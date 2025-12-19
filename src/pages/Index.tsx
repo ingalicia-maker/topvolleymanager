@@ -38,7 +38,7 @@ export default function Index() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{players.length}</p>
-                <p className="text-xs text-muted-foreground">Jugadores</p>
+                <p className="text-xs text-muted-foreground">Jugadoras</p>
               </div>
             </CardContent>
           </Card>
@@ -72,7 +72,7 @@ export default function Index() {
           <Link to="/players/new">
             <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
               <UserPlus className="h-5 w-5" />
-              <span className="text-sm">Añadir Jugador</span>
+              <span className="text-sm">Añadir Jugadora</span>
             </Button>
           </Link>
           <Link to="/events/new">

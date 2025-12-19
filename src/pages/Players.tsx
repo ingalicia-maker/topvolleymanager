@@ -45,7 +45,7 @@ export default function Players() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header
-        title="Jugadores"
+        title="Jugadoras"
         rightAction={
           <div className="flex gap-2">
             {isSelecting ? (
@@ -65,9 +65,9 @@ export default function Players() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>¿Eliminar jugadores?</AlertDialogTitle>
+                        <AlertDialogTitle>¿Eliminar jugadoras?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Se eliminarán {selectedPlayers.length} jugador{selectedPlayers.length > 1 ? 'es' : ''}. Esta acción no se puede deshacer.
+                          Se eliminarán {selectedPlayers.length} jugadora{selectedPlayers.length > 1 ? 's' : ''}. Esta acción no se puede deshacer.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -97,7 +97,7 @@ export default function Players() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar jugador..."
+            placeholder="Buscar jugadora..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-9"
@@ -107,7 +107,7 @@ export default function Players() {
         <div className="space-y-2">
           {filteredPlayers.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              {players.length === 0 ? 'No hay jugadores registrados' : 'No se encontraron jugadores'}
+              {players.length === 0 ? 'No hay jugadoras registradas' : 'No se encontraron jugadoras'}
             </p>
           ) : (
             filteredPlayers.map(player => (

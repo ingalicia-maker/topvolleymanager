@@ -5,7 +5,20 @@ export interface Player {
   teams: string[];
   position?: string;
   number?: number;
+  auspicias?: string; // Motivo de ausencia actual
 }
+
+export const SAMPLE_PLAYERS: Player[] = [
+  { id: 'p1', name: 'Martina Mesejo', phone: '+34600000001', teams: ['cadete-a'] },
+  { id: 'p2', name: 'Martina Gómez', phone: '+34600000002', teams: ['cadete-a'] },
+  { id: 'p3', name: 'Valeria Yañez', phone: '+34600000003', teams: ['cadete-a'] },
+  { id: 'p4', name: 'Carmen Perez', phone: '+34600000004', teams: ['cadete-a'] },
+  { id: 'p5', name: 'Lara Nuñez', phone: '+34600000005', teams: ['cadete-a'] },
+  { id: 'p6', name: 'Lucia Sexto', phone: '+34600000006', teams: ['cadete-a'] },
+  { id: 'p7', name: 'Ana Fachado', phone: '+34600000007', teams: ['cadete-a'] },
+  { id: 'p8', name: 'Lola Gantes', phone: '+34600000008', teams: ['cadete-b'] },
+  { id: 'p9', name: 'Aitana Pia', phone: '+34600000009', teams: ['cadete-b'] },
+];
 
 export interface Team {
   id: string;

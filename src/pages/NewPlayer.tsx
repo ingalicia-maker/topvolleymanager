@@ -54,13 +54,13 @@ export default function NewPlayer() {
     };
 
     setPlayers([...players, newPlayer]);
-    toast.success('Jugador añadido');
+    toast.success('Jugadora añadida');
     navigate(-1);
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Nuevo Jugador" showBack />
+      <Header title="Nueva Jugadora" showBack />
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre *</Label>
@@ -121,7 +121,7 @@ export default function NewPlayer() {
         </div>
 
         <Button type="submit" className="w-full">
-          Guardar Jugador
+          Guardar Jugadora
         </Button>
       </form>
       <BottomNav />
