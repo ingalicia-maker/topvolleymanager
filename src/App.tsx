@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthGuard } from "@/components/AuthGuard";
+import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
@@ -23,15 +25,16 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/teams" element={<Teams />} />
-          <Route path="/teams/:teamId" element={<TeamDetail />} />
-          <Route path="/players" element={<Players />} />
-          <Route path="/players/new" element={<NewPlayer />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/events/new" element={<NewEvent />} />
-          <Route path="/events/:eventId" element={<EventDetail />} />
-          <Route path="/ausencias" element={<Ausencias />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/" element={<AuthGuard><Index /></AuthGuard>} />
+          <Route path="/teams" element={<AuthGuard><Teams /></AuthGuard>} />
+          <Route path="/teams/:teamId" element={<AuthGuard><TeamDetail /></AuthGuard>} />
+          <Route path="/players" element={<AuthGuard><Players /></AuthGuard>} />
+          <Route path="/players/new" element={<AuthGuard><NewPlayer /></AuthGuard>} />
+          <Route path="/events" element={<AuthGuard><Events /></AuthGuard>} />
+          <Route path="/events/new" element={<AuthGuard><NewEvent /></AuthGuard>} />
+          <Route path="/events/:eventId" element={<AuthGuard><EventDetail /></AuthGuard>} />
+          <Route path="/ausencias" element={<AuthGuard><Ausencias /></AuthGuard>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

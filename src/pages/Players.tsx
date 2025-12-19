@@ -6,8 +6,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Player } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { usePlayers } from '@/hooks/usePlayers';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function Players() {
-  const [players, setPlayers] = useLocalStorage<Player[]>('volleyball-players', []);
+  const { players, loading, deletePlayer } = usePlayers();
   const [search, setSearch] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -36,11 +35,25 @@ export default function Players() {
     );
   };
 
-  const deleteSelected = () => {
-    setPlayers(prev => prev.filter(p => !selectedPlayers.includes(p.id)));
+  const deleteSelected = async () => {
+    for (const id of selectedPlayers) {
+      await deletePlayer(id);
+    }
     setSelectedPlayers([]);
     setIsSelecting(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <Header title="Jugadoras" />
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">

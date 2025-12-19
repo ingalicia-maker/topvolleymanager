@@ -6,8 +6,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Event, TEAMS } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { TEAMS } from '@/types/volleyball';
+import { useEvents } from '@/hooks/useEvents';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,13 +16,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function Events() {
-  const [events] = useLocalStorage<Event[]>('volleyball-events', []);
+  const { events, loading } = useEvents();
   const [teamFilter, setTeamFilter] = useState<string[]>([]);
 
   const today = new Date().toISOString().split('T')[0];
 
   const filteredEvents = events.filter(e =>
-    teamFilter.length === 0 || teamFilter.includes(e.teamId)
+    teamFilter.length === 0 || teamFilter.includes(e.team_id)
   );
 
   const upcomingEvents = filteredEvents
@@ -38,6 +38,18 @@ export default function Events() {
       prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId]
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <Header title="Eventos" />
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">

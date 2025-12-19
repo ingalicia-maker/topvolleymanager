@@ -1,15 +1,18 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, LogOut } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Event, Player, TEAMS } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { TEAMS } from '@/types/volleyball';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvents } from '@/hooks/useEvents';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Index() {
-  const [events] = useLocalStorage<Event[]>('volleyball-events', []);
-  const [players] = useLocalStorage<Player[]>('volleyball-players', []);
+  const { players } = usePlayers();
+  const { events } = useEvents();
+  const { signOut } = useAuth();
 
   const today = new Date().toISOString().split('T')[0];
   const upcomingEvents = events
@@ -24,8 +27,15 @@ export default function Index() {
     <div className="min-h-screen bg-background pb-20">
       {/* Hero Header */}
       <div className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground px-4 pt-8 pb-10">
-        <h1 className="text-2xl font-bold mb-1">Voleibol Manager</h1>
-        <p className="text-primary-foreground/80 text-sm">Gestiona tus equipos y convocatorias</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Voleibol Manager</h1>
+            <p className="text-primary-foreground/80 text-sm">Gestiona tus equipos y convocatorias</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={signOut} className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
+            <LogOut className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
       <div className="px-4 -mt-6 space-y-6">

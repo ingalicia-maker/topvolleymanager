@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Event, Player, TEAMS } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { TEAMS } from '@/types/volleyball';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvents } from '@/hooks/useEvents';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import {
   Select,
@@ -22,8 +24,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function NewEvent() {
   const navigate = useNavigate();
-  const [events, setEvents] = useLocalStorage<Event[]>('volleyball-events', []);
-  const [players] = useLocalStorage<Player[]>('volleyball-players', []);
+  const { players } = usePlayers();
+  const { addEvent } = useEvents();
+  const { user } = useAuth();
 
   const [type, setType] = useState<'training' | 'match'>('training');
   const [teamId, setTeamId] = useState('');
@@ -34,6 +37,7 @@ export default function NewEvent() {
   const [notes, setNotes] = useState('');
   const [invitedPlayers, setInvitedPlayers] = useState<string[]>([]);
   const [playerTab, setPlayerTab] = useState('team');
+  const [loading, setLoading] = useState(false);
 
   const selectedTeam = TEAMS.find(t => t.id === teamId);
   const teamPlayers = players.filter(p => p.teams.includes(teamId));
@@ -53,7 +57,7 @@ export default function NewEvent() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!teamId) {
@@ -77,23 +81,25 @@ export default function NewEvent() {
       return;
     }
 
-    const newEvent: Event = {
-      id: crypto.randomUUID(),
+    setLoading(true);
+    const result = await addEvent({
       type,
-      teamId,
+      team_id: teamId,
       title: title.trim(),
       date,
       time,
       location: location.trim(),
-      invitedPlayers,
-      confirmedPlayers: [],
-      declinedPlayers: [],
-      notes: notes.trim() || undefined,
-    };
+      invited_players: invitedPlayers,
+      confirmed_players: [],
+      declined_players: [],
+      notes: notes.trim() || null,
+      created_by: user?.id || null,
+    });
 
-    setEvents([...events, newEvent]);
-    toast.success('Evento creado');
-    navigate(`/events/${newEvent.id}`);
+    if (result) {
+      navigate(`/events/${result.id}`);
+    }
+    setLoading(false);
   };
 
   return (
@@ -120,7 +126,7 @@ export default function NewEvent() {
 
         <div className="space-y-2">
           <Label>Equipo *</Label>
-          <Select value={teamId} onValueChange={setTeamId}>
+          <Select value={teamId} onValueChange={setTeamId} disabled={loading}>
             <SelectTrigger>
               <SelectValue placeholder="Selecciona equipo" />
             </SelectTrigger>
@@ -147,6 +153,7 @@ export default function NewEvent() {
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder={type === 'match' ? 'Ej: vs Club Rival' : 'Ej: Entrenamiento semanal'}
+            disabled={loading}
           />
         </div>
 
@@ -158,6 +165,7 @@ export default function NewEvent() {
               type="date"
               value={date}
               onChange={e => setDate(e.target.value)}
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -167,6 +175,7 @@ export default function NewEvent() {
               type="time"
               value={time}
               onChange={e => setTime(e.target.value)}
+              disabled={loading}
             />
           </div>
         </div>
@@ -178,6 +187,7 @@ export default function NewEvent() {
             value={location}
             onChange={e => setLocation(e.target.value)}
             placeholder="Pabellón, dirección..."
+            disabled={loading}
           />
         </div>
 
@@ -189,6 +199,7 @@ export default function NewEvent() {
             onChange={e => setNotes(e.target.value)}
             placeholder="Información adicional..."
             rows={3}
+            disabled={loading}
           />
         </div>
 
@@ -197,7 +208,7 @@ export default function NewEvent() {
             <div className="flex items-center justify-between">
               <Label>Convocar jugadoras ({invitedPlayers.length})</Label>
               {teamPlayers.length > 0 && (
-                <Button type="button" variant="ghost" size="sm" onClick={selectAllTeam}>
+                <Button type="button" variant="ghost" size="sm" onClick={selectAllTeam} disabled={loading}>
                   Seleccionar equipo
                 </Button>
               )}
@@ -250,8 +261,8 @@ export default function NewEvent() {
           </div>
         )}
 
-        <Button type="submit" className="w-full">
-          Crear Evento
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Creando...' : 'Crear Evento'}
         </Button>
       </form>
       <BottomNav />
