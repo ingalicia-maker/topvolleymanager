@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ausencias: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date: string
+          id: string
+          player_id: string | null
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          id?: string
+          player_id?: string | null
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          id?: string
+          player_id?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ausencias_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          confirmed_players: string[] | null
+          created_at: string | null
+          created_by: string | null
+          date: string
+          declined_players: string[] | null
+          id: string
+          invited_players: string[] | null
+          location: string
+          notes: string | null
+          team_id: string
+          time: string
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          confirmed_players?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          declined_players?: string[] | null
+          id?: string
+          invited_players?: string[] | null
+          location: string
+          notes?: string | null
+          team_id: string
+          time: string
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          confirmed_players?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          declined_players?: string[] | null
+          id?: string
+          invited_players?: string[] | null
+          location?: string
+          notes?: string | null
+          team_id?: string
+          time?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      players: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          number: number | null
+          phone: string
+          teams: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          number?: number | null
+          phone: string
+          teams?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          number?: number | null
+          phone?: string
+          teams?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          assigned_teams: string[] | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_teams?: string[] | null
+          created_at?: string | null
+          email: string
+          id: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_teams?: string[] | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
