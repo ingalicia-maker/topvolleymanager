@@ -195,7 +195,7 @@ export default function NewEvent() {
         {teamId && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Convocar jugadores ({invitedPlayers.length})</Label>
+              <Label>Convocar jugadoras ({invitedPlayers.length})</Label>
               {teamPlayers.length > 0 && (
                 <Button type="button" variant="ghost" size="sm" onClick={selectAllTeam}>
                   Seleccionar equipo
@@ -208,13 +208,13 @@ export default function NewEvent() {
                   {selectedTeam?.name} ({teamPlayers.length})
                 </TabsTrigger>
                 <TabsTrigger value="other" className="flex-1">
-                  Otros ({otherPlayers.length})
+                  Otras ({otherPlayers.length})
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="team" className="mt-3 space-y-2">
                 {teamPlayers.length === 0 ? (
                   <p className="text-center text-muted-foreground py-4 text-sm">
-                    No hay jugadores en este equipo
+                    No hay jugadoras en este equipo
                   </p>
                 ) : (
                   teamPlayers.map(player => (
@@ -232,7 +232,7 @@ export default function NewEvent() {
               <TabsContent value="other" className="mt-3 space-y-2">
                 {otherPlayers.length === 0 ? (
                   <p className="text-center text-muted-foreground py-4 text-sm">
-                    No hay otros jugadores
+                    No hay otras jugadoras
                   </p>
                 ) : (
                   otherPlayers.map(player => (

@@ -198,7 +198,7 @@ export default function EventDetail() {
           <TabsContent value="confirmed" className="mt-3 space-y-2">
             {confirmedPlayersList.length === 0 ? (
               <p className="text-center text-muted-foreground py-4 text-sm">
-                Ningún jugador confirmado
+                Ninguna jugadora confirmada
               </p>
             ) : (
               confirmedPlayersList.map(player => (
@@ -210,7 +210,7 @@ export default function EventDetail() {
           <TabsContent value="pending" className="mt-3 space-y-2">
             {pendingPlayersList.length === 0 ? (
               <p className="text-center text-muted-foreground py-4 text-sm">
-                Todos los jugadores han respondido
+                Todas las jugadoras han respondido
               </p>
             ) : (
               pendingPlayersList.map(player => (
@@ -222,7 +222,7 @@ export default function EventDetail() {
           <TabsContent value="declined" className="mt-3 space-y-2">
             {declinedPlayersList.length === 0 ? (
               <p className="text-center text-muted-foreground py-4 text-sm">
-                Ningún jugador ha declinado
+                Ninguna jugadora ha declinado
               </p>
             ) : (
               declinedPlayersList.map(player => (

@@ -1,11 +1,12 @@
-import { Home, Users, Calendar, UserCircle } from 'lucide-react';
+import { Home, Users, Calendar, UserCircle, TableProperties } from 'lucide-react';
 import { NavLink } from './NavLink';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Inicio' },
   { to: '/teams', icon: Users, label: 'Equipos' },
   { to: '/events', icon: Calendar, label: 'Eventos' },
-  { to: '/players', icon: UserCircle, label: 'Jugadores' },
+  { to: '/players', icon: UserCircle, label: 'Jugadoras' },
+  { to: '/dashboard', icon: TableProperties, label: 'Dashboard' },
 ];
 
 export function BottomNav() {
