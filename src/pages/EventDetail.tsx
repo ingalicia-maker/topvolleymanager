@@ -1,0 +1,238 @@
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Calendar, MapPin, Clock, Users, Download, MessageCircle, Check, X, Trophy, Dumbbell } from 'lucide-react';
+import { Header } from '@/components/Header';
+import { BottomNav } from '@/components/BottomNav';
+import { PlayerCard } from '@/components/PlayerCard';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Event, Player, TEAMS } from '@/types/volleyball';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { toast } from 'sonner';
+
+export default function EventDetail() {
+  const { eventId } = useParams<{ eventId: string }>();
+  const [events, setEvents] = useLocalStorage<Event[]>('volleyball-events', []);
+  const [players] = useLocalStorage<Player[]>('volleyball-players', []);
+
+  const event = events.find(e => e.id === eventId);
+  const team = event ? TEAMS.find(t => t.id === event.teamId) : null;
+
+  if (!event || !team) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <Header title="Evento no encontrado" showBack />
+        <BottomNav />
+      </div>
+    );
+  }
+
+  const invitedPlayersList = players.filter(p => event.invitedPlayers.includes(p.id));
+  const confirmedPlayersList = players.filter(p => event.confirmedPlayers.includes(p.id));
+  const declinedPlayersList = players.filter(p => event.declinedPlayers.includes(p.id));
+  const pendingPlayersList = invitedPlayersList.filter(
+    p => !event.confirmedPlayers.includes(p.id) && !event.declinedPlayers.includes(p.id)
+  );
+
+  const toggleConfirm = (playerId: string) => {
+    setEvents(prev => prev.map(e => {
+      if (e.id !== eventId) return e;
+      const isConfirmed = e.confirmedPlayers.includes(playerId);
+      return {
+        ...e,
+        confirmedPlayers: isConfirmed
+          ? e.confirmedPlayers.filter(id => id !== playerId)
+          : [...e.confirmedPlayers, playerId],
+        declinedPlayers: e.declinedPlayers.filter(id => id !== playerId),
+      };
+    }));
+  };
+
+  const toggleDecline = (playerId: string) => {
+    setEvents(prev => prev.map(e => {
+      if (e.id !== eventId) return e;
+      const isDeclined = e.declinedPlayers.includes(playerId);
+      return {
+        ...e,
+        declinedPlayers: isDeclined
+          ? e.declinedPlayers.filter(id => id !== playerId)
+          : [...e.declinedPlayers, playerId],
+        confirmedPlayers: e.confirmedPlayers.filter(id => id !== playerId),
+      };
+    }));
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  const generateWhatsAppList = () => {
+    const confirmedNames = confirmedPlayersList.map(p => `✅ ${p.name}`).join('\n');
+    const pendingNames = pendingPlayersList.map(p => `⏳ ${p.name}`).join('\n');
+    const declinedNames = declinedPlayersList.map(p => `❌ ${p.name}`).join('\n');
+    
+    const message = `*${event.title}*\n📅 ${formatDate(event.date)}\n⏰ ${event.time}\n📍 ${event.location}\n\n*Confirmados (${confirmedPlayersList.length}):*\n${confirmedNames || 'Ninguno'}\n\n*Pendientes (${pendingPlayersList.length}):*\n${pendingNames || 'Ninguno'}\n\n*No pueden (${declinedPlayersList.length}):*\n${declinedNames || 'Ninguno'}`;
+    
+    navigator.clipboard.writeText(message);
+    toast.success('Lista copiada al portapapeles');
+  };
+
+  const downloadList = () => {
+    const content = `${event.title}\nFecha: ${formatDate(event.date)}\nHora: ${event.time}\nUbicación: ${event.location}\n\nConfirmados (${confirmedPlayersList.length}):\n${confirmedPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguno'}\n\nPendientes (${pendingPlayersList.length}):\n${pendingPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguno'}\n\nNo pueden (${declinedPlayersList.length}):\n${declinedPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguno'}`;
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${event.title.replace(/\s+/g, '_')}_${event.date}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Lista descargada');
+  };
+
+  const PlayerWithActions = ({ player, status }: { player: Player; status: 'confirmed' | 'declined' | 'pending' }) => (
+    <div className="flex items-center gap-2">
+      <div className="flex-1">
+        <PlayerCard player={player} showTeams={false} />
+      </div>
+      <div className="flex gap-1">
+        <Button
+          variant={status === 'confirmed' ? 'default' : 'outline'}
+          size="icon"
+          className={`h-8 w-8 ${status === 'confirmed' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+          onClick={() => toggleConfirm(player.id)}
+        >
+          <Check className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={status === 'declined' ? 'default' : 'outline'}
+          size="icon"
+          className={`h-8 w-8 ${status === 'declined' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+          onClick={() => toggleDecline(player.id)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <Header title={event.title} showBack />
+      
+      <div className="p-4 space-y-4">
+        {/* Event Info Card */}
+        <div 
+          className="rounded-xl p-4 space-y-3"
+          style={{ backgroundColor: `${team.color}10` }}
+        >
+          <div className="flex items-center gap-2">
+            {event.type === 'match' ? (
+              <Trophy className="h-5 w-5 text-amber-500" />
+            ) : (
+              <Dumbbell className="h-5 w-5 text-primary" />
+            )}
+            <Badge variant={event.type === 'match' ? 'default' : 'secondary'}>
+              {event.type === 'match' ? 'Partido' : 'Entrenamiento'}
+            </Badge>
+            <Badge variant="outline" style={{ borderColor: team.color, color: team.color }}>
+              {team.name}
+            </Badge>
+          </div>
+          
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-foreground">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              {formatDate(event.date)}
+            </div>
+            <div className="flex items-center gap-2 text-foreground">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              {event.time}
+            </div>
+            <div className="flex items-center gap-2 text-foreground">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              {event.location}
+            </div>
+            <div className="flex items-center gap-2 text-foreground">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-green-600 font-medium">{confirmedPlayersList.length}</span>
+              <span className="text-muted-foreground">/ {invitedPlayersList.length} convocados</span>
+            </div>
+          </div>
+
+          {event.notes && (
+            <p className="text-sm text-muted-foreground border-t border-border/50 pt-3 mt-3">
+              {event.notes}
+            </p>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex-1 gap-2" onClick={generateWhatsAppList}>
+            <MessageCircle className="h-4 w-4" />
+            Copiar para WhatsApp
+          </Button>
+          <Button variant="outline" className="flex-1 gap-2" onClick={downloadList}>
+            <Download className="h-4 w-4" />
+            Descargar
+          </Button>
+        </div>
+
+        {/* Players Tabs */}
+        <Tabs defaultValue="confirmed" className="w-full">
+          <TabsList className="w-full">
+            <TabsTrigger value="confirmed" className="flex-1">
+              ✅ {confirmedPlayersList.length}
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="flex-1">
+              ⏳ {pendingPlayersList.length}
+            </TabsTrigger>
+            <TabsTrigger value="declined" className="flex-1">
+              ❌ {declinedPlayersList.length}
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="confirmed" className="mt-3 space-y-2">
+            {confirmedPlayersList.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4 text-sm">
+                Ningún jugador confirmado
+              </p>
+            ) : (
+              confirmedPlayersList.map(player => (
+                <PlayerWithActions key={player.id} player={player} status="confirmed" />
+              ))
+            )}
+          </TabsContent>
+          
+          <TabsContent value="pending" className="mt-3 space-y-2">
+            {pendingPlayersList.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4 text-sm">
+                Todos los jugadores han respondido
+              </p>
+            ) : (
+              pendingPlayersList.map(player => (
+                <PlayerWithActions key={player.id} player={player} status="pending" />
+              ))
+            )}
+          </TabsContent>
+          
+          <TabsContent value="declined" className="mt-3 space-y-2">
+            {declinedPlayersList.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4 text-sm">
+                Ningún jugador ha declinado
+              </p>
+            ) : (
+              declinedPlayersList.map(player => (
+                <PlayerWithActions key={player.id} player={player} status="declined" />
+              ))
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+      <BottomNav />
+    </div>
+  );
+}
