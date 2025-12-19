@@ -32,14 +32,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Player, Ausencia, TEAMS, SAMPLE_PLAYERS } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { toast } from 'sonner';
+import { TEAMS } from '@/types/volleyball';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useAusencias } from '@/hooks/useAusencias';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 export default function Ausencias() {
-  const [players] = useLocalStorage<Player[]>('volleyball-players', SAMPLE_PLAYERS);
-  const [ausencias, setAusencias] = useLocalStorage<Ausencia[]>('volleyball-ausencias', []);
+  const { players } = usePlayers();
+  const { ausencias, addAusencia, updateAusencia, deleteAusencia } = useAusencias();
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [teamFilter, setTeamFilter] = useState<string[]>([]);
   const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
@@ -52,36 +54,26 @@ export default function Ausencias() {
   );
 
   const ausenciasForDate = ausencias.filter(a => a.date === dateStr);
-  const absentPlayerIds = ausenciasForDate.map(a => a.playerId);
+  const absentPlayerIds = ausenciasForDate.map(a => a.player_id);
 
-  const toggleAusencia = (playerId: string) => {
-    const existing = ausencias.find(a => a.playerId === playerId && a.date === dateStr);
+  const toggleAusencia = async (playerId: string) => {
+    const existing = ausencias.find(a => a.player_id === playerId && a.date === dateStr);
     if (existing) {
-      setAusencias(prev => prev.filter(a => a.id !== existing.id));
-      toast.success('Ausencia eliminada');
+      await deleteAusencia(existing.id);
     } else {
       const reason = reasonInputs[playerId]?.trim();
-      const newAusencia: Ausencia = {
-        id: crypto.randomUUID(),
-        playerId,
+      await addAusencia({
+        player_id: playerId,
         date: dateStr,
-        reason: reason || undefined,
-      };
-      setAusencias(prev => [...prev, newAusencia]);
+        reason: reason || null,
+        created_by: user?.id || null,
+      });
       setReasonInputs(prev => ({ ...prev, [playerId]: '' }));
-      toast.success('Ausencia registrada');
     }
   };
 
-  const updateReason = (ausenciaId: string, reason: string) => {
-    setAusencias(prev => prev.map(a =>
-      a.id === ausenciaId ? { ...a, reason: reason.trim() || undefined } : a
-    ));
-  };
-
-  const deleteAusencia = (ausenciaId: string) => {
-    setAusencias(prev => prev.filter(a => a.id !== ausenciaId));
-    toast.success('Ausencia eliminada');
+  const handleUpdateReason = async (ausenciaId: string, reason: string) => {
+    await updateAusencia(ausenciaId, { reason: reason.trim() || null });
   };
 
   // Group ausencias by date for history
@@ -89,7 +81,7 @@ export default function Ausencias() {
     if (!acc[a.date]) acc[a.date] = [];
     acc[a.date].push(a);
     return acc;
-  }, {} as Record<string, Ausencia[]>);
+  }, {} as Record<string, typeof ausencias>);
 
   const sortedDates = Object.keys(ausenciasByDate).sort((a, b) => b.localeCompare(a));
 
@@ -200,7 +192,7 @@ export default function Ausencias() {
             {/* Player List */}
             <div className="space-y-2">
               {filteredPlayers.map(player => {
-                const ausencia = ausenciasForDate.find(a => a.playerId === player.id);
+                const ausencia = ausenciasForDate.find(a => a.player_id === player.id);
                 const isAbsent = !!ausencia;
                 const playerTeams = TEAMS.filter(t => player.teams.includes(t.id));
 
@@ -239,7 +231,7 @@ export default function Ausencias() {
                               <Input
                                 placeholder="Motivo (opcional)..."
                                 value={ausencia.reason || ''}
-                                onChange={(e) => updateReason(ausencia.id, e.target.value)}
+                                onChange={(e) => handleUpdateReason(ausencia.id, e.target.value)}
                                 className="h-8 text-sm flex-1"
                               />
                             </div>
@@ -300,7 +292,7 @@ export default function Ausencias() {
                       <h3 className="font-semibold text-sm mb-3 capitalize">{dateFormatted}</h3>
                       <div className="space-y-2">
                         {dateAusencias.map(ausencia => {
-                          const playerTeams = getPlayerTeams(ausencia.playerId);
+                          const playerTeams = getPlayerTeams(ausencia.player_id);
                           return (
                             <div
                               key={ausencia.id}
@@ -309,7 +301,7 @@ export default function Ausencias() {
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium text-sm">
-                                    {getPlayerName(ausencia.playerId)}
+                                    {getPlayerName(ausencia.player_id)}
                                   </span>
                                   <div className="flex gap-1">
                                     {playerTeams.map(teamId => {
@@ -340,7 +332,7 @@ export default function Ausencias() {
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>¿Eliminar ausencia?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      Se eliminará la ausencia de {getPlayerName(ausencia.playerId)}.
+                                      Se eliminará la ausencia de {getPlayerName(ausencia.player_id)}.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>

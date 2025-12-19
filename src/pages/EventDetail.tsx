@@ -1,23 +1,23 @@
-import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, Download, MessageCircle, Check, X, Trophy, Dumbbell, Copy, Send } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Download, Check, X, Trophy, Dumbbell, Copy, Send } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Event, Player, TEAMS } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { TEAMS } from '@/types/volleyball';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvents } from '@/hooks/useEvents';
 import { toast } from 'sonner';
 
 export default function EventDetail() {
   const { eventId } = useParams<{ eventId: string }>();
-  const [events, setEvents] = useLocalStorage<Event[]>('volleyball-events', []);
-  const [players] = useLocalStorage<Player[]>('volleyball-players', []);
+  const { events, updateEvent } = useEvents();
+  const { players } = usePlayers();
 
   const event = events.find(e => e.id === eventId);
-  const team = event ? TEAMS.find(t => t.id === event.teamId) : null;
+  const team = event ? TEAMS.find(t => t.id === event.team_id) : null;
 
   if (!event || !team) {
     return (
@@ -28,39 +28,37 @@ export default function EventDetail() {
     );
   }
 
-  const invitedPlayersList = players.filter(p => event.invitedPlayers.includes(p.id));
-  const confirmedPlayersList = players.filter(p => event.confirmedPlayers.includes(p.id));
-  const declinedPlayersList = players.filter(p => event.declinedPlayers.includes(p.id));
+  const invitedPlayersList = players.filter(p => event.invited_players?.includes(p.id));
+  const confirmedPlayersList = players.filter(p => event.confirmed_players?.includes(p.id));
+  const declinedPlayersList = players.filter(p => event.declined_players?.includes(p.id));
   const pendingPlayersList = invitedPlayersList.filter(
-    p => !event.confirmedPlayers.includes(p.id) && !event.declinedPlayers.includes(p.id)
+    p => !event.confirmed_players?.includes(p.id) && !event.declined_players?.includes(p.id)
   );
 
-  const toggleConfirm = (playerId: string) => {
-    setEvents(prev => prev.map(e => {
-      if (e.id !== eventId) return e;
-      const isConfirmed = e.confirmedPlayers.includes(playerId);
-      return {
-        ...e,
-        confirmedPlayers: isConfirmed
-          ? e.confirmedPlayers.filter(id => id !== playerId)
-          : [...e.confirmedPlayers, playerId],
-        declinedPlayers: e.declinedPlayers.filter(id => id !== playerId),
-      };
-    }));
+  const toggleConfirm = async (playerId: string) => {
+    const isConfirmed = event.confirmed_players?.includes(playerId);
+    const newConfirmed = isConfirmed
+      ? event.confirmed_players.filter(id => id !== playerId)
+      : [...(event.confirmed_players || []), playerId];
+    const newDeclined = (event.declined_players || []).filter(id => id !== playerId);
+    
+    await updateEvent(event.id, {
+      confirmed_players: newConfirmed,
+      declined_players: newDeclined,
+    });
   };
 
-  const toggleDecline = (playerId: string) => {
-    setEvents(prev => prev.map(e => {
-      if (e.id !== eventId) return e;
-      const isDeclined = e.declinedPlayers.includes(playerId);
-      return {
-        ...e,
-        declinedPlayers: isDeclined
-          ? e.declinedPlayers.filter(id => id !== playerId)
-          : [...e.declinedPlayers, playerId],
-        confirmedPlayers: e.confirmedPlayers.filter(id => id !== playerId),
-      };
-    }));
+  const toggleDecline = async (playerId: string) => {
+    const isDeclined = event.declined_players?.includes(playerId);
+    const newDeclined = isDeclined
+      ? event.declined_players.filter(id => id !== playerId)
+      : [...(event.declined_players || []), playerId];
+    const newConfirmed = (event.confirmed_players || []).filter(id => id !== playerId);
+    
+    await updateEvent(event.id, {
+      confirmed_players: newConfirmed,
+      declined_players: newDeclined,
+    });
   };
 
   const formatDate = (dateStr: string) => {
@@ -87,7 +85,7 @@ export default function EventDetail() {
   };
 
   const downloadList = () => {
-    const content = `${event.title}\nFecha: ${formatDate(event.date)}\nHora: ${event.time}\nUbicación: ${event.location}\n\nConfirmados (${confirmedPlayersList.length}):\n${confirmedPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguno'}\n\nPendientes (${pendingPlayersList.length}):\n${pendingPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguno'}\n\nNo pueden (${declinedPlayersList.length}):\n${declinedPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguno'}`;
+    const content = `${event.title}\nFecha: ${formatDate(event.date)}\nHora: ${event.time}\nUbicación: ${event.location}\n\nConfirmadas (${confirmedPlayersList.length}):\n${confirmedPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguna'}\n\nPendientes (${pendingPlayersList.length}):\n${pendingPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguna'}\n\nNo pueden (${declinedPlayersList.length}):\n${declinedPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguna'}`;
     
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -99,7 +97,7 @@ export default function EventDetail() {
     toast.success('Lista descargada');
   };
 
-  const PlayerWithActions = ({ player, status }: { player: Player; status: 'confirmed' | 'declined' | 'pending' }) => (
+  const PlayerWithActions = ({ player, status }: { player: typeof players[0]; status: 'confirmed' | 'declined' | 'pending' }) => (
     <div className="flex items-center gap-2">
       <div className="flex-1">
         <PlayerCard player={player} showTeams={false} />
@@ -165,7 +163,7 @@ export default function EventDetail() {
             <div className="flex items-center gap-2 text-foreground">
               <Users className="h-4 w-4 text-muted-foreground" />
               <span className="text-green-600 font-medium">{confirmedPlayersList.length}</span>
-              <span className="text-muted-foreground">/ {invitedPlayersList.length} convocados</span>
+              <span className="text-muted-foreground">/ {invitedPlayersList.length} convocadas</span>
             </div>
           </div>
 

@@ -1,12 +1,13 @@
-import { Phone, MessageCircle } from 'lucide-react';
-import { Player, TEAMS } from '@/types/volleyball';
+import { MessageCircle } from 'lucide-react';
+import { TEAMS } from '@/types/volleyball';
+import { DbPlayer } from '@/hooks/usePlayers';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Checkbox } from './ui/checkbox';
 
 interface PlayerCardProps {
-  player: Player;
+  player: DbPlayer;
   selectable?: boolean;
   selected?: boolean;
   onSelect?: (id: string) => void;

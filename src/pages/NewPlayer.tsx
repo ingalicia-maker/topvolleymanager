@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Player, TEAMS } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { TEAMS } from '@/types/volleyball';
+import { usePlayers } from '@/hooks/usePlayers';
 import { toast } from 'sonner';
 
 export default function NewPlayer() {
@@ -15,13 +15,14 @@ export default function NewPlayer() {
   const [searchParams] = useSearchParams();
   const preselectedTeam = searchParams.get('team');
   
-  const [players, setPlayers] = useLocalStorage<Player[]>('volleyball-players', []);
+  const { addPlayer } = usePlayers();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [number, setNumber] = useState('');
   const [selectedTeams, setSelectedTeams] = useState<string[]>(
     preselectedTeam ? [preselectedTeam] : []
   );
+  const [loading, setLoading] = useState(false);
 
   const toggleTeam = (teamId: string) => {
     setSelectedTeams(prev =>
@@ -29,7 +30,7 @@ export default function NewPlayer() {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name.trim()) {
@@ -45,17 +46,18 @@ export default function NewPlayer() {
       return;
     }
 
-    const newPlayer: Player = {
-      id: crypto.randomUUID(),
+    setLoading(true);
+    const result = await addPlayer({
       name: name.trim(),
       phone: phone.trim(),
       teams: selectedTeams,
-      number: number ? parseInt(number) : undefined,
-    };
+      number: number ? parseInt(number) : null,
+    });
 
-    setPlayers([...players, newPlayer]);
-    toast.success('Jugadora añadida');
-    navigate(-1);
+    if (result) {
+      navigate(-1);
+    }
+    setLoading(false);
   };
 
   return (
@@ -69,6 +71,7 @@ export default function NewPlayer() {
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Nombre completo"
+            disabled={loading}
           />
         </div>
 
@@ -80,6 +83,7 @@ export default function NewPlayer() {
             value={phone}
             onChange={e => setPhone(e.target.value)}
             placeholder="+34 600 000 000"
+            disabled={loading}
           />
         </div>
 
@@ -91,6 +95,7 @@ export default function NewPlayer() {
             value={number}
             onChange={e => setNumber(e.target.value)}
             placeholder="Opcional"
+            disabled={loading}
           />
         </div>
 
@@ -106,6 +111,7 @@ export default function NewPlayer() {
                 <Checkbox
                   checked={selectedTeams.includes(team.id)}
                   onCheckedChange={() => toggleTeam(team.id)}
+                  disabled={loading}
                 />
                 <div
                   className="w-3 h-3 rounded-full"
@@ -120,8 +126,8 @@ export default function NewPlayer() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full">
-          Guardar Jugadora
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Guardando...' : 'Guardar Jugadora'}
         </Button>
       </form>
       <BottomNav />

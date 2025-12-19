@@ -4,13 +4,13 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
 import { Button } from '@/components/ui/button';
-import { TEAMS, Player } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { TEAMS } from '@/types/volleyball';
+import { usePlayers } from '@/hooks/usePlayers';
 import { Link } from 'react-router-dom';
 
 export default function TeamDetail() {
   const { teamId } = useParams<{ teamId: string }>();
-  const [players] = useLocalStorage<Player[]>('volleyball-players', []);
+  const { players } = usePlayers();
 
   const team = TEAMS.find(t => t.id === teamId);
   const teamPlayers = players.filter(p => p.teams.includes(teamId || ''));
@@ -46,14 +46,14 @@ export default function TeamDetail() {
           <p className="text-sm text-muted-foreground">Coach</p>
           <p className="font-bold text-foreground">{team.coach}</p>
           <p className="text-sm text-muted-foreground mt-2">
-            {teamPlayers.length} jugador{teamPlayers.length !== 1 ? 'es' : ''}
+            {teamPlayers.length} jugadora{teamPlayers.length !== 1 ? 's' : ''}
           </p>
         </div>
         
         <div className="space-y-2">
           {teamPlayers.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              No hay jugadores en este equipo
+              No hay jugadoras en este equipo
             </p>
           ) : (
             teamPlayers.map(player => (

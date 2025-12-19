@@ -1,11 +1,11 @@
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { TeamCard } from '@/components/TeamCard';
-import { TEAMS, Player } from '@/types/volleyball';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { TEAMS } from '@/types/volleyball';
+import { usePlayers } from '@/hooks/usePlayers';
 
 export default function Teams() {
-  const [players] = useLocalStorage<Player[]>('volleyball-players', []);
+  const { players } = usePlayers();
 
   const getPlayerCount = (teamId: string) => {
     return players.filter(p => p.teams.includes(teamId)).length;
