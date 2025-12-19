@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, Download, MessageCircle, Check, X, Trophy, Dumbbell } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Download, MessageCircle, Check, X, Trophy, Dumbbell, Copy, Send } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
@@ -68,15 +68,22 @@ export default function EventDetail() {
     return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  const generateWhatsAppList = () => {
+  const generateMessage = () => {
     const confirmedNames = confirmedPlayersList.map(p => `✅ ${p.name}`).join('\n');
     const pendingNames = pendingPlayersList.map(p => `⏳ ${p.name}`).join('\n');
     const declinedNames = declinedPlayersList.map(p => `❌ ${p.name}`).join('\n');
     
-    const message = `*${event.title}*\n📅 ${formatDate(event.date)}\n⏰ ${event.time}\n📍 ${event.location}\n\n*Confirmados (${confirmedPlayersList.length}):*\n${confirmedNames || 'Ninguno'}\n\n*Pendientes (${pendingPlayersList.length}):*\n${pendingNames || 'Ninguno'}\n\n*No pueden (${declinedPlayersList.length}):*\n${declinedNames || 'Ninguno'}`;
-    
-    navigator.clipboard.writeText(message);
+    return `*${event.title}*\n📅 ${formatDate(event.date)}\n⏰ ${event.time}\n📍 ${event.location}\n\n*Confirmadas (${confirmedPlayersList.length}):*\n${confirmedNames || 'Ninguna'}\n\n*Pendientes (${pendingPlayersList.length}):*\n${pendingNames || 'Ninguna'}\n\n*No pueden (${declinedPlayersList.length}):*\n${declinedNames || 'Ninguna'}`;
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generateMessage());
     toast.success('Lista copiada al portapapeles');
+  };
+
+  const shareWhatsApp = () => {
+    const message = encodeURIComponent(generateMessage());
+    window.open(`https://wa.me/?text=${message}`, '_blank');
   };
 
   const downloadList = () => {
@@ -170,14 +177,21 @@ export default function EventDetail() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
-          <Button variant="outline" className="flex-1 gap-2" onClick={generateWhatsAppList}>
-            <MessageCircle className="h-4 w-4" />
-            Copiar para WhatsApp
+        <div className="grid grid-cols-3 gap-2">
+          <Button 
+            className="flex-1 gap-1 bg-green-600 hover:bg-green-700 text-white" 
+            onClick={shareWhatsApp}
+          >
+            <Send className="h-4 w-4" />
+            <span className="text-xs">WhatsApp</span>
           </Button>
-          <Button variant="outline" className="flex-1 gap-2" onClick={downloadList}>
+          <Button variant="outline" className="flex-1 gap-1" onClick={copyToClipboard}>
+            <Copy className="h-4 w-4" />
+            <span className="text-xs">Copiar</span>
+          </Button>
+          <Button variant="outline" className="flex-1 gap-1" onClick={downloadList}>
             <Download className="h-4 w-4" />
-            Descargar
+            <span className="text-xs">Descargar</span>
           </Button>
         </div>
 
