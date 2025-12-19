@@ -1,3 +1,10 @@
+export interface Ausencia {
+  id: string;
+  playerId: string;
+  date: string; // YYYY-MM-DD
+  reason?: string;
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -5,7 +12,6 @@ export interface Player {
   teams: string[];
   position?: string;
   number?: number;
-  auspicias?: string; // Motivo de ausencia actual
 }
 
 export const SAMPLE_PLAYERS: Player[] = [

@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, UserCircle, TableProperties } from 'lucide-react';
+import { Home, Users, Calendar, UserCircle, AlertTriangle } from 'lucide-react';
 import { NavLink } from './NavLink';
 
 const navItems = [
@@ -6,7 +6,7 @@ const navItems = [
   { to: '/teams', icon: Users, label: 'Equipos' },
   { to: '/events', icon: Calendar, label: 'Eventos' },
   { to: '/players', icon: UserCircle, label: 'Jugadoras' },
-  { to: '/dashboard', icon: TableProperties, label: 'Dashboard' },
+  { to: '/ausencias', icon: AlertTriangle, label: 'Ausencias' },
 ];
 
 export function BottomNav() {

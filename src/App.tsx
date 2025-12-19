@@ -8,10 +8,10 @@ import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
 import Players from "./pages/Players";
 import NewPlayer from "./pages/NewPlayer";
-import PlayersDashboard from "./pages/PlayersDashboard";
 import Events from "./pages/Events";
 import NewEvent from "./pages/NewEvent";
 import EventDetail from "./pages/EventDetail";
+import Ausencias from "./pages/Ausencias";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,10 +28,10 @@ const App = () => (
           <Route path="/teams/:teamId" element={<TeamDetail />} />
           <Route path="/players" element={<Players />} />
           <Route path="/players/new" element={<NewPlayer />} />
-          <Route path="/dashboard" element={<PlayersDashboard />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/new" element={<NewEvent />} />
           <Route path="/events/:eventId" element={<EventDetail />} />
+          <Route path="/ausencias" element={<Ausencias />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
