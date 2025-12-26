@@ -55,7 +55,16 @@ export default function NewPlayer() {
     });
 
     if (result) {
-      navigate(-1);
+      setName('');
+      setPhone('');
+      setNumber('');
+      setSelectedTeams(preselectedTeam ? [preselectedTeam] : []);
+      toast.success('Jugadora guardada. Puedes añadir otra o volver al inicio.', {
+        action: {
+          label: 'Ir al inicio',
+          onClick: () => navigate('/'),
+        },
+      });
     }
     setLoading(false);
   };
