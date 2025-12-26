@@ -213,18 +213,20 @@ export default function Auth() {
                   <Label>Equipos que entrenas (opcional)</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {TEAMS.map(team => (
-                      <div
+                      <label
                         key={team.id}
                         className="flex items-center gap-2 p-2 rounded border border-border cursor-pointer hover:bg-muted/50"
-                        onClick={() => toggleTeam(team.id)}
                       >
-                        <Checkbox checked={assignedTeams.includes(team.id)} />
+                        <Checkbox 
+                          checked={assignedTeams.includes(team.id)} 
+                          onCheckedChange={() => toggleTeam(team.id)}
+                        />
                         <span
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: team.color }}
                         />
                         <span className="text-sm">{team.name}</span>
-                      </div>
+                      </label>
                     ))}
                   </div>
                 </div>
