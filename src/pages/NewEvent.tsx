@@ -30,7 +30,7 @@ export default function NewEvent() {
 
   const [type, setType] = useState<'training' | 'match'>('training');
   const [teamId, setTeamId] = useState('');
-  const [title, setTitle] = useState('');
+  
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
@@ -95,10 +95,7 @@ export default function NewEvent() {
       toast.error('Selecciona un equipo');
       return;
     }
-    if (!title.trim()) {
-      toast.error('El título es obligatorio');
-      return;
-    }
+    const eventTitle = type === 'training' ? 'Entrenamiento' : 'Partido';
     if (!date) {
       toast.error('La fecha es obligatoria');
       return;
@@ -116,7 +113,7 @@ export default function NewEvent() {
     const result = await addEvent({
       type,
       team_id: teamId,
-      title: title.trim(),
+      title: eventTitle,
       date,
       time,
       location: location.trim(),
@@ -177,16 +174,6 @@ export default function NewEvent() {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="title">Título *</Label>
-          <Input
-            id="title"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder={type === 'match' ? 'Ej: vs Club Rival' : 'Ej: Entrenamiento semanal'}
-            disabled={loading}
-          />
-        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
