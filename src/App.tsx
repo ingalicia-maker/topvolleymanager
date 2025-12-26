@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,20 +20,82 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
       <Sonner />
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
-          <Route path="/" element={<AuthGuard><Index /></AuthGuard>} />
-          <Route path="/teams" element={<AuthGuard><Teams /></AuthGuard>} />
-          <Route path="/teams/:teamId" element={<AuthGuard><TeamDetail /></AuthGuard>} />
-          <Route path="/players" element={<AuthGuard><Players /></AuthGuard>} />
-          <Route path="/players/new" element={<AuthGuard><NewPlayer /></AuthGuard>} />
-          <Route path="/events" element={<AuthGuard><Events /></AuthGuard>} />
-          <Route path="/events/new" element={<AuthGuard><NewEvent /></AuthGuard>} />
-          <Route path="/events/:eventId" element={<AuthGuard><EventDetail /></AuthGuard>} />
-          <Route path="/ausencias" element={<AuthGuard><Ausencias /></AuthGuard>} />
+          <Route
+            path="/"
+            element={
+              <AuthGuard>
+                <Index />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/teams"
+            element={
+              <AuthGuard>
+                <Teams />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/teams/:teamId"
+            element={
+              <AuthGuard>
+                <TeamDetail />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/players"
+            element={
+              <AuthGuard>
+                <Players />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/players/new"
+            element={
+              <AuthGuard>
+                <NewPlayer />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/events"
+            element={
+              <AuthGuard>
+                <Events />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/events/new"
+            element={
+              <AuthGuard>
+                <NewEvent />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/events/:eventId"
+            element={
+              <AuthGuard>
+                <EventDetail />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/ausencias"
+            element={
+              <AuthGuard>
+                <Ausencias />
+              </AuthGuard>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
