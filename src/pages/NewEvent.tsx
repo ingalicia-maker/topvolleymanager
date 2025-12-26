@@ -39,6 +39,16 @@ export default function NewEvent() {
   const [playerTab, setPlayerTab] = useState('team');
   const [loading, setLoading] = useState(false);
 
+  // Generate time options in 15-minute increments
+  const timeOptions: string[] = [];
+  for (let h = 0; h < 24; h++) {
+    for (const m of [0, 15, 30, 45]) {
+      const hour = h.toString().padStart(2, '0');
+      const minute = m.toString().padStart(2, '0');
+      timeOptions.push(`${hour}:${minute}`);
+    }
+  }
+
   const selectedTeam = TEAMS.find(t => t.id === teamId);
   const teamPlayers = players.filter(p => p.teams.includes(teamId));
   const otherPlayers = players.filter(p => !p.teams.includes(teamId));
@@ -190,14 +200,19 @@ export default function NewEvent() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="time">Hora *</Label>
-            <Input
-              id="time"
-              type="time"
-              value={time}
-              onChange={e => setTime(e.target.value)}
-              disabled={loading}
-            />
+            <Label>Hora *</Label>
+            <Select value={time} onValueChange={setTime} disabled={loading}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona hora" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeOptions.map(t => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
