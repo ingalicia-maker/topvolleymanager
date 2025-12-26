@@ -166,6 +166,8 @@ function toast({ ...props }: Toast) {
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
 
+  // Subscribe once; re-subscribing on every state update creates duplicated listeners
+  // and can lead to "Maximum update depth exceeded".
   React.useEffect(() => {
     listeners.push(setState);
     return () => {
@@ -174,7 +176,7 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+  }, []);
 
   return {
     ...state,
@@ -182,5 +184,6 @@ function useToast() {
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   };
 }
+
 
 export { useToast, toast };
