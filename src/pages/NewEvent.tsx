@@ -57,6 +57,27 @@ export default function NewEvent() {
     });
   };
 
+  const selectAllOther = () => {
+    const otherPlayerIds = otherPlayers.map(p => p.id);
+    setInvitedPlayers(prev => {
+      const withoutOther = prev.filter(id => !otherPlayerIds.includes(id));
+      return [...withoutOther, ...otherPlayerIds];
+    });
+  };
+
+  const deselectAllTeam = () => {
+    const teamPlayerIds = teamPlayers.map(p => p.id);
+    setInvitedPlayers(prev => prev.filter(id => !teamPlayerIds.includes(id)));
+  };
+
+  const deselectAllOther = () => {
+    const otherPlayerIds = otherPlayers.map(p => p.id);
+    setInvitedPlayers(prev => prev.filter(id => !otherPlayerIds.includes(id)));
+  };
+
+  const allTeamSelected = teamPlayers.length > 0 && teamPlayers.every(p => invitedPlayers.includes(p.id));
+  const allOtherSelected = otherPlayers.length > 0 && otherPlayers.every(p => invitedPlayers.includes(p.id));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -205,14 +226,7 @@ export default function NewEvent() {
 
         {teamId && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Convocar jugadoras ({invitedPlayers.length})</Label>
-              {teamPlayers.length > 0 && (
-                <Button type="button" variant="ghost" size="sm" onClick={selectAllTeam} disabled={loading}>
-                  Seleccionar equipo
-                </Button>
-              )}
-            </div>
+            <Label>Convocar jugadoras ({invitedPlayers.length})</Label>
             <Tabs value={playerTab} onValueChange={setPlayerTab}>
               <TabsList className="w-full">
                 <TabsTrigger value="team" className="flex-1">
@@ -228,16 +242,29 @@ export default function NewEvent() {
                     No hay jugadoras en este equipo
                   </p>
                 ) : (
-                  teamPlayers.map(player => (
-                    <PlayerCard
-                      key={player.id}
-                      player={player}
-                      selectable
-                      selected={invitedPlayers.includes(player.id)}
-                      onSelect={togglePlayer}
-                      showTeams={false}
-                    />
-                  ))
+                  <>
+                    <div className="flex justify-end mb-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={allTeamSelected ? deselectAllTeam : selectAllTeam}
+                        disabled={loading}
+                      >
+                        {allTeamSelected ? 'Quitar todas' : 'Seleccionar todas'}
+                      </Button>
+                    </div>
+                    {teamPlayers.map(player => (
+                      <PlayerCard
+                        key={player.id}
+                        player={player}
+                        selectable
+                        selected={invitedPlayers.includes(player.id)}
+                        onSelect={togglePlayer}
+                        showTeams={false}
+                      />
+                    ))}
+                  </>
                 )}
               </TabsContent>
               <TabsContent value="other" className="mt-3 space-y-2">
@@ -246,15 +273,28 @@ export default function NewEvent() {
                     No hay otras jugadoras
                   </p>
                 ) : (
-                  otherPlayers.map(player => (
-                    <PlayerCard
-                      key={player.id}
-                      player={player}
-                      selectable
-                      selected={invitedPlayers.includes(player.id)}
-                      onSelect={togglePlayer}
-                    />
-                  ))
+                  <>
+                    <div className="flex justify-end mb-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={allOtherSelected ? deselectAllOther : selectAllOther}
+                        disabled={loading}
+                      >
+                        {allOtherSelected ? 'Quitar todas' : 'Seleccionar todas'}
+                      </Button>
+                    </div>
+                    {otherPlayers.map(player => (
+                      <PlayerCard
+                        key={player.id}
+                        player={player}
+                        selectable
+                        selected={invitedPlayers.includes(player.id)}
+                        onSelect={togglePlayer}
+                      />
+                    ))}
+                  </>
                 )}
               </TabsContent>
             </Tabs>
