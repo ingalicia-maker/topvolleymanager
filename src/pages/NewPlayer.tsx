@@ -103,10 +103,9 @@ export default function NewPlayer() {
           <Label>Equipos *</Label>
           <div className="space-y-2">
             {TEAMS.map(team => (
-              <div
+              <label
                 key={team.id}
                 className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => toggleTeam(team.id)}
               >
                 <Checkbox
                   checked={selectedTeams.includes(team.id)}
@@ -121,7 +120,7 @@ export default function NewPlayer() {
                   <p className="font-medium text-foreground">{team.name}</p>
                   <p className="text-sm text-muted-foreground">Coach: {team.coach}</p>
                 </div>
-              </div>
+              </label>
             ))}
           </div>
         </div>
