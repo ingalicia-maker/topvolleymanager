@@ -13,14 +13,6 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function NewEvent() {
   const navigate = useNavigate();
@@ -38,6 +30,9 @@ export default function NewEvent() {
   const [invitedPlayers, setInvitedPlayers] = useState<string[]>([]);
   const [playerTab, setPlayerTab] = useState('team');
   const [loading, setLoading] = useState(false);
+
+  const nativeSelectClassName =
+    "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
   // Generate time options in 15-minute increments (7:00 - 23:45)
   const timeOptions: string[] = [];
@@ -135,38 +130,37 @@ export default function NewEvent() {
       <Header title="Nuevo Evento" showBack />
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
         <div className="space-y-2">
-          <Label>Tipo de evento</Label>
-          <Select value={type} onValueChange={(v) => setType(v as 'training' | 'match')} disabled={loading}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="training">Entrenamiento</SelectItem>
-              <SelectItem value="match">Partido</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="type">Tipo de evento</Label>
+          <select
+            id="type"
+            className={nativeSelectClassName}
+            value={type}
+            onChange={(e) => setType(e.target.value as 'training' | 'match')}
+            disabled={loading}
+          >
+            <option value="training">Entrenamiento</option>
+            <option value="match">Partido</option>
+          </select>
         </div>
 
         <div className="space-y-2">
-          <Label>Equipo *</Label>
-          <Select value={teamId} onValueChange={setTeamId} disabled={loading}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona equipo" />
-            </SelectTrigger>
-            <SelectContent>
-              {TEAMS.map(team => (
-                <SelectItem key={team.id} value={team.id}>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: team.color }}
-                    />
-                    {team.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="teamId">Equipo *</Label>
+          <select
+            id="teamId"
+            className={nativeSelectClassName}
+            value={teamId}
+            onChange={(e) => setTeamId(e.target.value)}
+            disabled={loading}
+          >
+            <option value="" disabled>
+              Selecciona equipo
+            </option>
+            {TEAMS.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
         </div>
 
 
@@ -182,19 +176,23 @@ export default function NewEvent() {
             />
           </div>
           <div className="space-y-2">
-            <Label>Hora *</Label>
-            <Select value={time} onValueChange={setTime} disabled={loading}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona hora" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeOptions.map(t => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="time">Hora *</Label>
+            <select
+              id="time"
+              className={nativeSelectClassName}
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              disabled={loading}
+            >
+              <option value="" disabled>
+                Selecciona hora
+              </option>
+              {timeOptions.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -224,77 +222,102 @@ export default function NewEvent() {
         {teamId && (
           <div className="space-y-3">
             <Label>Convocar jugadoras ({invitedPlayers.length})</Label>
-            <Tabs value={playerTab} onValueChange={setPlayerTab}>
-              <TabsList className="w-full">
-                <TabsTrigger value="team" className="flex-1">
+
+            <div className="w-full">
+              <div className="inline-flex h-10 w-full items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+                <button
+                  type="button"
+                  className={
+                    "inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 " +
+                    (playerTab === 'team'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'hover:text-foreground')
+                  }
+                  onClick={() => setPlayerTab('team')}
+                  disabled={loading}
+                >
                   {selectedTeam?.name} ({teamPlayers.length})
-                </TabsTrigger>
-                <TabsTrigger value="other" className="flex-1">
+                </button>
+                <button
+                  type="button"
+                  className={
+                    "inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 " +
+                    (playerTab === 'other'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'hover:text-foreground')
+                  }
+                  onClick={() => setPlayerTab('other')}
+                  disabled={loading}
+                >
                   Otras ({otherPlayers.length})
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="team" className="mt-3 space-y-2">
-                {teamPlayers.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4 text-sm">
-                    No hay jugadoras en este equipo
-                  </p>
-                ) : (
-                  <>
-                    <div className="flex justify-end mb-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={allTeamSelected ? deselectAllTeam : selectAllTeam}
-                        disabled={loading}
-                      >
-                        {allTeamSelected ? 'Quitar todas' : 'Seleccionar todas'}
-                      </Button>
-                    </div>
-                    {teamPlayers.map(player => (
-                      <PlayerCard
-                        key={player.id}
-                        player={player}
-                        selectable
-                        selected={invitedPlayers.includes(player.id)}
-                        onSelect={togglePlayer}
-                        showTeams={false}
-                      />
-                    ))}
-                  </>
-                )}
-              </TabsContent>
-              <TabsContent value="other" className="mt-3 space-y-2">
-                {otherPlayers.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4 text-sm">
-                    No hay otras jugadoras
-                  </p>
-                ) : (
-                  <>
-                    <div className="flex justify-end mb-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={allOtherSelected ? deselectAllOther : selectAllOther}
-                        disabled={loading}
-                      >
-                        {allOtherSelected ? 'Quitar todas' : 'Seleccionar todas'}
-                      </Button>
-                    </div>
-                    {otherPlayers.map(player => (
-                      <PlayerCard
-                        key={player.id}
-                        player={player}
-                        selectable
-                        selected={invitedPlayers.includes(player.id)}
-                        onSelect={togglePlayer}
-                      />
-                    ))}
-                  </>
-                )}
-              </TabsContent>
-            </Tabs>
+                </button>
+              </div>
+
+              {playerTab === 'team' ? (
+                <div className="mt-3 space-y-2">
+                  {teamPlayers.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4 text-sm">
+                      No hay jugadoras en este equipo
+                    </p>
+                  ) : (
+                    <>
+                      <div className="flex justify-end mb-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={allTeamSelected ? deselectAllTeam : selectAllTeam}
+                          disabled={loading}
+                        >
+                          {allTeamSelected ? 'Quitar todas' : 'Seleccionar todas'}
+                        </Button>
+                      </div>
+                      {teamPlayers.map((player) => (
+                        <PlayerCard
+                          key={player.id}
+                          player={player}
+                          selectable
+                          selected={invitedPlayers.includes(player.id)}
+                          onSelect={togglePlayer}
+                          showTeams={false}
+                        />
+                      ))}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="mt-3 space-y-2">
+                  {otherPlayers.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4 text-sm">
+                      No hay otras jugadoras
+                    </p>
+                  ) : (
+                    <>
+                      <div className="flex justify-end mb-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={allOtherSelected ? deselectAllOther : selectAllOther}
+                          disabled={loading}
+                        >
+                          {allOtherSelected ? 'Quitar todas' : 'Seleccionar todas'}
+                        </Button>
+                      </div>
+                      {otherPlayers.map((player) => (
+                        <PlayerCard
+                          key={player.id}
+                          player={player}
+                          selectable
+                          selected={invitedPlayers.includes(player.id)}
+                          onSelect={togglePlayer}
+                        />
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
