@@ -4,7 +4,6 @@ import { DbPlayer } from '@/hooks/usePlayers';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Checkbox } from './ui/checkbox';
 
 interface PlayerCardProps {
   player: DbPlayer;
@@ -31,10 +30,13 @@ export function PlayerCard({ player, selectable, selected, onSelect, showTeams =
       <CardContent className="p-3">
         <div className="flex items-center gap-3">
           {selectable && (
-            <Checkbox 
-              checked={selected} 
-              onCheckedChange={() => onSelect?.(player.id)}
+            <input
+              type="checkbox"
+              checked={!!selected}
+              onChange={() => onSelect?.(player.id)}
               onClick={(e) => e.stopPropagation()}
+              aria-label={`Seleccionar ${player.name}`}
+              className="h-4 w-4 shrink-0 rounded-sm border border-primary bg-background text-primary accent-primary"
             />
           )}
           <div className="flex-1 min-w-0">
