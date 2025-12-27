@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
@@ -134,22 +134,17 @@ export default function NewEvent() {
     <div className="min-h-screen bg-background pb-20">
       <Header title="Nuevo Evento" showBack />
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Label>Tipo de evento</Label>
-          <RadioGroup
-            value={type}
-            onValueChange={(v) => setType(v as 'training' | 'match')}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="training" id="training" />
-              <Label htmlFor="training" className="cursor-pointer">Entrenamiento</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="match" id="match" />
-              <Label htmlFor="match" className="cursor-pointer">Partido</Label>
-            </div>
-          </RadioGroup>
+          <Select value={type} onValueChange={(v) => setType(v as 'training' | 'match')} disabled={loading}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="training">Entrenamiento</SelectItem>
+              <SelectItem value="match">Partido</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
