@@ -39,9 +39,9 @@ export default function NewEvent() {
   const [playerTab, setPlayerTab] = useState('team');
   const [loading, setLoading] = useState(false);
 
-  // Generate time options in 15-minute increments
+  // Generate time options in 15-minute increments (7:00 - 23:45)
   const timeOptions: string[] = [];
-  for (let h = 0; h < 24; h++) {
+  for (let h = 7; h <= 23; h++) {
     for (const m of [0, 15, 30, 45]) {
       const hour = h.toString().padStart(2, '0');
       const minute = m.toString().padStart(2, '0');
