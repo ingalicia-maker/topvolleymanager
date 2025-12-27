@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 export interface DbAusencia {
   id: string;
   player_id: string;
+  team_id: string;
   date: string;
   reason: string | null;
   created_by: string | null;
@@ -82,5 +83,46 @@ export function useAusencias() {
     return true;
   };
 
-  return { ausencias, loading, addAusencia, updateAusencia, deleteAusencia, refetch: fetchAusencias };
+  // Check if a player is absent for a specific team on a specific date
+  const isPlayerAbsent = (playerId: string, teamId: string, date: string) => {
+    return ausencias.find(a => 
+      a.player_id === playerId && 
+      a.team_id === teamId && 
+      a.date === date
+    );
+  };
+
+  // Get absences count for a player in a specific team
+  const getPlayerTeamAbsenceCount = (playerId: string, teamId: string) => {
+    return ausencias.filter(a => 
+      a.player_id === playerId && 
+      a.team_id === teamId
+    ).length;
+  };
+
+  // Get absences by month for a team
+  const getAbsencesByMonth = (teamId: string) => {
+    const teamAusencias = ausencias.filter(a => a.team_id === teamId);
+    const byMonth: Record<string, DbAusencia[]> = {};
+    
+    teamAusencias.forEach(a => {
+      const monthKey = a.date.substring(0, 7); // YYYY-MM
+      if (!byMonth[monthKey]) byMonth[monthKey] = [];
+      byMonth[monthKey].push(a);
+    });
+    
+    return byMonth;
+  };
+
+  return { 
+    ausencias, 
+    loading, 
+    addAusencia, 
+    updateAusencia, 
+    deleteAusencia, 
+    refetch: fetchAusencias,
+    isPlayerAbsent,
+    getPlayerTeamAbsenceCount,
+    getAbsencesByMonth
+  };
 }
