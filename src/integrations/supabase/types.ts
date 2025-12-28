@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       ausencias: {
         Row: {
+          absence_type: Database["public"]["Enums"]["absence_type"]
           created_at: string | null
           created_by: string | null
           date: string
@@ -25,6 +26,7 @@ export type Database = {
           team_id: string
         }
         Insert: {
+          absence_type?: Database["public"]["Enums"]["absence_type"]
           created_at?: string | null
           created_by?: string | null
           date: string
@@ -34,6 +36,7 @@ export type Database = {
           team_id: string
         }
         Update: {
+          absence_type?: Database["public"]["Enums"]["absence_type"]
           created_at?: string | null
           created_by?: string | null
           date?: string
@@ -103,6 +106,123 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          recipient_id: string
+          related_event_id: string | null
+          related_player_id: string | null
+          sender_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          recipient_id: string
+          related_event_id?: string | null
+          related_player_id?: string | null
+          sender_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          recipient_id?: string
+          related_event_id?: string | null
+          related_player_id?: string | null
+          sender_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_related_event_id_fkey"
+            columns: ["related_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_related_player_id_fkey"
+            columns: ["related_player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_ratings: {
+        Row: {
+          communication_cooperation: number
+          created_at: string | null
+          decision_making: number
+          effort_attitude: number
+          event_id: string | null
+          id: string
+          leadership_initiative: number
+          notes: string | null
+          player_id: string
+          rated_by: string | null
+          rating_date: string
+          team_id: string
+          technical_execution: number
+        }
+        Insert: {
+          communication_cooperation: number
+          created_at?: string | null
+          decision_making: number
+          effort_attitude: number
+          event_id?: string | null
+          id?: string
+          leadership_initiative: number
+          notes?: string | null
+          player_id: string
+          rated_by?: string | null
+          rating_date?: string
+          team_id: string
+          technical_execution: number
+        }
+        Update: {
+          communication_cooperation?: number
+          created_at?: string | null
+          decision_making?: number
+          effort_attitude?: number
+          event_id?: string | null
+          id?: string
+          leadership_initiative?: number
+          notes?: string | null
+          player_id?: string
+          rated_by?: string | null
+          rating_date?: string
+          team_id?: string
+          technical_execution?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_ratings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_ratings_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       players: {
         Row: {
           created_at: string | null
@@ -160,15 +280,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_director: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      absence_type: "justified" | "unjustified"
+      app_role: "coach" | "director"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -295,6 +441,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      absence_type: ["justified", "unjustified"],
+      app_role: ["coach", "director"],
+    },
   },
 } as const

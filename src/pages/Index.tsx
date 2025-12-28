@@ -2,15 +2,21 @@ import { Link } from 'react-router-dom';
 import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, LogOut } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
+import { NotificationBell } from '@/components/NotificationBell';
+import { PlayerOfTheWeek } from '@/components/PlayerOfTheWeek';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function Index() {
   const { players } = usePlayers();
+  const { events } = useEvents();
+  const { signOut } = useAuth();
+  const { profile, isDirector, assignedTeams } = useUserRole();
   const { events } = useEvents();
   const { signOut } = useAuth();
 
@@ -32,13 +38,19 @@ export default function Index() {
             <h1 className="text-2xl font-bold mb-1">Voleibol Manager</h1>
             <p className="text-primary-foreground/80 text-sm">Gestiona tus equipos y convocatorias</p>
           </div>
+        <div className="flex items-
+gap-2">
+          <NotificationBell />
           <Button variant="ghost" size="icon" onClick={signOut} className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
             <LogOut className="h-5 w-5" />
           </Button>
         </div>
       </div>
+    </div>
 
-      <div className="px-4 -mt-6 space-y-6">
+    <div className="px-4 -mt-6 space-y-6">
+      {/* Player of the Week */}
+      <PlayerOfTheWeek />
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-3">
           <Card className="shadow-lg">

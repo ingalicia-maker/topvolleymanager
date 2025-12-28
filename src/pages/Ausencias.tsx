@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarIcon, X, AlertTriangle, History, BarChart3 } from 'lucide-react';
+import { CalendarIcon, X, AlertTriangle, History, BarChart3, CheckCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import { AbsenceChart } from '@/components/AbsenceChart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -27,23 +28,29 @@ import {
 } from '@/components/ui/alert-dialog';
 import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
-import { useAusencias } from '@/hooks/useAusencias';
+import { useAusencias, AbsenceType } from '@/hooks/useAusencias';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
 
 export default function Ausencias() {
   const { players } = usePlayers();
   const { ausencias, addAusencia, updateAusencia, deleteAusencia, isPlayerAbsent, getPlayerTeamAbsenceCount, getAbsencesByMonth } = useAusencias();
   const { user } = useAuth();
+  const { isDirector, assignedTeams } = useUserRole();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTeamId, setSelectedTeamId] = useState<string>(TEAMS[0]?.id || '');
   const [activeTab, setActiveTab] = useState<'registrar' | 'historial' | 'estadisticas'>('registrar');
   const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
+  const [absenceTypeInputs, setAbsenceTypeInputs] = useState<Record<string, AbsenceType>>({});
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
   const formattedDate = format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es });
 
   const selectedTeam = TEAMS.find(t => t.id === selectedTeamId);
+
+  // Filter teams based on role
+  const availableTeams = isDirector ? TEAMS : TEAMS.filter(t => assignedTeams.includes(t.id));
 
   // Players that belong to the selected team
   const teamPlayers = useMemo(() => 
@@ -63,19 +70,26 @@ export default function Ausencias() {
       await deleteAusencia(existing.id);
     } else {
       const reason = reasonInputs[playerId]?.trim();
+      const absenceType = absenceTypeInputs[playerId] || 'unjustified';
       await addAusencia({
         player_id: playerId,
         team_id: selectedTeamId,
         date: dateStr,
         reason: reason || null,
+        absence_type: absenceType,
         created_by: user?.id || null,
       });
       setReasonInputs(prev => ({ ...prev, [playerId]: '' }));
+      setAbsenceTypeInputs(prev => ({ ...prev, [playerId]: 'unjustified' }));
     }
   };
 
   const handleUpdateReason = async (ausenciaId: string, reason: string) => {
     await updateAusencia(ausenciaId, { reason: reason.trim() || null });
+  };
+
+  const handleUpdateAbsenceType = async (ausenciaId: string, absenceType: AbsenceType) => {
+    await updateAusencia(ausenciaId, { absence_type: absenceType });
   };
 
   // Get absences grouped by month for history
@@ -93,10 +107,15 @@ export default function Ausencias() {
 
   // Statistics: total absences per player for this team
   const playerStats = useMemo(() => {
-    return teamPlayers.map(player => ({
-      player,
-      totalAbsences: getPlayerTeamAbsenceCount(player.id, selectedTeamId)
-    })).sort((a, b) => b.totalAbsences - a.totalAbsences);
+    return teamPlayers.map(player => {
+      const playerAusencias = ausencias.filter(a => a.player_id === player.id && a.team_id === selectedTeamId);
+      return {
+        player,
+        totalAbsences: playerAusencias.length,
+        justified: playerAusencias.filter(a => a.absence_type === 'justified').length,
+        unjustified: playerAusencias.filter(a => a.absence_type === 'unjustified').length,
+      };
+    }).sort((a, b) => b.totalAbsences - a.totalAbsences);
   }, [teamPlayers, ausencias, selectedTeamId]);
 
   const totalTeamAbsences = useMemo(() => 
@@ -128,12 +147,17 @@ export default function Ausencias() {
             value={selectedTeamId}
             onChange={(e) => setSelectedTeamId(e.target.value)}
           >
-            {TEAMS.map(team => (
+            {availableTeams.map(team => (
               <option key={team.id} value={team.id}>
                 {team.name}
               </option>
             ))}
           </select>
+          {!isDirector && assignedTeams.length === 0 && (
+            <p className="text-xs text-muted-foreground">
+              No tienes equipos asignados. Puedes asignarte equipos desde tu perfil.
+            </p>
+          )}
         </div>
 
         {/* Tabs */}
@@ -231,7 +255,8 @@ export default function Ausencias() {
                         key={player.id}
                         className={cn(
                           "transition-all",
-                          isAbsent && "border-amber-500/50 bg-amber-500/5"
+                          isAbsent && ausencia?.absence_type === 'justified' && "border-primary/50 bg-primary/5",
+                          isAbsent && ausencia?.absence_type === 'unjustified' && "border-amber-500/50 bg-amber-500/5"
                         )}
                       >
                         <CardContent className="p-3">
@@ -250,16 +275,62 @@ export default function Ausencias() {
                               </div>
 
                               {isAbsent ? (
-                                <div className="mt-2 flex items-center gap-2">
+                                <div className="mt-2 space-y-2">
+                                  {/* Absence Type Selector */}
+                                  <div className="flex gap-2">
+                                    <Button
+                                      type="button"
+                                      variant={ausencia.absence_type === 'justified' ? 'default' : 'outline'}
+                                      size="sm"
+                                      className="h-7 text-xs flex-1"
+                                      onClick={() => handleUpdateAbsenceType(ausencia.id, 'justified')}
+                                    >
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      Justificada
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant={ausencia.absence_type === 'unjustified' ? 'destructive' : 'outline'}
+                                      size="sm"
+                                      className="h-7 text-xs flex-1"
+                                      onClick={() => handleUpdateAbsenceType(ausencia.id, 'unjustified')}
+                                    >
+                                      <AlertTriangle className="h-3 w-3 mr-1" />
+                                      No justificada
+                                    </Button>
+                                  </div>
                                   <Input
                                     placeholder="Motivo (opcional)..."
                                     value={ausencia.reason || ''}
                                     onChange={(e) => handleUpdateReason(ausencia.id, e.target.value)}
-                                    className="h-8 text-sm flex-1"
+                                    className="h-8 text-sm"
                                   />
                                 </div>
                               ) : (
-                                <div className="mt-2">
+                                <div className="mt-2 space-y-2">
+                                  {/* Absence Type Selector for new absence */}
+                                  <div className="flex gap-2">
+                                    <Button
+                                      type="button"
+                                      variant={(absenceTypeInputs[player.id] || 'unjustified') === 'justified' ? 'default' : 'outline'}
+                                      size="sm"
+                                      className="h-7 text-xs flex-1"
+                                      onClick={() => setAbsenceTypeInputs(prev => ({ ...prev, [player.id]: 'justified' }))}
+                                    >
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      Justificada
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant={(absenceTypeInputs[player.id] || 'unjustified') === 'unjustified' ? 'secondary' : 'outline'}
+                                      size="sm"
+                                      className="h-7 text-xs flex-1"
+                                      onClick={() => setAbsenceTypeInputs(prev => ({ ...prev, [player.id]: 'unjustified' }))}
+                                    >
+                                      <AlertTriangle className="h-3 w-3 mr-1" />
+                                      No justificada
+                                    </Button>
+                                  </div>
                                   <Input
                                     placeholder="Motivo (opcional)..."
                                     value={reasonInputs[player.id] || ''}
@@ -342,12 +413,23 @@ export default function Ausencias() {
                                   {dateAusencias.map(ausencia => (
                                     <div
                                       key={ausencia.id}
-                                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                                      className={cn(
+                                        "flex items-center justify-between p-2 rounded-lg",
+                                        ausencia.absence_type === 'justified' ? "bg-primary/10" : "bg-amber-500/10"
+                                      )}
                                     >
                                       <div className="flex-1">
-                                        <span className="font-medium text-sm">
-                                          {getPlayerName(ausencia.player_id)}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium text-sm">
+                                            {getPlayerName(ausencia.player_id)}
+                                          </span>
+                                          <Badge 
+                                            variant={ausencia.absence_type === 'justified' ? 'default' : 'destructive'}
+                                            className="text-[10px] h-4"
+                                          >
+                                            {ausencia.absence_type === 'justified' ? 'Justificada' : 'No justificada'}
+                                          </Badge>
+                                        </div>
                                         {ausencia.reason && (
                                           <p className="text-xs text-muted-foreground">
                                             {ausencia.reason}
@@ -356,7 +438,7 @@ export default function Ausencias() {
                                       </div>
                                       <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600">
+                                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
                                             <X className="h-3 w-3" />
                                           </Button>
                                         </AlertDialogTrigger>
@@ -393,6 +475,13 @@ export default function Ausencias() {
           {/* Estadísticas Tab */}
           {activeTab === 'estadisticas' && (
             <div className="mt-4 space-y-4">
+              {/* Chart */}
+              <AbsenceChart 
+                ausencias={ausencias} 
+                teamId={selectedTeamId} 
+                teamName={selectedTeam?.name || ''} 
+              />
+
               <Card>
                 <CardContent className="p-4">
                   <div className="text-center mb-4">
@@ -413,7 +502,7 @@ export default function Ausencias() {
                   <CardContent className="p-4">
                     <h3 className="font-semibold mb-3">Ausencias por jugadora</h3>
                     <div className="space-y-2">
-                      {playerStats.map(({ player, totalAbsences }) => (
+                      {playerStats.map(({ player, totalAbsences, justified, unjustified }) => (
                         <div
                           key={player.id}
                           className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
@@ -424,12 +513,24 @@ export default function Ausencias() {
                               <span className="text-xs text-primary">#{player.number}</span>
                             )}
                           </div>
-                          <Badge
-                            variant={totalAbsences > 0 ? "destructive" : "secondary"}
-                            className="min-w-[40px] justify-center"
-                          >
-                            {totalAbsences}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            {justified > 0 && (
+                              <Badge variant="default" className="text-[10px]">
+                                {justified} J
+                              </Badge>
+                            )}
+                            {unjustified > 0 && (
+                              <Badge variant="destructive" className="text-[10px]">
+                                {unjustified} NJ
+                              </Badge>
+                            )}
+                            <Badge
+                              variant="secondary"
+                              className="min-w-[40px] justify-center"
+                            >
+                              {totalAbsences}
+                            </Badge>
+                          </div>
                         </div>
                       ))}
                     </div>
