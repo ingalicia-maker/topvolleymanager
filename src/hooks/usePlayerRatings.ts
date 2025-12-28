@@ -1,0 +1,294 @@
+import { useState, useEffect, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { toast } from 'sonner';
+import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
+
+export interface PlayerRating {
+  id: string;
+  player_id: string;
+  team_id: string;
+  rated_by: string | null;
+  event_id: string | null;
+  rating_date: string;
+  effort_attitude: number;
+  communication_cooperation: number;
+  technical_execution: number;
+  decision_making: number;
+  leadership_initiative: number;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface RatingInput {
+  player_id: string;
+  team_id: string;
+  event_id?: string;
+  effort_attitude: number;
+  communication_cooperation: number;
+  technical_execution: number;
+  decision_making: number;
+  leadership_initiative: number;
+  notes?: string;
+}
+
+export const RATING_CATEGORIES = [
+  { key: 'effort_attitude', label: 'Esfuerzo y actitud', shortLabel: 'Esfuerzo' },
+  { key: 'communication_cooperation', label: 'Comunicación y cooperación', shortLabel: 'Comunicación' },
+  { key: 'technical_execution', label: 'Ejecución técnica', shortLabel: 'Técnica' },
+  { key: 'decision_making', label: 'Toma de decisiones', shortLabel: 'Decisiones' },
+  { key: 'leadership_initiative', label: 'Liderazgo e iniciativa', shortLabel: 'Liderazgo' },
+] as const;
+
+export type RatingCategoryKey = typeof RATING_CATEGORIES[number]['key'];
+
+export function usePlayerRatings() {
+  const { user } = useAuth();
+  const [ratings, setRatings] = useState<PlayerRating[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchRatings = async () => {
+    const { data, error } = await supabase
+      .from('player_ratings')
+      .select('*')
+      .order('rating_date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching ratings:', error);
+      toast.error('Error al cargar puntuaciones');
+    } else {
+      setRatings(data || []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchRatings();
+  }, []);
+
+  const addRating = async (rating: RatingInput) => {
+    const { data, error } = await supabase
+      .from('player_ratings')
+      .insert([{
+        ...rating,
+        rated_by: user?.id || null,
+        rating_date: format(new Date(), 'yyyy-MM-dd'),
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      toast.error('Error al guardar puntuación');
+      return null;
+    }
+
+    setRatings(prev => [data, ...prev]);
+    toast.success('Puntuación guardada');
+    return data;
+  };
+
+  // Get player's average rating for current week
+  const getWeeklyPlayerStats = (playerId: string, teamId?: string) => {
+    const now = new Date();
+    const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+
+    const weekRatings = ratings.filter(r => 
+      r.player_id === playerId &&
+      r.rating_date >= weekStart &&
+      r.rating_date <= weekEnd &&
+      (!teamId || r.team_id === teamId)
+    );
+
+    if (weekRatings.length === 0) return null;
+
+    const avgByCategory: Record<RatingCategoryKey, number> = {
+      effort_attitude: 0,
+      communication_cooperation: 0,
+      technical_execution: 0,
+      decision_making: 0,
+      leadership_initiative: 0,
+    };
+
+    RATING_CATEGORIES.forEach(cat => {
+      const sum = weekRatings.reduce((acc, r) => acc + (r[cat.key] as number), 0);
+      avgByCategory[cat.key] = sum / weekRatings.length;
+    });
+
+    const totalAvg = Object.values(avgByCategory).reduce((a, b) => a + b, 0) / 5;
+
+    return { avgByCategory, totalAvg, ratingsCount: weekRatings.length };
+  };
+
+  // Get player of the week
+  const getPlayerOfTheWeek = (teamId?: string) => {
+    const now = new Date();
+    const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+
+    const weekRatings = ratings.filter(r => 
+      r.rating_date >= weekStart &&
+      r.rating_date <= weekEnd &&
+      (!teamId || r.team_id === teamId)
+    );
+
+    // Group by player
+    const byPlayer: Record<string, PlayerRating[]> = {};
+    weekRatings.forEach(r => {
+      if (!byPlayer[r.player_id]) byPlayer[r.player_id] = [];
+      byPlayer[r.player_id].push(r);
+    });
+
+    let topPlayer: { playerId: string; avgScore: number } | null = null;
+
+    Object.entries(byPlayer).forEach(([playerId, playerRatings]) => {
+      const totalScore = playerRatings.reduce((acc, r) => {
+        return acc + r.effort_attitude + r.communication_cooperation + 
+               r.technical_execution + r.decision_making + r.leadership_initiative;
+      }, 0);
+      const avgScore = totalScore / (playerRatings.length * 5);
+
+      if (!topPlayer || avgScore > topPlayer.avgScore) {
+        topPlayer = { playerId, avgScore };
+      }
+    });
+
+    return topPlayer;
+  };
+
+  // Get monthly evolution for a player
+  const getMonthlyEvolution = (playerId: string, teamId?: string): Array<{
+    month: string;
+    effort_attitude: number;
+    communication_cooperation: number;
+    technical_execution: number;
+    decision_making: number;
+    leadership_initiative: number;
+    totalAvg: number;
+  }> => {
+    const playerRatings = ratings.filter(r => 
+      r.player_id === playerId &&
+      (!teamId || r.team_id === teamId)
+    );
+
+    // Group by month
+    const byMonth: Record<string, PlayerRating[]> = {};
+    playerRatings.forEach(r => {
+      const monthKey = r.rating_date.substring(0, 7);
+      if (!byMonth[monthKey]) byMonth[monthKey] = [];
+      byMonth[monthKey].push(r);
+    });
+
+    return Object.entries(byMonth)
+      .map(([month, monthRatings]) => {
+        const effort_attitude = monthRatings.reduce((acc, r) => acc + r.effort_attitude, 0) / monthRatings.length;
+        const communication_cooperation = monthRatings.reduce((acc, r) => acc + r.communication_cooperation, 0) / monthRatings.length;
+        const technical_execution = monthRatings.reduce((acc, r) => acc + r.technical_execution, 0) / monthRatings.length;
+        const decision_making = monthRatings.reduce((acc, r) => acc + r.decision_making, 0) / monthRatings.length;
+        const leadership_initiative = monthRatings.reduce((acc, r) => acc + r.leadership_initiative, 0) / monthRatings.length;
+        const totalAvg = (effort_attitude + communication_cooperation + technical_execution + decision_making + leadership_initiative) / 5;
+        return { 
+          month, 
+          effort_attitude,
+          communication_cooperation,
+          technical_execution,
+          decision_making,
+          leadership_initiative,
+          totalAvg 
+        };
+      })
+      .sort((a, b) => a.month.localeCompare(b.month));
+  };
+
+  // Detect trends for a player
+  const getPlayerTrends = (playerId: string, teamId?: string) => {
+    const evolution = getMonthlyEvolution(playerId, teamId);
+    if (evolution.length < 2) return [];
+
+    const trends: string[] = [];
+    const lastTwo = evolution.slice(-2);
+    const [prev, curr] = lastTwo;
+
+    RATING_CATEGORIES.forEach(cat => {
+      const diff = (curr[cat.key] as number) - (prev[cat.key] as number);
+      if (diff >= 0.5) {
+        trends.push(`Mejora en ${cat.label.toLowerCase()}`);
+      } else if (diff <= -0.5) {
+        trends.push(`Bajada en ${cat.label.toLowerCase()}`);
+      }
+    });
+
+    // Check for consistency in effort
+    const recentRatings = ratings
+      .filter(r => r.player_id === playerId && (!teamId || r.team_id === teamId))
+      .slice(0, 9); // Last 9 ratings (~3 weeks)
+
+    if (recentRatings.length >= 6) {
+      const highEffortCount = recentRatings.filter(r => r.effort_attitude >= 4).length;
+      if (highEffortCount >= recentRatings.length * 0.8) {
+        trends.push('Mantiene alto nivel de esfuerzo');
+      }
+    }
+
+    return trends;
+  };
+
+  // Get positive alerts for a player
+  const getPositiveAlerts = (playerId: string, teamId?: string) => {
+    const alerts: string[] = [];
+    
+    // Check consecutive weeks of high effort
+    const now = new Date();
+    let consecutiveHighEffort = 0;
+    
+    for (let i = 0; i < 4; i++) {
+      const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
+      
+      const weekRatings = ratings.filter(r => 
+        r.player_id === playerId &&
+        r.rating_date >= format(weekStart, 'yyyy-MM-dd') &&
+        r.rating_date <= format(weekEnd, 'yyyy-MM-dd') &&
+        (!teamId || r.team_id === teamId)
+      );
+      
+      if (weekRatings.length > 0) {
+        const avgEffort = weekRatings.reduce((a, r) => a + r.effort_attitude, 0) / weekRatings.length;
+        if (avgEffort >= 4) {
+          consecutiveHighEffort++;
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+    
+    if (consecutiveHighEffort >= 3) {
+      alerts.push(`¡Ha sido la más constante en esfuerzo durante ${consecutiveHighEffort} semanas!`);
+    }
+
+    // Check for improvement in decision making
+    const evolution = getMonthlyEvolution(playerId, teamId);
+    if (evolution.length >= 2) {
+      const [prev, curr] = evolution.slice(-2);
+      if ((curr.decision_making as number) - (prev.decision_making as number) >= 1) {
+        alerts.push('¡Gran mejora en su lectura de juego!');
+      }
+    }
+
+    return alerts;
+  };
+
+  return {
+    ratings,
+    loading,
+    addRating,
+    getWeeklyPlayerStats,
+    getPlayerOfTheWeek,
+    getMonthlyEvolution,
+    getPlayerTrends,
+    getPositiveAlerts,
+    refetch: fetchRatings,
+  };
+}

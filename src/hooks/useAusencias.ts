@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export type AbsenceType = 'justified' | 'unjustified';
+
 export interface DbAusencia {
   id: string;
   player_id: string;
   team_id: string;
   date: string;
   reason: string | null;
+  absence_type: AbsenceType;
   created_by: string | null;
   created_at: string;
 }
