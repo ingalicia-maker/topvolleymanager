@@ -12,6 +12,9 @@ import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useNotifications } from '@/hooks/useNotifications';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function NewEvent() {
@@ -19,6 +22,8 @@ export default function NewEvent() {
   const { players } = usePlayers();
   const { addEvent } = useEvents();
   const { user } = useAuth();
+  const { profile } = useUserRole();
+  const { notifyPlayerSummoned } = useNotifications();
 
   const [type, setType] = useState<'training' | 'match'>('training');
   const [teamId, setTeamId] = useState('');
@@ -120,6 +125,55 @@ export default function NewEvent() {
     });
 
     if (result) {
+      // Notify coaches of players from other teams
+      const otherTeamPlayers = players.filter(
+        p => invitedPlayers.includes(p.id) && !p.teams.includes(teamId)
+      );
+
+      if (otherTeamPlayers.length > 0) {
+        // Get coaches who have these players' teams assigned
+        const affectedTeamIds = new Set<string>();
+        otherTeamPlayers.forEach(p => {
+          p.teams.forEach(t => {
+            if (t !== teamId) affectedTeamIds.add(t);
+          });
+        });
+
+        // Fetch profiles of coaches with affected teams
+        const { data: coaches } = await supabase
+          .from('profiles')
+          .select('id, assigned_teams');
+
+        if (coaches) {
+          const senderName = profile?.name || 'Un entrenador';
+          
+          for (const coach of coaches) {
+            if (coach.id === user?.id) continue; // Don't notify yourself
+            
+            const coachTeams = coach.assigned_teams || [];
+            const matchingTeams = coachTeams.filter((t: string) => affectedTeamIds.has(t));
+            
+            if (matchingTeams.length > 0) {
+              // Find which players from this coach's teams were summoned
+              const summonedFromCoach = otherTeamPlayers.filter(p =>
+                p.teams.some(t => matchingTeams.includes(t))
+              );
+
+              for (const player of summonedFromCoach) {
+                await notifyPlayerSummoned(
+                  coach.id,
+                  senderName,
+                  player.name,
+                  result.title,
+                  player.id,
+                  result.id
+                );
+              }
+            }
+          }
+        }
+      }
+
       navigate(`/events/${result.id}`);
     }
     setLoading(false);

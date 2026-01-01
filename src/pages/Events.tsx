@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TEAMS } from '@/types/volleyball';
 import { useEvents } from '@/hooks/useEvents';
+import { useUserRole } from '@/hooks/useUserRole';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +18,19 @@ import {
 
 export default function Events() {
   const { events, loading } = useEvents();
+  const { assignedTeams, isDirector } = useUserRole();
   const [teamFilter, setTeamFilter] = useState<string[]>([]);
 
   const today = new Date().toISOString().split('T')[0];
 
-  const filteredEvents = events.filter(e =>
+  // Show only events from assigned teams (unless director)
+  const visibleEvents = useMemo(() => {
+    if (isDirector) return events;
+    if (assignedTeams.length === 0) return events; // Show all if no teams assigned yet
+    return events.filter(e => assignedTeams.includes(e.team_id));
+  }, [events, assignedTeams, isDirector]);
+
+  const filteredEvents = visibleEvents.filter(e =>
     teamFilter.length === 0 || teamFilter.includes(e.team_id)
   );
 

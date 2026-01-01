@@ -13,6 +13,8 @@ import Events from "./pages/Events";
 import NewEvent from "./pages/NewEvent";
 import EventDetail from "./pages/EventDetail";
 import Ausencias from "./pages/Ausencias";
+import Profile from "./pages/Profile";
+import Ratings from "./pages/Ratings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -93,6 +95,22 @@ const App = () => (
             element={
               <AuthGuard>
                 <Ausencias />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <AuthGuard>
+                <Profile />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/ratings"
+            element={
+              <AuthGuard>
+                <Ratings />
               </AuthGuard>
             }
           />

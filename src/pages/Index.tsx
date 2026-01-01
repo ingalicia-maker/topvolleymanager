@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, LogOut } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -9,25 +9,27 @@ import { Button } from '@/components/ui/button';
 import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
-import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 
 export default function Index() {
   const { players } = usePlayers();
   const { events } = useEvents();
-  const { signOut } = useAuth();
   const { profile, isDirector, assignedTeams } = useUserRole();
-  const { events } = useEvents();
-  const { signOut } = useAuth();
 
   const today = new Date().toISOString().split('T')[0];
-  const upcomingEvents = events
+  
+  // Filter events by assigned teams (unless director)
+  const visibleEvents = isDirector || assignedTeams.length === 0
+    ? events
+    : events.filter(e => assignedTeams.includes(e.team_id));
+
+  const upcomingEvents = visibleEvents
     .filter(e => e.date >= today)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 3);
 
-  const totalMatches = events.filter(e => e.type === 'match').length;
-  const totalTrainings = events.filter(e => e.type === 'training').length;
+  const totalMatches = visibleEvents.filter(e => e.type === 'match').length;
+  const totalTrainings = visibleEvents.filter(e => e.type === 'training').length;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -38,12 +40,13 @@ export default function Index() {
             <h1 className="text-2xl font-bold mb-1">Voleibol Manager</h1>
             <p className="text-primary-foreground/80 text-sm">Gestiona tus equipos y convocatorias</p>
           </div>
-        <div className="flex items-
-gap-2">
+        <div className="flex items-center gap-2">
           <NotificationBell />
-          <Button variant="ghost" size="icon" onClick={signOut} className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
-            <LogOut className="h-5 w-5" />
-          </Button>
+          <Link to="/profile">
+            <Button variant="ghost" size="icon" className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
+              <User className="h-5 w-5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
