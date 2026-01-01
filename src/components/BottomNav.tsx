@@ -1,10 +1,10 @@
-import { Home, Users, Calendar, UserCircle, AlertTriangle } from 'lucide-react';
+import { Home, Users, Calendar, UserCircle, AlertTriangle, Star } from 'lucide-react';
 import { NavLink } from './NavLink';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Inicio' },
-  { to: '/teams', icon: Users, label: 'Equipos' },
   { to: '/events', icon: Calendar, label: 'Eventos' },
+  { to: '/ratings', icon: Star, label: 'Puntuaciones' },
   { to: '/players', icon: UserCircle, label: 'Jugadoras' },
   { to: '/ausencias', icon: AlertTriangle, label: 'Ausencias' },
 ];
