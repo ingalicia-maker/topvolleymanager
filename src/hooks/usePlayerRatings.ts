@@ -66,13 +66,14 @@ export function usePlayerRatings() {
     fetchRatings();
   }, []);
 
-  const addRating = async (rating: RatingInput) => {
+  const addRating = async (rating: RatingInput & { rating_date?: string }) => {
+    const ratingDate = rating.rating_date || format(new Date(), 'yyyy-MM-dd');
     const { data, error } = await supabase
       .from('player_ratings')
       .insert([{
         ...rating,
         rated_by: user?.id || null,
-        rating_date: format(new Date(), 'yyyy-MM-dd'),
+        rating_date: ratingDate,
       }])
       .select()
       .single();

@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TEAMS } from '@/types/volleyball';
@@ -14,6 +13,8 @@ import { usePlayerRatings, RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
 import { useUserRole } from '@/hooks/useUserRole';
 import { PlayerProgressChart } from '@/components/PlayerProgressChart';
 import { TeamProgressChart } from '@/components/TeamProgressChart';
+import { RatingInput } from '@/components/RatingInput';
+import { PlayerRatingsSummary } from '@/components/PlayerRatingsSummary';
 import { toast } from 'sonner';
 import { Star, User, Calendar, ChevronRight, Check, TrendingUp, Users, Plus } from 'lucide-react';
 import { format } from 'date-fns';
@@ -97,11 +98,15 @@ export default function Ratings() {
     if (!selectedPlayer || !selectedTeam) return;
 
     setSaving(true);
+    // Use the first day of the selected month for the rating date
+    const ratingDate = `${selectedMonth}-15`;
+    
     const success = await addRating({
       player_id: selectedPlayer,
       team_id: selectedTeam,
       ...ratingsValues,
       notes: notes.trim() || null,
+      rating_date: ratingDate,
     });
 
     if (success) {
@@ -329,33 +334,19 @@ export default function Ratings() {
                       Puntuación (1-10)
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="px-4 py-2">
                     {RATING_CATEGORIES.map(cat => (
-                      <div key={cat.key} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm">
-                            {RATING_EMOJIS[cat.key]} {cat.label}
-                          </Label>
-                          <Badge variant="secondary" className="font-bold min-w-[2rem] justify-center">
-                            {ratingsValues[cat.key]}
-                          </Badge>
-                        </div>
-                        <Slider
-                          value={[ratingsValues[cat.key]]}
-                          onValueChange={([val]) =>
-                            setRatingsValues(prev => ({ ...prev, [cat.key]: val }))
-                          }
-                          min={1}
-                          max={10}
-                          step={1}
-                          className="w-full"
-                        />
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>1</span>
-                          <span>5</span>
-                          <span>10</span>
-                        </div>
-                      </div>
+                      <RatingInput
+                        key={cat.key}
+                        label={cat.label}
+                        emoji={RATING_EMOJIS[cat.key]}
+                        value={ratingsValues[cat.key]}
+                        onChange={(val) =>
+                          setRatingsValues(prev => ({ ...prev, [cat.key]: val }))
+                        }
+                        min={1}
+                        max={10}
+                      />
                     ))}
                   </CardContent>
                 </Card>
@@ -383,6 +374,7 @@ export default function Ratings() {
             <PlayerProgressView
               players={players}
               visibleTeams={visibleTeams}
+              ratings={ratings}
               getMonthlyEvolution={getMonthlyEvolution}
               getPlayerTrends={getPlayerTrends}
               getPositiveAlerts={getPositiveAlerts}
@@ -408,12 +400,14 @@ export default function Ratings() {
 function PlayerProgressView({
   players,
   visibleTeams,
+  ratings,
   getMonthlyEvolution,
   getPlayerTrends,
   getPositiveAlerts,
 }: {
   players: Array<{ id: string; name: string; number: number | null; teams: string[] }>;
   visibleTeams: typeof TEAMS;
+  ratings: Array<any>;
   getMonthlyEvolution: (playerId: string, teamId?: string) => Array<any>;
   getPlayerTrends: (playerId: string, teamId?: string) => string[];
   getPositiveAlerts: (playerId: string, teamId?: string) => string[];
@@ -449,41 +443,63 @@ function PlayerProgressView({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>Equipo</Label>
-          <select
-            className={nativeSelectClassName}
-            value={selectedTeam || ''}
-            onChange={(e) => {
-              setSelectedTeam(e.target.value || null);
-              setSelectedPlayer(null);
-            }}
-          >
-            <option value="">Selecciona equipo</option>
-            {visibleTeams.map(t => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label>Jugadora</Label>
-          <select
-            className={nativeSelectClassName}
-            value={selectedPlayer || ''}
-            onChange={(e) => setSelectedPlayer(e.target.value || null)}
-            disabled={!selectedTeam}
-          >
-            <option value="">Selecciona jugadora</option>
-            {teamPlayers.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
+      {/* Team selector */}
+      <div className="space-y-2">
+        <Label>Equipo</Label>
+        <select
+          className={nativeSelectClassName}
+          value={selectedTeam || ''}
+          onChange={(e) => {
+            setSelectedTeam(e.target.value || null);
+            setSelectedPlayer(null);
+          }}
+        >
+          <option value="">Selecciona equipo</option>
+          {visibleTeams.map(t => (
+            <option key={t.id} value={t.id}>{t.name}</option>
+          ))}
+        </select>
       </div>
 
+      {/* Players list with summaries */}
+      {selectedTeam && teamPlayers.length > 0 && !selectedPlayer && (
+        <div className="space-y-2">
+          <Label className="text-muted-foreground">Selecciona una jugadora para ver detalles</Label>
+          {teamPlayers.map(p => (
+            <PlayerRatingsSummary
+              key={p.id}
+              player={p}
+              teamId={selectedTeam}
+              ratings={ratings}
+              onClick={() => setSelectedPlayer(p.id)}
+              isSelected={selectedPlayer === p.id}
+            />
+          ))}
+        </div>
+      )}
+
+      {selectedTeam && teamPlayers.length === 0 && (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <User className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+            <p className="text-muted-foreground text-sm">No hay jugadoras en este equipo</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Player detail view */}
       {selectedPlayer && player && (
         <div className="space-y-4">
+          {/* Back button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedPlayer(null)}
+            className="mb-2"
+          >
+            ← Volver a la lista
+          </Button>
+
           {/* Player Info */}
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="p-4 flex items-center gap-3">
@@ -548,11 +564,11 @@ function PlayerProgressView({
         </div>
       )}
 
-      {!selectedPlayer && (
+      {!selectedTeam && (
         <Card>
           <CardContent className="p-6 text-center">
-            <User className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-            <p className="text-muted-foreground text-sm">Selecciona una jugadora para ver su evolución</p>
+            <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+            <p className="text-muted-foreground text-sm">Selecciona un equipo para ver jugadoras</p>
           </CardContent>
         </Card>
       )}
