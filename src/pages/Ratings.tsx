@@ -15,6 +15,7 @@ import { PlayerProgressChart } from '@/components/PlayerProgressChart';
 import { TeamProgressChart } from '@/components/TeamProgressChart';
 import { RatingInput } from '@/components/RatingInput';
 import { PlayerRatingsSummary } from '@/components/PlayerRatingsSummary';
+import { PlayerRanking } from '@/components/PlayerRanking';
 import { toast } from 'sonner';
 import { Star, User, Calendar, ChevronRight, Check, TrendingUp, Users, Plus } from 'lucide-react';
 import { format } from 'date-fns';
@@ -414,6 +415,24 @@ function PlayerProgressView({
 }) {
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const [rankingMonth, setRankingMonth] = useState(() => format(new Date(), 'yyyy-MM'));
+
+  // Generate month options (last 12 months)
+  const monthOptions = useMemo(() => {
+    const options: string[] = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      options.push(format(date, 'yyyy-MM'));
+    }
+    return options;
+  }, []);
+
+  const formatMonthDisplay = (monthStr: string) => {
+    const [year, month] = monthStr.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return format(date, 'MMMM yyyy', { locale: es });
+  };
 
   const nativeSelectClassName =
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
@@ -443,40 +462,51 @@ function PlayerProgressView({
 
   return (
     <div className="space-y-4">
-      {/* Team selector */}
-      <div className="space-y-2">
-        <Label>Equipo</Label>
-        <select
-          className={nativeSelectClassName}
-          value={selectedTeam || ''}
-          onChange={(e) => {
-            setSelectedTeam(e.target.value || null);
-            setSelectedPlayer(null);
-          }}
-        >
-          <option value="">Selecciona equipo</option>
-          {visibleTeams.map(t => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
+      {/* Team and Month selectors */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label>Equipo</Label>
+          <select
+            className={nativeSelectClassName}
+            value={selectedTeam || ''}
+            onChange={(e) => {
+              setSelectedTeam(e.target.value || null);
+              setSelectedPlayer(null);
+            }}
+          >
+            <option value="">Selecciona equipo</option>
+            {visibleTeams.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-2">
+          <Label>Mes ranking</Label>
+          <select
+            className={nativeSelectClassName}
+            value={rankingMonth}
+            onChange={(e) => setRankingMonth(e.target.value)}
+          >
+            {monthOptions.map(month => (
+              <option key={month} value={month}>
+                {formatMonthDisplay(month)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Players list with summaries */}
-      {selectedTeam && teamPlayers.length > 0 && !selectedPlayer && (
-        <div className="space-y-2">
-          <Label className="text-muted-foreground">Selecciona una jugadora para ver detalles</Label>
-          {teamPlayers.map(p => (
-            <PlayerRatingsSummary
-              key={p.id}
-              player={p}
-              teamId={selectedTeam}
-              ratings={ratings}
-              onClick={() => setSelectedPlayer(p.id)}
-              isSelected={selectedPlayer === p.id}
-            />
-          ))}
-        </div>
+      {/* Monthly Ranking */}
+      {selectedTeam && !selectedPlayer && (
+        <PlayerRanking
+          players={teamPlayers}
+          ratings={ratings}
+          teamId={selectedTeam}
+          month={rankingMonth}
+          onPlayerClick={setSelectedPlayer}
+        />
       )}
+
 
       {selectedTeam && teamPlayers.length === 0 && (
         <Card>
