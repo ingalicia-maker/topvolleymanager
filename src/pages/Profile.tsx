@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -10,9 +11,10 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Shield, Users, Save, LogOut } from 'lucide-react';
+import { User, Shield, Users, Save, LogOut, Settings } from 'lucide-react';
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { profile, isDirector, assignedTeams, updateAssignedTeams, loading, roles } = useUserRole();
   const { signOut, user } = useAuth();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
@@ -118,6 +120,25 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Club Settings - Only for Directors */}
+        {isDirector && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="p-4">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/club-settings')}
+                className="w-full gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Configuración del Club
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Cambia el nombre, colores, fuentes y escudo del club
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Assigned Teams */}
         <Card>
