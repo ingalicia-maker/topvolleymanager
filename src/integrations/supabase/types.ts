@@ -55,6 +55,42 @@ export type Database = {
           },
         ]
       }
+      club_settings: {
+        Row: {
+          accent_color: string
+          club_name: string
+          created_at: string | null
+          font_family: string
+          id: string
+          logo_url: string | null
+          primary_color: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          accent_color?: string
+          club_name?: string
+          created_at?: string | null
+          font_family?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          accent_color?: string
+          club_name?: string
+          created_at?: string | null
+          font_family?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           confirmed_players: string[] | null

@@ -10,11 +10,13 @@ import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useEvents } from '@/hooks/useEvents';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useClubTheme } from '@/components/ClubThemeProvider';
 
 export default function Index() {
   const { players } = usePlayers();
   const { events } = useEvents();
   const { profile, isDirector, assignedTeams } = useUserRole();
+  const { clubName, logoUrl } = useClubTheme();
 
   const today = new Date().toISOString().split('T')[0];
   
@@ -36,10 +38,15 @@ export default function Index() {
       {/* Hero Header */}
       <div className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground px-4 pt-8 pb-10">
         <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {logoUrl && (
+            <img src={logoUrl} alt="Club logo" className="h-12 w-12 object-contain rounded-lg bg-white/10 p-1" />
+          )}
           <div>
-            <h1 className="text-2xl font-bold mb-1">Voleibol Manager</h1>
+            <h1 className="text-2xl font-bold mb-1">{clubName}</h1>
             <p className="text-primary-foreground/80 text-sm">Gestiona tus equipos y convocatorias</p>
           </div>
+        </div>
         <div className="flex items-center gap-2">
           <NotificationBell />
           <Link to="/profile">

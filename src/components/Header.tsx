@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
+import { useClubTheme } from './ClubThemeProvider';
 
 interface HeaderProps {
   title: string;
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 export function Header({ title, showBack = false, rightAction, onBack }: HeaderProps) {
   const navigate = useNavigate();
+  const { logoUrl } = useClubTheme();
 
   const handleBack = () => {
     if (onBack) {
@@ -32,6 +34,9 @@ export function Header({ title, showBack = false, rightAction, onBack }: HeaderP
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
+        )}
+        {logoUrl && !showBack && (
+          <img src={logoUrl} alt="Club logo" className="h-8 w-8 object-contain" />
         )}
         <h1 className="flex-1 truncate text-lg font-bold">{title}</h1>
         {rightAction}
