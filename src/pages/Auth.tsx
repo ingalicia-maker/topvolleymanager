@@ -20,8 +20,9 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [isDirector, setIsDirector] = useState(false);
   const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({}); 
 
   useEffect(() => {
     // Check if user is already logged in
@@ -101,6 +102,7 @@ export default function Auth() {
         emailRedirectTo: redirectUrl,
         data: {
           name: name.trim(),
+          is_director: isDirector,
           assigned_teams: assignedTeams,
         },
       },
@@ -209,8 +211,25 @@ export default function Auth() {
                   {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
                 </div>
 
+                {/* Director Deportivo Option */}
+                <div className="space-y-2">
+                  <label
+                    className="flex items-center gap-3 p-3 rounded-lg border-2 border-amber-500 bg-amber-500/10 cursor-pointer hover:bg-amber-500/20 transition-colors"
+                  >
+                    <Checkbox 
+                      checked={isDirector} 
+                      onCheckedChange={(checked) => setIsDirector(checked === true)}
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium text-amber-600">Director Deportivo</p>
+                      <p className="text-xs text-muted-foreground">Acceso total a todos los equipos y funcionalidades</p>
+                    </div>
+                  </label>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Equipos que entrenas (opcional)</Label>
+                  <p className="text-xs text-muted-foreground">Puedes ser director y entrenador a la vez</p>
                   <div className="grid grid-cols-2 gap-2">
                     {TEAMS.map(team => (
                       <label
