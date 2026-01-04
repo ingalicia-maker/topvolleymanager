@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useTeams, DbTeam } from '@/hooks/useTeams';
 import { usePlayerRatings, RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
 import { useUserRole } from '@/hooks/useUserRole';
 import { PlayerProgressChart } from '@/components/PlayerProgressChart';
@@ -31,6 +31,7 @@ const RATING_EMOJIS: Record<string, string> = {
 
 export default function Ratings() {
   const { players } = usePlayers();
+  const { teams, loading: teamsLoading } = useTeams();
   const { addRating, ratings, getMonthlyEvolution, getPlayerTrends, getPositiveAlerts } = usePlayerRatings();
   const { assignedTeams, isDirector } = useUserRole();
 
@@ -52,17 +53,17 @@ export default function Ratings() {
 
   // Filter teams by assigned (unless director)
   const visibleTeams = useMemo(() => {
-    if (isDirector) return TEAMS;
-    if (assignedTeams.length === 0) return TEAMS;
-    return TEAMS.filter(t => assignedTeams.includes(t.id));
-  }, [isDirector, assignedTeams]);
+    if (isDirector) return teams;
+    if (assignedTeams.length === 0) return teams;
+    return teams.filter(t => assignedTeams.includes(t.id));
+  }, [isDirector, assignedTeams, teams]);
 
-  const team = TEAMS.find(t => t.id === selectedTeam);
+  const team = teams.find(t => t.id === selectedTeam);
   
   // Get players for selected team
   const teamPlayers = useMemo(() => {
     if (!selectedTeam) return [];
-    return players.filter(p => p.teams.includes(selectedTeam));
+    return players.filter(p => p.teams?.includes(selectedTeam));
   }, [selectedTeam, players]);
 
   const player = players.find(p => p.id === selectedPlayer);
@@ -199,7 +200,7 @@ export default function Ratings() {
                 ) : (
                   <div className="space-y-2">
                     {visibleTeams.map(t => {
-                      const teamPlayerCount = players.filter(p => p.teams.includes(t.id)).length;
+                      const teamPlayerCount = players.filter(p => p.teams?.includes(t.id)).length;
                       return (
                         <Card
                           key={t.id}
@@ -261,7 +262,7 @@ export default function Ratings() {
                   <div className="space-y-2">
                     {teamPlayers.map(p => {
                       const isRated = ratedPlayers.includes(p.id) || isPlayerRatedThisMonth(p.id, team.id);
-                      const playerTeams = TEAMS.filter(t => p.teams.includes(t.id));
+                      const playerTeams = teams.filter(t => p.teams?.includes(t.id));
 
                       return (
                         <Card
@@ -406,8 +407,8 @@ function PlayerProgressView({
   getPlayerTrends,
   getPositiveAlerts,
 }: {
-  players: Array<{ id: string; name: string; number: number | null; teams: string[] }>;
-  visibleTeams: typeof TEAMS;
+  players: Array<{ id: string; name: string; number: number | null; teams: string[] | null }>;
+  visibleTeams: DbTeam[];
   ratings: Array<any>;
   getMonthlyEvolution: (playerId: string, teamId?: string) => Array<any>;
   getPlayerTrends: (playerId: string, teamId?: string) => string[];
@@ -439,11 +440,11 @@ function PlayerProgressView({
 
   const teamPlayers = useMemo(() => {
     if (!selectedTeam) return [];
-    return players.filter(p => p.teams.includes(selectedTeam));
+    return players.filter(p => p.teams?.includes(selectedTeam));
   }, [selectedTeam, players]);
 
   const player = players.find(p => p.id === selectedPlayer);
-  const team = TEAMS.find(t => t.id === selectedTeam);
+  const team = visibleTeams.find(t => t.id === selectedTeam);
 
   const evolution = useMemo(() => {
     if (!selectedPlayer) return [];
@@ -612,8 +613,8 @@ function TeamProgressView({
   visibleTeams,
   ratings,
 }: {
-  players: Array<{ id: string; name: string; number: number | null; teams: string[] }>;
-  visibleTeams: typeof TEAMS;
+  players: Array<{ id: string; name: string; number: number | null; teams: string[] | null }>;
+  visibleTeams: DbTeam[];
   ratings: Array<any>;
 }) {
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
@@ -621,7 +622,7 @@ function TeamProgressView({
   const nativeSelectClassName =
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
-  const team = TEAMS.find(t => t.id === selectedTeam);
+  const team = visibleTeams.find(t => t.id === selectedTeam);
 
   // Calculate team monthly averages
   const teamEvolution = useMemo(() => {

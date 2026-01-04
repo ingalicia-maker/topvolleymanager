@@ -1,10 +1,10 @@
 import { Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Team, Player } from '@/types/volleyball';
+import { DbTeam } from '@/hooks/useTeams';
 import { Card, CardContent } from './ui/card';
 
 interface TeamCardProps {
-  team: Team;
+  team: DbTeam;
   playerCount: number;
 }
 

@@ -6,14 +6,15 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { PlayerOfTheWeek } from '@/components/PlayerOfTheWeek';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useTeams } from '@/hooks/useTeams';
 import { useEvents } from '@/hooks/useEvents';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useClubTheme } from '@/components/ClubThemeProvider';
 
 export default function Index() {
   const { players } = usePlayers();
+  const { teams, loading: teamsLoading } = useTeams();
   const { events } = useEvents();
   const { profile, isDirector, assignedTeams } = useUserRole();
   const { clubName, logoUrl } = useClubTheme();
@@ -80,7 +81,7 @@ export default function Index() {
                 <Calendar className="h-5 w-5 text-secondary-foreground" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{TEAMS.length}</p>
+                <p className="text-2xl font-bold text-foreground">{teams.length}</p>
                 <p className="text-xs text-muted-foreground">Equipos</p>
               </div>
             </CardContent>
@@ -152,23 +153,29 @@ export default function Index() {
               Ver todos
             </Link>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            {TEAMS.map(team => (
-              <Link
-                key={team.id}
-                to={`/teams/${team.id}`}
-                className="shrink-0"
-              >
-                <Card className="w-32 overflow-hidden transition-all hover:shadow-md active:scale-[0.98]">
-                  <div className="h-1.5" style={{ backgroundColor: team.color }} />
-                  <CardContent className="p-3">
-                    <p className="font-medium text-sm text-foreground truncate">{team.name}</p>
-                    <p className="text-xs text-muted-foreground">{team.coach}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+          {teamsLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+              {teams.map(team => (
+                <Link
+                  key={team.id}
+                  to={`/teams/${team.id}`}
+                  className="shrink-0"
+                >
+                  <Card className="w-32 overflow-hidden transition-all hover:shadow-md active:scale-[0.98]">
+                    <div className="h-1.5" style={{ backgroundColor: team.color }} />
+                    <CardContent className="p-3">
+                      <p className="font-medium text-sm text-foreground truncate">{team.name}</p>
+                      <p className="text-xs text-muted-foreground">{team.coach}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <BottomNav />

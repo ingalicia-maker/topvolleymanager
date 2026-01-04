@@ -1,6 +1,6 @@
 import { Calendar, MapPin, Users, Trophy, Dumbbell } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { TEAMS } from '@/types/volleyball';
+import { useTeams } from '@/hooks/useTeams';
 import { DbEvent } from '@/hooks/useEvents';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
@@ -10,7 +10,8 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
-  const team = TEAMS.find(t => t.id === event.team_id);
+  const { teams } = useTeams();
+  const team = teams.find(t => t.id === event.team_id);
   const confirmedCount = event.confirmed_players?.length || 0;
   const invitedCount = event.invited_players?.length || 0;
   

@@ -6,8 +6,8 @@ import { PlayerCard } from '@/components/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useTeams } from '@/hooks/useTeams';
 import { useEvents } from '@/hooks/useEvents';
 import { toast } from 'sonner';
 
@@ -15,11 +15,12 @@ export default function EventDetail() {
   const { eventId } = useParams<{ eventId: string }>();
   const { events, updateEvent } = useEvents();
   const { players } = usePlayers();
+  const { teams } = useTeams();
 
   const event = events.find(e => e.id === eventId);
-  const team = event ? TEAMS.find(t => t.id === event.team_id) : null;
+  const team = event ? teams.find(t => t.id === event.team_id) : null;
 
-  if (!event || !team) {
+  if (!event) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <Header title="Evento no encontrado" showBack />
@@ -131,7 +132,7 @@ export default function EventDetail() {
         {/* Event Info Card */}
         <div 
           className="rounded-xl p-4 space-y-3"
-          style={{ backgroundColor: `${team.color}10` }}
+          style={{ backgroundColor: team ? `${team.color}10` : 'hsl(var(--muted))' }}
         >
           <div className="flex items-center gap-2">
             {event.type === 'match' ? (
@@ -142,9 +143,11 @@ export default function EventDetail() {
             <Badge variant={event.type === 'match' ? 'default' : 'secondary'}>
               {event.type === 'match' ? 'Partido' : 'Entrenamiento'}
             </Badge>
-            <Badge variant="outline" style={{ borderColor: team.color, color: team.color }}>
-              {team.name}
-            </Badge>
+            {team && (
+              <Badge variant="outline" style={{ borderColor: team.color, color: team.color }}>
+                {team.name}
+              </Badge>
+            )}
           </div>
           
           <div className="space-y-2 text-sm">

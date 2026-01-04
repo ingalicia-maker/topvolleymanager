@@ -11,7 +11,7 @@ interface PlayerRankingProps {
     id: string;
     name: string;
     number: number | null;
-    teams: string[];
+    teams: string[] | null;
   }>;
   ratings: Array<{
     player_id: string;
@@ -43,7 +43,7 @@ export function PlayerRanking({ players, ratings, teamId, month, onPlayerClick }
   };
 
   const rankedPlayers = useMemo(() => {
-    const teamPlayers = players.filter(p => p.teams.includes(teamId));
+    const teamPlayers = players.filter(p => p.teams?.includes(teamId));
     
     const ranked: RankedPlayer[] = [];
     

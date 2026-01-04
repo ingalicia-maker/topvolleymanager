@@ -1,6 +1,6 @@
 import { MessageCircle } from 'lucide-react';
-import { TEAMS } from '@/types/volleyball';
 import { DbPlayer } from '@/hooks/usePlayers';
+import { useTeams } from '@/hooks/useTeams';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -14,13 +14,19 @@ interface PlayerCardProps {
 }
 
 export function PlayerCard({ player, selectable, selected, onSelect, showTeams = true }: PlayerCardProps) {
+  const { teams } = useTeams();
+  
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
     const phone = player.phone.replace(/\D/g, '');
     window.open(`https://wa.me/${phone}`, '_blank');
   };
 
-  const playerTeams = TEAMS.filter(t => player.teams.includes(t.id));
+  const playerTeams = teams.filter(t => player.teams?.includes(t.id));
+  
+  const fullName = [player.name, player.surname1, player.surname2]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <Card 
@@ -35,16 +41,20 @@ export function PlayerCard({ player, selectable, selected, onSelect, showTeams =
               checked={!!selected}
               onChange={() => onSelect?.(player.id)}
               onClick={(e) => e.stopPropagation()}
-              aria-label={`Seleccionar ${player.name}`}
+              aria-label={`Seleccionar ${fullName}`}
               className="h-4 w-4 shrink-0 rounded-sm border border-primary bg-background text-primary accent-primary"
             />
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-foreground truncate">{player.name}</span>
+              <span className="font-semibold text-foreground truncate">{fullName}</span>
               {player.number && (
                 <span className="text-xs font-bold text-primary">#{player.number}</span>
               )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+              {player.birth_year && <span>{player.birth_year}</span>}
+              {player.height && <span>• {player.height} cm</span>}
             </div>
             {showTeams && playerTeams.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">

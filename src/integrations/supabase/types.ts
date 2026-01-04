@@ -261,29 +261,41 @@ export type Database = {
       }
       players: {
         Row: {
+          birth_year: number | null
           created_at: string | null
+          height: number | null
           id: string
           name: string
           number: number | null
           phone: string
+          surname1: string | null
+          surname2: string | null
           teams: string[] | null
           updated_at: string | null
         }
         Insert: {
+          birth_year?: number | null
           created_at?: string | null
+          height?: number | null
           id?: string
           name: string
           number?: number | null
           phone: string
+          surname1?: string | null
+          surname2?: string | null
           teams?: string[] | null
           updated_at?: string | null
         }
         Update: {
+          birth_year?: number | null
           created_at?: string | null
+          height?: number | null
           id?: string
           name?: string
           number?: number | null
           phone?: string
+          surname1?: string | null
+          surname2?: string | null
           teams?: string[] | null
           updated_at?: string | null
         }
@@ -310,6 +322,36 @@ export type Database = {
           assigned_teams?: string[] | null
           created_at?: string | null
           email?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          coach: string
+          color: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach: string
+          color?: string
+          created_at?: string | null
+          created_by?: string | null
+          id: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach?: string
+          color?: string
+          created_at?: string | null
+          created_by?: string | null
           id?: string
           name?: string
           updated_at?: string | null
