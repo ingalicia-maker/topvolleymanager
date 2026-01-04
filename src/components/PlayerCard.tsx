@@ -1,4 +1,5 @@
 import { MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DbPlayer } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
 import { Card, CardContent } from './ui/card';
@@ -11,15 +12,25 @@ interface PlayerCardProps {
   selected?: boolean;
   onSelect?: (id: string) => void;
   showTeams?: boolean;
+  clickable?: boolean;
 }
 
-export function PlayerCard({ player, selectable, selected, onSelect, showTeams = true }: PlayerCardProps) {
+export function PlayerCard({ player, selectable, selected, onSelect, showTeams = true, clickable = true }: PlayerCardProps) {
   const { teams } = useTeams();
+  const navigate = useNavigate();
   
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
     const phone = player.phone.replace(/\D/g, '');
     window.open(`https://wa.me/${phone}`, '_blank');
+  };
+
+  const handleClick = () => {
+    if (selectable && onSelect) {
+      onSelect(player.id);
+    } else if (clickable) {
+      navigate(`/players/${player.id}`);
+    }
   };
 
   const playerTeams = teams.filter(t => player.teams?.includes(t.id));
@@ -30,8 +41,8 @@ export function PlayerCard({ player, selectable, selected, onSelect, showTeams =
 
   return (
     <Card 
-      className={`transition-all ${selectable ? 'cursor-pointer hover:shadow-md active:scale-[0.98]' : ''} ${selected ? 'ring-2 ring-primary' : ''}`}
-      onClick={() => selectable && onSelect?.(player.id)}
+      className={`transition-all cursor-pointer hover:shadow-md active:scale-[0.98] ${selected ? 'ring-2 ring-primary' : ''}`}
+      onClick={handleClick}
     >
       <CardContent className="p-3">
         <div className="flex items-center gap-3">

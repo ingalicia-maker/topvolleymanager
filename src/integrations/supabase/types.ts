@@ -98,13 +98,18 @@ export type Database = {
           created_by: string | null
           date: string
           declined_players: string[] | null
+          departure_time: string | null
+          destination: string | null
           id: string
           invited_players: string[] | null
           location: string
           notes: string | null
+          player_stops: Json | null
+          stops: Json | null
           team_id: string
           time: string
           title: string
+          total_passengers: number | null
           type: string
           updated_at: string | null
         }
@@ -114,13 +119,18 @@ export type Database = {
           created_by?: string | null
           date: string
           declined_players?: string[] | null
+          departure_time?: string | null
+          destination?: string | null
           id?: string
           invited_players?: string[] | null
           location: string
           notes?: string | null
+          player_stops?: Json | null
+          stops?: Json | null
           team_id: string
           time: string
           title: string
+          total_passengers?: number | null
           type: string
           updated_at?: string | null
         }
@@ -130,13 +140,18 @@ export type Database = {
           created_by?: string | null
           date?: string
           declined_players?: string[] | null
+          departure_time?: string | null
+          destination?: string | null
           id?: string
           invited_players?: string[] | null
           location?: string
           notes?: string | null
+          player_stops?: Json | null
+          stops?: Json | null
           team_id?: string
           time?: string
           title?: string
+          total_passengers?: number | null
           type?: string
           updated_at?: string | null
         }

@@ -1,14 +1,17 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, Download, Check, X, Trophy, Dumbbell, Copy, Send } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Download, Check, X, Trophy, Dumbbell, Copy, Send, Bus } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
-import { useEvents } from '@/hooks/useEvents';
+import { useEvents, AVAILABLE_STOPS } from '@/hooks/useEvents';
 import { toast } from 'sonner';
 
 export default function EventDetail() {
@@ -20,6 +23,9 @@ export default function EventDetail() {
   const event = events.find(e => e.id === eventId);
   const team = event ? teams.find(t => t.id === event.team_id) : null;
 
+  const [editingStops, setEditingStops] = useState(false);
+  const [playerStops, setPlayerStops] = useState<Record<string, string>>({});
+
   if (!event) {
     return (
       <div className="min-h-screen bg-background pb-20">
@@ -29,6 +35,7 @@ export default function EventDetail() {
     );
   }
 
+  const isDisplacement = event.type === 'displacement';
   const invitedPlayersList = players.filter(p => event.invited_players?.includes(p.id));
   const confirmedPlayersList = players.filter(p => event.confirmed_players?.includes(p.id));
   const declinedPlayersList = players.filter(p => event.declined_players?.includes(p.id));
@@ -67,10 +74,24 @@ export default function EventDetail() {
     return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
 
+  const getPlayerName = (player: typeof players[0]) => {
+    return [player.name, player.surname1].filter(Boolean).join(' ');
+  };
+
   const generateMessage = () => {
-    const confirmedNames = confirmedPlayersList.map(p => `✅ ${p.name}`).join('\n');
-    const pendingNames = pendingPlayersList.map(p => `⏳ ${p.name}`).join('\n');
-    const declinedNames = declinedPlayersList.map(p => `❌ ${p.name}`).join('\n');
+    if (isDisplacement) {
+      const stopsInfo = (event.stops || []).map(stop => {
+        const playersAtStop = invitedPlayersList.filter(p => event.player_stops?.[p.id] === stop);
+        const playerNames = playersAtStop.map(p => `  - ${getPlayerName(p)}`).join('\n');
+        return `📍 *${stop}* (${playersAtStop.length})\n${playerNames || '  Ninguna'}`;
+      }).join('\n\n');
+
+      return `🚌 *${event.title}*\n📅 ${formatDate(event.date)}\n⏰ Salida: ${event.time}\n📍 Destino: ${event.destination}\n\n👥 *Total pasajeros: ${event.total_passengers}*\n\n*Paradas:*\n${stopsInfo}`;
+    }
+
+    const confirmedNames = confirmedPlayersList.map(p => `✅ ${getPlayerName(p)}`).join('\n');
+    const pendingNames = pendingPlayersList.map(p => `⏳ ${getPlayerName(p)}`).join('\n');
+    const declinedNames = declinedPlayersList.map(p => `❌ ${getPlayerName(p)}`).join('\n');
     
     return `*${event.title}*\n📅 ${formatDate(event.date)}\n⏰ ${event.time}\n📍 ${event.location}\n\n*Confirmadas (${confirmedPlayersList.length}):*\n${confirmedNames || 'Ninguna'}\n\n*Pendientes (${pendingPlayersList.length}):*\n${pendingNames || 'Ninguna'}\n\n*No pueden (${declinedPlayersList.length}):*\n${declinedNames || 'Ninguna'}`;
   };
@@ -86,8 +107,7 @@ export default function EventDetail() {
   };
 
   const downloadList = () => {
-    const content = `${event.title}\nFecha: ${formatDate(event.date)}\nHora: ${event.time}\nUbicación: ${event.location}\n\nConfirmadas (${confirmedPlayersList.length}):\n${confirmedPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguna'}\n\nPendientes (${pendingPlayersList.length}):\n${pendingPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguna'}\n\nNo pueden (${declinedPlayersList.length}):\n${declinedPlayersList.map(p => `- ${p.name}`).join('\n') || 'Ninguna'}`;
-    
+    const content = generateMessage().replace(/\*/g, '').replace(/📍|📅|⏰|👥|🚌|✅|⏳|❌/g, '');
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -98,10 +118,56 @@ export default function EventDetail() {
     toast.success('Lista descargada');
   };
 
+  const assignPlayerToStop = async (playerId: string, stop: string) => {
+    const newPlayerStops = { ...event.player_stops, [playerId]: stop };
+    if (!stop) {
+      delete newPlayerStops[playerId];
+    }
+    await updateEvent(event.id, { player_stops: newPlayerStops });
+  };
+
+  // Calculate passengers by stop for displacement events
+  const getPassengersByStop = () => {
+    const result: Record<string, { count: number; players: typeof players }> = {};
+    
+    (event.stops || []).forEach(stop => {
+      const playersAtStop = invitedPlayersList.filter(p => event.player_stops?.[p.id] === stop);
+      result[stop] = { count: playersAtStop.length, players: playersAtStop };
+    });
+
+    // Also count unassigned players
+    const unassigned = invitedPlayersList.filter(p => !event.player_stops?.[p.id]);
+    if (unassigned.length > 0) {
+      result['Sin asignar'] = { count: unassigned.length, players: unassigned };
+    }
+
+    return result;
+  };
+
+  const passengersByStop = isDisplacement ? getPassengersByStop() : {};
+
+  const getEventIcon = () => {
+    switch (event.type) {
+      case 'match': return <Trophy className="h-5 w-5 text-amber-500" />;
+      case 'displacement': return <Bus className="h-5 w-5 text-blue-500" />;
+      default: return <Dumbbell className="h-5 w-5 text-primary" />;
+    }
+  };
+
+  const getEventBadge = () => {
+    switch (event.type) {
+      case 'match': return { variant: 'default' as const, label: 'Partido' };
+      case 'displacement': return { variant: 'outline' as const, label: 'Desplazamiento' };
+      default: return { variant: 'secondary' as const, label: 'Entrenamiento' };
+    }
+  };
+
+  const badge = getEventBadge();
+
   const PlayerWithActions = ({ player, status }: { player: typeof players[0]; status: 'confirmed' | 'declined' | 'pending' }) => (
     <div className="flex items-center gap-2">
       <div className="flex-1">
-        <PlayerCard player={player} showTeams={false} />
+        <PlayerCard player={player} showTeams={false} clickable={false} />
       </div>
       <div className="flex gap-1">
         <Button
@@ -135,13 +201,9 @@ export default function EventDetail() {
           style={{ backgroundColor: team ? `${team.color}10` : 'hsl(var(--muted))' }}
         >
           <div className="flex items-center gap-2">
-            {event.type === 'match' ? (
-              <Trophy className="h-5 w-5 text-amber-500" />
-            ) : (
-              <Dumbbell className="h-5 w-5 text-primary" />
-            )}
-            <Badge variant={event.type === 'match' ? 'default' : 'secondary'}>
-              {event.type === 'match' ? 'Partido' : 'Entrenamiento'}
+            {getEventIcon()}
+            <Badge variant={badge.variant}>
+              {badge.label}
             </Badge>
             {team && (
               <Badge variant="outline" style={{ borderColor: team.color, color: team.color }}>
@@ -157,16 +219,25 @@ export default function EventDetail() {
             </div>
             <div className="flex items-center gap-2 text-foreground">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              {event.time}
+              {isDisplacement ? `Salida: ${event.time}` : event.time}
             </div>
             <div className="flex items-center gap-2 text-foreground">
               <MapPin className="h-4 w-4 text-muted-foreground" />
-              {event.location}
+              {isDisplacement ? event.destination : event.location}
             </div>
             <div className="flex items-center gap-2 text-foreground">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-green-600 font-medium">{confirmedPlayersList.length}</span>
-              <span className="text-muted-foreground">/ {invitedPlayersList.length} convocadas</span>
+              {isDisplacement ? (
+                <>
+                  <span className="text-blue-600 font-medium">{event.total_passengers}</span>
+                  <span className="text-muted-foreground">pasajeros totales</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-green-600 font-medium">{confirmedPlayersList.length}</span>
+                  <span className="text-muted-foreground">/ {invitedPlayersList.length} convocadas</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -196,56 +267,182 @@ export default function EventDetail() {
           </Button>
         </div>
 
-        {/* Players Tabs */}
-        <Tabs defaultValue="confirmed" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="confirmed" className="flex-1">
-              ✅ {confirmedPlayersList.length}
-            </TabsTrigger>
-            <TabsTrigger value="pending" className="flex-1">
-              ⏳ {pendingPlayersList.length}
-            </TabsTrigger>
-            <TabsTrigger value="declined" className="flex-1">
-              ❌ {declinedPlayersList.length}
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="confirmed" className="mt-3 space-y-2">
-            {confirmedPlayersList.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4 text-sm">
-                Ninguna jugadora confirmada
-              </p>
-            ) : (
-              confirmedPlayersList.map(player => (
-                <PlayerWithActions key={player.id} player={player} status="confirmed" />
-              ))
+        {/* Displacement-specific: Passengers by Stop Table */}
+        {isDisplacement && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Bus className="h-4 w-4" />
+                Pasajeros por parada
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Parada</TableHead>
+                    <TableHead className="text-right">Pasajeros</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Object.entries(passengersByStop).map(([stop, data]) => (
+                    <TableRow key={stop} className={stop === 'Sin asignar' ? 'text-amber-600' : ''}>
+                      <TableCell className="font-medium">{stop}</TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant={stop === 'Sin asignar' ? 'secondary' : 'default'}>
+                          {data.count}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="font-bold bg-muted/50">
+                    <TableCell>Total jugadoras</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="default">{invitedPlayersList.length}</Badge>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow className="font-bold bg-primary/10">
+                    <TableCell>TOTAL PASAJEROS</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="default" className="text-lg px-3">
+                        {event.total_passengers}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Displacement: Players by Stop */}
+        {isDisplacement ? (
+          <div className="space-y-4">
+            {(event.stops || []).map(stop => {
+              const playersAtStop = invitedPlayersList.filter(p => event.player_stops?.[p.id] === stop);
+              return (
+                <Card key={stop}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        {stop}
+                      </span>
+                      <Badge>{playersAtStop.length}</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {playersAtStop.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-2">
+                        Ninguna jugadora asignada
+                      </p>
+                    ) : (
+                      playersAtStop.map(player => (
+                        <div key={player.id} className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <PlayerCard player={player} showTeams={false} clickable={false} />
+                          </div>
+                          <select
+                            className="text-xs border rounded px-2 py-1 bg-background"
+                            value={event.player_stops?.[player.id] || ''}
+                            onChange={(e) => assignPlayerToStop(player.id, e.target.value)}
+                          >
+                            <option value="">Sin asignar</option>
+                            {(event.stops || []).map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+
+            {/* Unassigned players */}
+            {passengersByStop['Sin asignar'] && passengersByStop['Sin asignar'].count > 0 && (
+              <Card className="border-amber-500">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center justify-between text-amber-600">
+                    <span>⚠️ Sin parada asignada</span>
+                    <Badge variant="secondary">{passengersByStop['Sin asignar'].count}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {passengersByStop['Sin asignar'].players.map(player => (
+                    <div key={player.id} className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <PlayerCard player={player} showTeams={false} clickable={false} />
+                      </div>
+                      <select
+                        className="text-xs border rounded px-2 py-1 bg-background"
+                        value=""
+                        onChange={(e) => assignPlayerToStop(player.id, e.target.value)}
+                      >
+                        <option value="">Sin asignar</option>
+                        {(event.stops || []).map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
             )}
-          </TabsContent>
-          
-          <TabsContent value="pending" className="mt-3 space-y-2">
-            {pendingPlayersList.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4 text-sm">
-                Todas las jugadoras han respondido
-              </p>
-            ) : (
-              pendingPlayersList.map(player => (
-                <PlayerWithActions key={player.id} player={player} status="pending" />
-              ))
-            )}
-          </TabsContent>
-          
-          <TabsContent value="declined" className="mt-3 space-y-2">
-            {declinedPlayersList.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4 text-sm">
-                Ninguna jugadora ha declinado
-              </p>
-            ) : (
-              declinedPlayersList.map(player => (
-                <PlayerWithActions key={player.id} player={player} status="declined" />
-              ))
-            )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        ) : (
+          /* Standard Event: Players Tabs */
+          <Tabs defaultValue="confirmed" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="confirmed" className="flex-1">
+                ✅ {confirmedPlayersList.length}
+              </TabsTrigger>
+              <TabsTrigger value="pending" className="flex-1">
+                ⏳ {pendingPlayersList.length}
+              </TabsTrigger>
+              <TabsTrigger value="declined" className="flex-1">
+                ❌ {declinedPlayersList.length}
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="confirmed" className="mt-3 space-y-2">
+              {confirmedPlayersList.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4 text-sm">
+                  Ninguna jugadora confirmada
+                </p>
+              ) : (
+                confirmedPlayersList.map(player => (
+                  <PlayerWithActions key={player.id} player={player} status="confirmed" />
+                ))
+              )}
+            </TabsContent>
+            
+            <TabsContent value="pending" className="mt-3 space-y-2">
+              {pendingPlayersList.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4 text-sm">
+                  Todas las jugadoras han respondido
+                </p>
+              ) : (
+                pendingPlayersList.map(player => (
+                  <PlayerWithActions key={player.id} player={player} status="pending" />
+                ))
+              )}
+            </TabsContent>
+            
+            <TabsContent value="declined" className="mt-3 space-y-2">
+              {declinedPlayersList.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4 text-sm">
+                  Ninguna jugadora ha declinado
+                </p>
+              ) : (
+                declinedPlayersList.map(player => (
+                  <PlayerWithActions key={player.id} player={player} status="declined" />
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
       <BottomNav />
     </div>
