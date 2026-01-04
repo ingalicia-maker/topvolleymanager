@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export interface CoachSubmission {
+  coach_id: string;
+  coach_name: string;
+  submitted: boolean;
+  submitted_at: string | null;
+}
+
 export interface DbEvent {
   id: string;
   type: string;
@@ -25,6 +32,7 @@ export interface DbEvent {
   player_returns: Record<string, boolean>; // false = no vuelve en bus
   total_passengers: number | null;
   selected_teams: string[];
+  coach_submissions: Record<string, CoachSubmission>; // key is team_id
 }
 
 // Stops are now managed in the database via useStops hook
@@ -50,8 +58,9 @@ export function useEvents() {
         player_stops: typeof e.player_stops === 'object' && e.player_stops !== null ? e.player_stops : {},
         player_returns: typeof e.player_returns === 'object' && e.player_returns !== null ? e.player_returns : {},
         selected_teams: Array.isArray(e.selected_teams) ? e.selected_teams : [],
-      }));
-      setEvents(parsed as DbEvent[]);
+        coach_submissions: typeof e.coach_submissions === 'object' && e.coach_submissions !== null && !Array.isArray(e.coach_submissions) ? e.coach_submissions : {},
+      })) as unknown as DbEvent[];
+      setEvents(parsed);
     }
     setLoading(false);
   };
@@ -61,9 +70,17 @@ export function useEvents() {
   }, []);
 
   const addEvent = async (event: Omit<DbEvent, 'id' | 'created_at' | 'updated_at'>) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const eventToInsert = {
+      ...event,
+      player_stops: event.player_stops,
+      player_returns: event.player_returns,
+      coach_submissions: event.coach_submissions,
+    } as any;
+    
     const { data, error } = await supabase
       .from('events')
-      .insert([event])
+      .insert([eventToInsert])
       .select()
       .single();
 
@@ -78,7 +95,8 @@ export function useEvents() {
       player_stops: typeof data.player_stops === 'object' && data.player_stops !== null ? data.player_stops : {},
       player_returns: typeof data.player_returns === 'object' && data.player_returns !== null ? data.player_returns : {},
       selected_teams: Array.isArray(data.selected_teams) ? data.selected_teams : [],
-    } as DbEvent;
+      coach_submissions: typeof data.coach_submissions === 'object' && data.coach_submissions !== null && !Array.isArray(data.coach_submissions) ? data.coach_submissions : {},
+    } as unknown as DbEvent;
     
     setEvents(prev => [parsed, ...prev]);
     toast.success('Evento creado');
@@ -86,9 +104,10 @@ export function useEvents() {
   };
 
   const updateEvent = async (id: string, updates: Partial<DbEvent>) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase
       .from('events')
-      .update(updates)
+      .update(updates as any)
       .eq('id', id);
 
     if (error) {
