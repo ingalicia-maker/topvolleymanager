@@ -20,6 +20,7 @@ import Ratings from "./pages/Ratings";
 import ClubSettings from "./pages/ClubSettings";
 import DisplacementCalendar from "./pages/DisplacementCalendar";
 import PendingTasks from "./pages/PendingTasks";
+import WeeklySummary from "./pages/WeeklySummary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -149,6 +150,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <PendingTasks />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/weekly-summary"
+            element={
+              <AuthGuard>
+                <WeeklySummary />
               </AuthGuard>
             }
           />

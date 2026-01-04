@@ -28,6 +28,24 @@ export default function Players() {
   const [isSelecting, setIsSelecting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
 
+  const exportToExcel = () => {
+    const exportData = players.map(p => ({
+      Nombre: p.name,
+      'Apellido 1': p.surname1 || '',
+      'Apellido 2': p.surname2 || '',
+      Teléfono: p.phone,
+      Equipos: (p.teams || []).join(', '),
+      Dorsal: p.number || '',
+      'Año Nacimiento': p.birth_year || '',
+      'Altura (cm)': p.height || ''
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Jugadoras');
+    XLSX.writeFile(wb, 'jugadoras.xlsx');
+  };
+
   const filteredPlayers = players.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -103,6 +121,9 @@ export default function Players() {
                 </Link>
                 <Button variant="ghost" size="sm" onClick={() => setIsSelecting(true)}>
                   Editar
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportToExcel}>
+                  <Download className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
                   <Upload className="h-4 w-4" />
