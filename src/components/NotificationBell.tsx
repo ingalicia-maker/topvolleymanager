@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Bell } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, Bus, Users, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -16,9 +17,31 @@ import { cn } from '@/lib/utils';
 export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
+  };
+
+  const handleNotificationClick = (notification: typeof notifications[0]) => {
+    markAsRead(notification.id);
+    setOpen(false);
+    
+    // Navigate to the related event if available
+    if (notification.related_event_id) {
+      navigate(`/events/${notification.related_event_id}`);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'displacement_created':
+        return <Bus className="h-4 w-4 text-blue-500" />;
+      case 'player_summoned':
+        return <Users className="h-4 w-4 text-amber-500" />;
+      default:
+        return <Trophy className="h-4 w-4 text-primary" />;
+    }
   };
 
   return (
@@ -59,25 +82,34 @@ export function NotificationBell() {
                     "p-3 cursor-pointer transition-colors hover:bg-muted/50",
                     !notification.is_read && "bg-primary/5"
                   )}
-                  onClick={() => markAsRead(notification.id)}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-2">
-                    <div className={cn(
-                      "w-2 h-2 rounded-full mt-1.5 shrink-0",
-                      notification.is_read ? "bg-muted" : "bg-primary"
-                    )} />
+                    <div className="mt-0.5 shrink-0">
+                      {getNotificationIcon(notification.type)}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">{notification.title}</p>
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {notification.message}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(notification.created_at), { 
-                          addSuffix: true, 
-                          locale: es 
-                        })}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-[10px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(notification.created_at), { 
+                            addSuffix: true, 
+                            locale: es 
+                          })}
+                        </p>
+                        {notification.related_event_id && (
+                          <span className="text-[10px] text-primary font-medium">
+                            Ver evento →
+                          </span>
+                        )}
+                      </div>
                     </div>
+                    {!notification.is_read && (
+                      <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" />
+                    )}
                   </div>
                 </div>
               ))}

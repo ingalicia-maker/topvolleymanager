@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Users, Trophy, Dumbbell, Bus } from 'lucide-react';
+import { Calendar, MapPin, Users, Trophy, Dumbbell, Bus, CheckCircle, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTeams } from '@/hooks/useTeams';
 import { DbEvent } from '@/hooks/useEvents';
@@ -13,6 +13,16 @@ export function EventCard({ event }: EventCardProps) {
   const { teams } = useTeams();
   const team = teams.find(t => t.id === event.team_id);
   const invitedCount = event.invited_players?.length || 0;
+  
+  // For displacements: get all involved teams
+  const isDisplacement = event.type === 'displacement';
+  const selectedTeams = isDisplacement ? (event.selected_teams || []) : [];
+  const involvedTeams = selectedTeams.map(id => teams.find(t => t.id === id)).filter(Boolean);
+  
+  // Check submission status for displacements
+  const coachSubmissions = event.coach_submissions || {};
+  const submittedCount = selectedTeams.filter(t => coachSubmissions[t]?.submitted).length;
+  const allSubmitted = selectedTeams.length > 0 && submittedCount === selectedTeams.length;
   
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -40,21 +50,66 @@ export function EventCard({ event }: EventCardProps) {
   return (
     <Link to={`/events/${event.id}`}>
       <Card className="overflow-hidden transition-all hover:shadow-lg active:scale-[0.98]">
-        <div 
-          className="h-1.5" 
-          style={{ backgroundColor: team?.color }}
-        />
+        {/* Color bar - show gradient for multiple teams in displacement */}
+        {isDisplacement && involvedTeams.length > 1 ? (
+          <div className="h-1.5 flex">
+            {involvedTeams.map((tm, idx) => (
+              <div 
+                key={idx}
+                className="flex-1"
+                style={{ backgroundColor: tm?.color }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div 
+            className="h-1.5" 
+            style={{ backgroundColor: isDisplacement && involvedTeams[0] ? involvedTeams[0].color : team?.color }}
+          />
+        )}
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 {getEventIcon()}
                 <Badge variant={badge.variant} className="text-xs">
                   {badge.label}
                 </Badge>
+                {/* Show submission status for displacements */}
+                {isDisplacement && (
+                  allSubmitted ? (
+                    <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-700">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Completo
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {submittedCount}/{selectedTeams.length}
+                    </Badge>
+                  )
+                )}
               </div>
               <h3 className="font-bold text-foreground truncate">{event.title}</h3>
-              <p className="text-sm text-muted-foreground">{team?.name}</p>
+              {/* Show teams involved */}
+              {isDisplacement && involvedTeams.length > 0 ? (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {involvedTeams.map(tm => (
+                    <span 
+                      key={tm?.id} 
+                      className="text-xs px-1.5 py-0.5 rounded-full"
+                      style={{ 
+                        backgroundColor: `${tm?.color}20`,
+                        color: tm?.color 
+                      }}
+                    >
+                      {tm?.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">{team?.name}</p>
+              )}
             </div>
             <div className="text-right shrink-0">
               <div className="flex items-center gap-1 text-sm font-medium text-foreground">

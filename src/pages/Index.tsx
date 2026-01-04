@@ -22,9 +22,15 @@ export default function Index() {
   const today = new Date().toISOString().split('T')[0];
   
   // Filter events by assigned teams (unless director)
+  // For displacements, check if any of coach's teams are in selected_teams
   const visibleEvents = isDirector || assignedTeams.length === 0
     ? events
-    : events.filter(e => assignedTeams.includes(e.team_id));
+    : events.filter(e => {
+      if (e.type === 'displacement' && e.selected_teams?.length > 0) {
+        return e.selected_teams.some(t => assignedTeams.includes(t));
+      }
+      return assignedTeams.includes(e.team_id);
+    });
 
   const upcomingEvents = visibleEvents
     .filter(e => e.date >= today)
