@@ -22,7 +22,9 @@ export interface DbEvent {
   departure_time: string | null;
   stops: string[];
   player_stops: Record<string, string>;
+  player_returns: Record<string, boolean>; // false = no vuelve en bus
   total_passengers: number | null;
+  selected_teams: string[];
 }
 
 // Stops are now managed in the database via useStops hook
@@ -46,6 +48,8 @@ export function useEvents() {
         ...e,
         stops: Array.isArray(e.stops) ? e.stops : [],
         player_stops: typeof e.player_stops === 'object' && e.player_stops !== null ? e.player_stops : {},
+        player_returns: typeof e.player_returns === 'object' && e.player_returns !== null ? e.player_returns : {},
+        selected_teams: Array.isArray(e.selected_teams) ? e.selected_teams : [],
       }));
       setEvents(parsed as DbEvent[]);
     }
@@ -72,6 +76,8 @@ export function useEvents() {
       ...data,
       stops: Array.isArray(data.stops) ? data.stops : [],
       player_stops: typeof data.player_stops === 'object' && data.player_stops !== null ? data.player_stops : {},
+      player_returns: typeof data.player_returns === 'object' && data.player_returns !== null ? data.player_returns : {},
+      selected_teams: Array.isArray(data.selected_teams) ? data.selected_teams : [],
     } as DbEvent;
     
     setEvents(prev => [parsed, ...prev]);
