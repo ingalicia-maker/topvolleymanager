@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -118,6 +118,24 @@ export default function Index() {
       
       {/* Player of the Week */}
       <PlayerOfTheWeek />
+      
+      {/* Weekly Summary Link */}
+      <Link to="/weekly-summary">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">Resumen Semanal</p>
+                <p className="text-xs text-muted-foreground">Estadísticas de tus equipos</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </Link>
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-3">
           <Card className="shadow-lg">

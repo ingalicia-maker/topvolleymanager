@@ -6,21 +6,32 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Shield, Users, Save, LogOut, Settings } from 'lucide-react';
+import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff } from 'lucide-react';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { teams, loading: teamsLoading } = useTeams();
   const { profile, isDirector, assignedTeams, updateAssignedTeams, loading, roles } = useUserRole();
   const { signOut, user } = useAuth();
+  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
   const [wantsDirector, setWantsDirector] = useState(isDirector);
   const [saving, setSaving] = useState(false);
+
+  const handlePushToggle = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+    } else {
+      await subscribe();
+    }
+  };
 
   useEffect(() => {
     setSelectedTeams(assignedTeams);
@@ -137,6 +148,34 @@ export default function Profile() {
               <p className="text-xs text-muted-foreground text-center mt-2">
                 Cambia el nombre, colores, fuentes y escudo del club
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Push Notifications */}
+        {isSupported && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {isSubscribed ? (
+                    <Bell className="h-5 w-5 text-primary" />
+                  ) : (
+                    <BellOff className="h-5 w-5 text-muted-foreground" />
+                  )}
+                  <div>
+                    <p className="font-medium">Notificaciones Push</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isSubscribed ? 'Recibirás alertas en tu dispositivo' : 'Activa las alertas en tu dispositivo'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={isSubscribed}
+                  onCheckedChange={handlePushToggle}
+                  disabled={pushLoading}
+                />
+              </div>
             </CardContent>
           </Card>
         )}
