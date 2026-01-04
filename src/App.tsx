@@ -18,6 +18,7 @@ import Ausencias from "./pages/Ausencias";
 import Profile from "./pages/Profile";
 import Ratings from "./pages/Ratings";
 import ClubSettings from "./pages/ClubSettings";
+import DisplacementCalendar from "./pages/DisplacementCalendar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -131,6 +132,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <ClubSettings />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/displacements"
+            element={
+              <AuthGuard>
+                <DisplacementCalendar />
               </AuthGuard>
             }
           />
