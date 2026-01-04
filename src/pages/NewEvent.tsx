@@ -32,7 +32,7 @@ export default function NewEvent() {
   const { stops: availableStops, loading: stopsLoading } = useStops();
   const { user } = useAuth();
   const { profile } = useUserRole();
-  const { notifyPlayerSummoned } = useNotifications();
+  const { notifyPlayerSummoned, notifyDisplacementCreated } = useNotifications();
 
   const [type, setType] = useState<EventType>('training');
   const [teamId, setTeamId] = useState('');
@@ -204,8 +204,34 @@ export default function NewEvent() {
     });
 
     if (result) {
-      // Notify coaches of players from other teams (for standard events)
-      if (type !== 'displacement') {
+      // Notify coaches when displacement is created
+      if (type === 'displacement') {
+        const { data: coaches } = await supabase
+          .from('profiles')
+          .select('id, name, assigned_teams');
+
+        if (coaches) {
+          const senderName = profile?.name || 'Un director';
+          
+          for (const coach of coaches) {
+            if (coach.id === user?.id) continue;
+            
+            const coachTeams = coach.assigned_teams || [];
+            const hasTeamInDisplacement = coachTeams.some((t: string) => selectedTeams.includes(t));
+            
+            if (hasTeamInDisplacement) {
+              await notifyDisplacementCreated(
+                coach.id,
+                senderName,
+                destination.trim(),
+                date,
+                result.id
+              );
+            }
+          }
+        }
+      } else {
+        // Notify coaches of players from other teams (for standard events)
         const otherTeamPlayers = players.filter(
           p => invitedPlayers.includes(p.id) && !p.teams?.includes(teamId)
         );

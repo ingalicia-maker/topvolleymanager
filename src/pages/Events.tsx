@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Filter } from 'lucide-react';
+import { Plus, Filter, Bus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -15,6 +15,11 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export default function Events() {
   const { events, loading } = useEvents();
@@ -66,6 +71,18 @@ export default function Events() {
         title="Eventos"
         rightAction={
           <div className="flex gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link to="/displacements">
+                  <Button variant="ghost" size="sm">
+                    <Bus className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                Calendario desplazamientos
+              </TooltipContent>
+            </Tooltip>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="relative">

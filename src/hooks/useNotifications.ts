@@ -110,6 +110,31 @@ export function useNotifications() {
     });
   };
 
+  // Notify coach when a displacement is created with their team
+  const notifyDisplacementCreated = async (
+    recipientCoachId: string,
+    senderName: string,
+    destination: string,
+    eventDate: string,
+    eventId: string
+  ) => {
+    const formattedDate = new Date(eventDate).toLocaleDateString('es-ES', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long' 
+    });
+    
+    return createNotification({
+      recipient_id: recipientCoachId,
+      sender_id: user?.id || null,
+      type: 'displacement_created',
+      title: 'Nuevo desplazamiento',
+      message: `${senderName} ha creado un desplazamiento a ${destination} para el ${formattedDate}. Añade las jugadoras de tu equipo.`,
+      related_player_id: null,
+      related_event_id: eventId,
+    });
+  };
+
   return {
     notifications,
     loading,
@@ -118,6 +143,7 @@ export function useNotifications() {
     markAllAsRead,
     createNotification,
     notifyPlayerSummoned,
+    notifyDisplacementCreated,
     refetch: fetchNotifications,
   };
 }
