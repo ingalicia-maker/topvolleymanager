@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, Download, Check, X, Trophy, Dumbbell, Copy, Send, Bus } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Download, Check, X, Trophy, Dumbbell, Copy, Send, Bus, ArrowLeftRight } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Switch } from '@/components/ui/switch';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
 import { useEvents } from '@/hooks/useEvents';
@@ -126,17 +127,27 @@ export default function EventDetail() {
     await updateEvent(event.id, { player_stops: newPlayerStops });
   };
 
-  // Calculate passengers by stop for displacement events
+  const togglePlayerReturn = async (playerId: string, returns: boolean) => {
+    const newPlayerReturns = { ...(event.player_returns || {}), [playerId]: returns };
+    await updateEvent(event.id, { player_returns: newPlayerReturns });
+  };
+
+  // Calculate passengers by stop for displacement events (only returning passengers)
   const getPassengersByStop = () => {
     const result: Record<string, { count: number; players: typeof players }> = {};
+    const playerReturns = event.player_returns || {};
     
     (event.stops || []).forEach(stop => {
-      const playersAtStop = invitedPlayersList.filter(p => event.player_stops?.[p.id] === stop);
+      const playersAtStop = invitedPlayersList.filter(p => 
+        event.player_stops?.[p.id] === stop && playerReturns[p.id] !== false
+      );
       result[stop] = { count: playersAtStop.length, players: playersAtStop };
     });
 
-    // Also count unassigned players
-    const unassigned = invitedPlayersList.filter(p => !event.player_stops?.[p.id]);
+    // Also count unassigned players (that return)
+    const unassigned = invitedPlayersList.filter(p => 
+      !event.player_stops?.[p.id] && playerReturns[p.id] !== false
+    );
     if (unassigned.length > 0) {
       result['Sin asignar'] = { count: unassigned.length, players: unassigned };
     }
@@ -144,7 +155,13 @@ export default function EventDetail() {
     return result;
   };
 
+  // Players not returning
+  const playersNotReturning = invitedPlayersList.filter(p => 
+    (event.player_returns || {})[p.id] === false
+  );
+
   const passengersByStop = isDisplacement ? getPassengersByStop() : {};
+  const returningPlayersCount = invitedPlayersList.length - playersNotReturning.length;
 
   const getEventIcon = () => {
     switch (event.type) {
@@ -337,23 +354,37 @@ export default function EventDetail() {
                         Ninguna jugadora asignada
                       </p>
                     ) : (
-                      playersAtStop.map(player => (
-                        <div key={player.id} className="flex items-center gap-2">
-                          <div className="flex-1">
-                            <PlayerCard player={player} showTeams={false} clickable={false} />
+                      playersAtStop.map(player => {
+                        const returns = (event.player_returns || {})[player.id] !== false;
+                        return (
+                          <div key={player.id} className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <PlayerCard player={player} showTeams={false} clickable={false} />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <select
+                                className="text-xs border rounded px-2 py-1 bg-background"
+                                value={event.player_stops?.[player.id] || ''}
+                                onChange={(e) => assignPlayerToStop(player.id, e.target.value)}
+                              >
+                                <option value="">Sin asignar</option>
+                                {(event.stops || []).map(s => (
+                                  <option key={s} value={s}>{s}</option>
+                                ))}
+                              </select>
+                              <div className="flex items-center gap-1">
+                                <Switch
+                                  checked={!returns}
+                                  onCheckedChange={(checked) => togglePlayerReturn(player.id, !checked)}
+                                />
+                                <span className={`text-[10px] whitespace-nowrap ${!returns ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                                  {!returns ? 'No vuelve' : ''}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <select
-                            className="text-xs border rounded px-2 py-1 bg-background"
-                            value={event.player_stops?.[player.id] || ''}
-                            onChange={(e) => assignPlayerToStop(player.id, e.target.value)}
-                          >
-                            <option value="">Sin asignar</option>
-                            {(event.stops || []).map(s => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </CardContent>
                 </Card>
@@ -370,21 +401,68 @@ export default function EventDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {passengersByStop['Sin asignar'].players.map(player => (
+                  {passengersByStop['Sin asignar'].players.map(player => {
+                    const returns = (event.player_returns || {})[player.id] !== false;
+                    return (
+                      <div key={player.id} className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <PlayerCard player={player} showTeams={false} clickable={false} />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <select
+                            className="text-xs border rounded px-2 py-1 bg-background"
+                            value=""
+                            onChange={(e) => assignPlayerToStop(player.id, e.target.value)}
+                          >
+                            <option value="">Sin asignar</option>
+                            {(event.stops || []).map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                          <div className="flex items-center gap-1">
+                            <Switch
+                              checked={!returns}
+                              onCheckedChange={(checked) => togglePlayerReturn(player.id, !checked)}
+                            />
+                            <span className={`text-[10px] whitespace-nowrap ${!returns ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                              {!returns ? 'No vuelve' : ''}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Players not returning */}
+            {playersNotReturning.length > 0 && (
+              <Card className="border-amber-500/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center justify-between text-amber-600">
+                    <span className="flex items-center gap-2">
+                      <ArrowLeftRight className="h-4 w-4" />
+                      No vuelven en bus
+                    </span>
+                    <Badge variant="secondary">{playersNotReturning.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {playersNotReturning.map(player => (
                     <div key={player.id} className="flex items-center gap-2">
                       <div className="flex-1">
                         <PlayerCard player={player} showTeams={false} clickable={false} />
                       </div>
-                      <select
-                        className="text-xs border rounded px-2 py-1 bg-background"
-                        value=""
-                        onChange={(e) => assignPlayerToStop(player.id, e.target.value)}
-                      >
-                        <option value="">Sin asignar</option>
-                        {(event.stops || []).map(s => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
+                      <div className="flex items-center gap-1">
+                        <Switch
+                          checked={true}
+                          onCheckedChange={(checked) => togglePlayerReturn(player.id, !checked)}
+                        />
+                        <span className="text-[10px] text-amber-600 font-medium whitespace-nowrap">
+                          No vuelve
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </CardContent>

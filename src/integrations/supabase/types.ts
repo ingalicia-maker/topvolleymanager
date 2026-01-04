@@ -104,7 +104,9 @@ export type Database = {
           invited_players: string[] | null
           location: string
           notes: string | null
+          player_returns: Json | null
           player_stops: Json | null
+          selected_teams: string[] | null
           stops: Json | null
           team_id: string
           time: string
@@ -125,7 +127,9 @@ export type Database = {
           invited_players?: string[] | null
           location: string
           notes?: string | null
+          player_returns?: Json | null
           player_stops?: Json | null
+          selected_teams?: string[] | null
           stops?: Json | null
           team_id: string
           time: string
@@ -146,7 +150,9 @@ export type Database = {
           invited_players?: string[] | null
           location?: string
           notes?: string | null
+          player_returns?: Json | null
           player_stops?: Json | null
+          selected_teams?: string[] | null
           stops?: Json | null
           team_id?: string
           time?: string
