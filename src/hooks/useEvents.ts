@@ -17,7 +17,22 @@ export interface DbEvent {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // Displacement-specific fields
+  destination: string | null;
+  departure_time: string | null;
+  stops: string[];
+  player_stops: Record<string, string>;
+  total_passengers: number | null;
 }
+
+export const AVAILABLE_STOPS = [
+  'Los Rosales',
+  'Sagrada',
+  'Os Carballos',
+  'Alfonso Molina',
+] as const;
+
+export type StopName = typeof AVAILABLE_STOPS[number];
 
 export function useEvents() {
   const [events, setEvents] = useState<DbEvent[]>([]);
@@ -33,7 +48,13 @@ export function useEvents() {
       console.error('Error fetching events:', error);
       toast.error('Error al cargar eventos');
     } else {
-      setEvents(data || []);
+      // Parse JSONB fields
+      const parsed = (data || []).map(e => ({
+        ...e,
+        stops: Array.isArray(e.stops) ? e.stops : [],
+        player_stops: typeof e.player_stops === 'object' && e.player_stops !== null ? e.player_stops : {},
+      }));
+      setEvents(parsed as DbEvent[]);
     }
     setLoading(false);
   };
@@ -54,9 +75,15 @@ export function useEvents() {
       return null;
     }
     
-    setEvents(prev => [data, ...prev]);
+    const parsed = {
+      ...data,
+      stops: Array.isArray(data.stops) ? data.stops : [],
+      player_stops: typeof data.player_stops === 'object' && data.player_stops !== null ? data.player_stops : {},
+    } as DbEvent;
+    
+    setEvents(prev => [parsed, ...prev]);
     toast.success('Evento creado');
-    return data;
+    return parsed;
   };
 
   const updateEvent = async (id: string, updates: Partial<DbEvent>) => {

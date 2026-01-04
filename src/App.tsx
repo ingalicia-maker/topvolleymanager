@@ -10,6 +10,7 @@ import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
 import Players from "./pages/Players";
 import NewPlayer from "./pages/NewPlayer";
+import PlayerDetail from "./pages/PlayerDetail";
 import Events from "./pages/Events";
 import NewEvent from "./pages/NewEvent";
 import EventDetail from "./pages/EventDetail";
@@ -66,6 +67,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <NewPlayer />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/players/:playerId"
+            element={
+              <AuthGuard>
+                <PlayerDetail />
               </AuthGuard>
             }
           />
