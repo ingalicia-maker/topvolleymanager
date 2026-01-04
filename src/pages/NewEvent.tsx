@@ -10,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
@@ -21,7 +20,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bus, MapPin, Clock, Users, Plus, X, ArrowLeft } from 'lucide-react';
+import { Bus, MapPin, Clock, Users } from 'lucide-react';
 
 type EventType = 'training' | 'match' | 'displacement';
 
@@ -50,10 +49,8 @@ export default function NewEvent() {
   const [destination, setDestination] = useState('');
   const [departureTime, setDepartureTime] = useState('');
   const [selectedStops, setSelectedStops] = useState<string[]>([]);
-  const [playerStops, setPlayerStops] = useState<Record<string, string>>({});
-  const [playerReturns, setPlayerReturns] = useState<Record<string, boolean>>({}); // true = vuelve, false = no vuelve
-  const [totalCoaches, setTotalCoaches] = useState('1');
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
+  const [totalCoaches, setTotalCoaches] = useState('1');
 
   const nativeSelectClassName =
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
@@ -73,98 +70,22 @@ export default function NewEvent() {
   const teamPlayers = players.filter(p => p.teams?.includes(teamId));
   const otherPlayers = players.filter(p => !p.teams?.includes(teamId));
 
-  // For displacement events - get players from selected teams
-  const displacementPlayers = players.filter(p => 
-    p.teams?.some(t => selectedTeams.includes(t))
-  );
-
   const togglePlayer = (playerId: string) => {
     setInvitedPlayers(prev =>
       prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
     );
-    // Remove from player stops if removed
-    if (invitedPlayers.includes(playerId)) {
-      setPlayerStops(prev => {
-        const { [playerId]: _, ...rest } = prev;
-        return rest;
-      });
-      setPlayerReturns(prev => {
-        const { [playerId]: _, ...rest } = prev;
-        return rest;
-      });
-    }
   };
 
   const toggleStop = (stop: string) => {
     setSelectedStops(prev =>
       prev.includes(stop) ? prev.filter(s => s !== stop) : [...prev, stop]
     );
-    // Remove players from this stop if stop is deselected
-    if (selectedStops.includes(stop)) {
-      setPlayerStops(prev => {
-        const filtered: Record<string, string> = {};
-        Object.entries(prev).forEach(([pid, s]) => {
-          if (s !== stop) filtered[pid] = s;
-        });
-        return filtered;
-      });
-    }
-  };
-
-  const assignPlayerToStop = (playerId: string, stop: string) => {
-    setPlayerStops(prev => ({
-      ...prev,
-      [playerId]: stop,
-    }));
-  };
-
-  const togglePlayerReturn = (playerId: string, returns: boolean) => {
-    setPlayerReturns(prev => ({
-      ...prev,
-      [playerId]: returns,
-    }));
   };
 
   const toggleTeamForDisplacement = (teamId: string) => {
-    setSelectedTeams(prev => {
-      if (prev.includes(teamId)) {
-        // Remove team and its players
-        const teamPlayerIds = players.filter(p => p.teams?.includes(teamId)).map(p => p.id);
-        setInvitedPlayers(current => current.filter(id => !teamPlayerIds.includes(id)));
-        return prev.filter(t => t !== teamId);
-      } else {
-        return [...prev, teamId];
-      }
-    });
-  };
-
-  const addAllPlayersFromTeam = (teamId: string) => {
-    const teamPlayerIds = players.filter(p => p.teams?.includes(teamId)).map(p => p.id);
-    setInvitedPlayers(prev => {
-      const existing = new Set(prev);
-      teamPlayerIds.forEach(id => existing.add(id));
-      return Array.from(existing);
-    });
-  };
-
-  const removeAllPlayersFromTeam = (teamId: string) => {
-    const teamPlayerIds = players.filter(p => p.teams?.includes(teamId)).map(p => p.id);
-    setInvitedPlayers(prev => prev.filter(id => !teamPlayerIds.includes(id)));
-    // Also clean up stops and returns
-    setPlayerStops(prev => {
-      const filtered: Record<string, string> = {};
-      Object.entries(prev).forEach(([pid, s]) => {
-        if (!teamPlayerIds.includes(pid)) filtered[pid] = s;
-      });
-      return filtered;
-    });
-    setPlayerReturns(prev => {
-      const filtered: Record<string, boolean> = {};
-      Object.entries(prev).forEach(([pid, r]) => {
-        if (!teamPlayerIds.includes(pid)) filtered[pid] = r;
-      });
-      return filtered;
-    });
+    setSelectedTeams(prev =>
+      prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId]
+    );
   };
 
   const selectAllTeam = () => {
@@ -195,10 +116,6 @@ export default function NewEvent() {
 
   const allTeamSelected = teamPlayers.length > 0 && teamPlayers.every(p => invitedPlayers.includes(p.id));
   const allOtherSelected = otherPlayers.length > 0 && otherPlayers.every(p => invitedPlayers.includes(p.id));
-
-  // Calculate total passengers (only those returning)
-  const returningPlayers = invitedPlayers.filter(id => playerReturns[id] !== false);
-  const totalPassengers = returningPlayers.length + (parseInt(totalCoaches) || 0);
 
   const getEventTitle = () => {
     switch (type) {
@@ -250,6 +167,20 @@ export default function NewEvent() {
     }
 
     setLoading(true);
+    
+    // For displacement events, initialize coach_submissions for each team
+    const coachSubmissions: Record<string, { coach_id: string; coach_name: string; submitted: boolean; submitted_at: string | null }> = {};
+    if (type === 'displacement') {
+      for (const tId of selectedTeams) {
+        coachSubmissions[tId] = {
+          coach_id: '',
+          coach_name: '',
+          submitted: false,
+          submitted_at: null,
+        };
+      }
+    }
+
     const result = await addEvent({
       type,
       team_id: type === 'displacement' ? selectedTeams[0] : teamId,
@@ -257,7 +188,7 @@ export default function NewEvent() {
       date,
       time: type === 'displacement' ? departureTime : time,
       location: type === 'displacement' ? destination.trim() : location.trim(),
-      invited_players: invitedPlayers,
+      invited_players: type === 'displacement' ? [] : invitedPlayers, // Empty for displacement - coaches add players later
       confirmed_players: [],
       declined_players: [],
       notes: notes.trim() || null,
@@ -265,54 +196,56 @@ export default function NewEvent() {
       destination: type === 'displacement' ? destination.trim() : null,
       departure_time: type === 'displacement' ? departureTime : null,
       stops: type === 'displacement' ? selectedStops : [],
-      player_stops: type === 'displacement' ? playerStops : {},
-      player_returns: type === 'displacement' ? playerReturns : {},
-      total_passengers: type === 'displacement' ? totalPassengers : null,
+      player_stops: {},
+      player_returns: {},
+      total_passengers: type === 'displacement' ? parseInt(totalCoaches) || 0 : null,
       selected_teams: type === 'displacement' ? selectedTeams : [],
+      coach_submissions: coachSubmissions,
     });
 
     if (result) {
-      // Notify coaches of players from other teams
-      const mainTeam = type === 'displacement' ? selectedTeams[0] : teamId;
-      const otherTeamPlayers = players.filter(
-        p => invitedPlayers.includes(p.id) && !p.teams?.includes(mainTeam)
-      );
+      // Notify coaches of players from other teams (for standard events)
+      if (type !== 'displacement') {
+        const otherTeamPlayers = players.filter(
+          p => invitedPlayers.includes(p.id) && !p.teams?.includes(teamId)
+        );
 
-      if (otherTeamPlayers.length > 0) {
-        const affectedTeamIds = new Set<string>();
-        otherTeamPlayers.forEach(p => {
-          p.teams?.forEach(t => {
-            if (t !== mainTeam) affectedTeamIds.add(t);
+        if (otherTeamPlayers.length > 0) {
+          const affectedTeamIds = new Set<string>();
+          otherTeamPlayers.forEach(p => {
+            p.teams?.forEach(t => {
+              if (t !== teamId) affectedTeamIds.add(t);
+            });
           });
-        });
 
-        const { data: coaches } = await supabase
-          .from('profiles')
-          .select('id, assigned_teams');
+          const { data: coaches } = await supabase
+            .from('profiles')
+            .select('id, assigned_teams');
 
-        if (coaches) {
-          const senderName = profile?.name || 'Un entrenador';
-          
-          for (const coach of coaches) {
-            if (coach.id === user?.id) continue;
+          if (coaches) {
+            const senderName = profile?.name || 'Un entrenador';
             
-            const coachTeams = coach.assigned_teams || [];
-            const matchingTeams = coachTeams.filter((t: string) => affectedTeamIds.has(t));
-            
-            if (matchingTeams.length > 0) {
-              const summonedFromCoach = otherTeamPlayers.filter(p =>
-                p.teams?.some(t => matchingTeams.includes(t))
-              );
-
-              for (const player of summonedFromCoach) {
-                await notifyPlayerSummoned(
-                  coach.id,
-                  senderName,
-                  player.name,
-                  result.title,
-                  player.id,
-                  result.id
+            for (const coach of coaches) {
+              if (coach.id === user?.id) continue;
+              
+              const coachTeams = coach.assigned_teams || [];
+              const matchingTeams = coachTeams.filter((t: string) => affectedTeamIds.has(t));
+              
+              if (matchingTeams.length > 0) {
+                const summonedFromCoach = otherTeamPlayers.filter(p =>
+                  p.teams?.some(t => matchingTeams.includes(t))
                 );
+
+                for (const player of summonedFromCoach) {
+                  await notifyPlayerSummoned(
+                    coach.id,
+                    senderName,
+                    player.name,
+                    result.title,
+                    player.id,
+                    result.id
+                  );
+                }
               }
             }
           }
@@ -322,12 +255,6 @@ export default function NewEvent() {
       navigate(`/events/${result.id}`);
     }
     setLoading(false);
-  };
-
-  const getPlayerName = (playerId: string) => {
-    const player = players.find(p => p.id === playerId);
-    if (!player) return 'Jugadora';
-    return [player.name, player.surname1].filter(Boolean).join(' ');
   };
 
   return (
@@ -342,11 +269,8 @@ export default function NewEvent() {
             value={type}
             onChange={(e) => {
               setType(e.target.value as EventType);
-              // Reset displacement-specific state when changing type
               if (e.target.value !== 'displacement') {
                 setSelectedTeams([]);
-                setPlayerStops({});
-                setPlayerReturns({});
               }
             }}
             disabled={loading}
@@ -359,7 +283,7 @@ export default function NewEvent() {
 
         {type === 'displacement' ? (
           <>
-            {/* DISPLACEMENT FLOW: 1. Destino y hora */}
+            {/* DISPLACEMENT FLOW: Step 1 - Destination and time */}
             <div className="space-y-2">
               <Label htmlFor="destination" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
@@ -408,7 +332,7 @@ export default function NewEvent() {
               </select>
             </div>
 
-            {/* DISPLACEMENT FLOW: 2. Paradas */}
+            {/* DISPLACEMENT FLOW: Step 2 - Stops */}
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -445,7 +369,7 @@ export default function NewEvent() {
               </CardContent>
             </Card>
 
-            {/* DISPLACEMENT FLOW: 3. Equipos que van */}
+            {/* DISPLACEMENT FLOW: Step 3 - Teams */}
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -460,125 +384,39 @@ export default function NewEvent() {
                   </div>
                 ) : (
                   <>
-                    {teams.map(team => (
-                      <label
-                        key={team.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selectedTeams.includes(team.id) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
-                        }`}
-                      >
-                        <Checkbox
-                          checked={selectedTeams.includes(team.id)}
-                          onCheckedChange={() => toggleTeamForDisplacement(team.id)}
-                          disabled={loading}
-                        />
-                        <div
-                          className="w-3 h-3 rounded-full shrink-0"
-                          style={{ backgroundColor: team.color }}
-                        />
-                        <div className="flex-1">
-                          <span className="font-medium">{team.name}</span>
-                          <span className="text-xs text-muted-foreground ml-2">
-                            ({players.filter(p => p.teams?.includes(team.id)).length} jugadoras)
-                          </span>
-                        </div>
-                      </label>
-                    ))}
+                    {teams.map(team => {
+                      const teamPlayerCount = players.filter(p => p.teams?.includes(team.id)).length;
+                      return (
+                        <label
+                          key={team.id}
+                          className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                            selectedTeams.includes(team.id) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                          }`}
+                        >
+                          <Checkbox
+                            checked={selectedTeams.includes(team.id)}
+                            onCheckedChange={() => toggleTeamForDisplacement(team.id)}
+                            disabled={loading}
+                          />
+                          <div
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ backgroundColor: team.color }}
+                          />
+                          <div className="flex-1">
+                            <span className="font-medium">{team.name}</span>
+                            <span className="text-xs text-muted-foreground ml-2">
+                              ({teamPlayerCount} jugadoras)
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })}
                   </>
                 )}
               </CardContent>
             </Card>
 
-            {/* DISPLACEMENT FLOW: 4. Jugadoras por equipo con parada y flag "no vuelve" */}
-            {selectedTeams.length > 0 && selectedStops.length > 0 && (
-              <div className="space-y-4">
-                {selectedTeams.map(teamId => {
-                  const team = teams.find(t => t.id === teamId);
-                  const teamPlayersList = players.filter(p => p.teams?.includes(teamId));
-                  const selectedFromTeam = teamPlayersList.filter(p => invitedPlayers.includes(p.id));
-                  const allSelected = teamPlayersList.length > 0 && teamPlayersList.every(p => invitedPlayers.includes(p.id));
-
-                  return (
-                    <Card key={teamId}>
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: team?.color }}
-                            />
-                            {team?.name}
-                            <Badge variant="secondary" className="ml-2">
-                              {selectedFromTeam.length}/{teamPlayersList.length}
-                            </Badge>
-                          </CardTitle>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => allSelected ? removeAllPlayersFromTeam(teamId) : addAllPlayersFromTeam(teamId)}
-                            disabled={loading}
-                          >
-                            {allSelected ? 'Quitar todas' : 'Añadir todas'}
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {teamPlayersList.map(player => {
-                          const isSelected = invitedPlayers.includes(player.id);
-                          const returns = playerReturns[player.id] !== false;
-                          
-                          return (
-                            <div key={player.id} className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={isSelected}
-                                  onCheckedChange={() => togglePlayer(player.id)}
-                                  disabled={loading}
-                                />
-                                <span className="font-medium flex-1">
-                                  {[player.name, player.surname1].filter(Boolean).join(' ')}
-                                  {player.number && <span className="text-xs text-primary ml-1">#{player.number}</span>}
-                                </span>
-                              </div>
-                              
-                              {isSelected && (
-                                <div className="ml-6 flex flex-wrap items-center gap-3 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-muted-foreground">Parada:</span>
-                                    <select
-                                      className="text-sm border rounded px-2 py-1 bg-background"
-                                      value={playerStops[player.id] || ''}
-                                      onChange={(e) => assignPlayerToStop(player.id, e.target.value)}
-                                    >
-                                      <option value="">Sin asignar</option>
-                                      {selectedStops.map(stop => (
-                                        <option key={stop} value={stop}>{stop}</option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Switch
-                                      checked={!returns}
-                                      onCheckedChange={(checked) => togglePlayerReturn(player.id, !checked)}
-                                    />
-                                    <span className={`text-xs ${!returns ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
-                                      No vuelve en bus
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Coaches and total */}
+            {/* Number of coaches */}
             <div className="space-y-2">
               <Label htmlFor="totalCoaches" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -594,23 +432,15 @@ export default function NewEvent() {
               />
             </div>
 
-            {invitedPlayers.length > 0 && (
-              <Card className="bg-primary/5 border-primary/20">
+            {selectedTeams.length > 0 && (
+              <Card className="bg-blue-500/10 border-blue-500/30">
                 <CardContent className="p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">Total pasajeros (vuelta):</span>
-                    <Badge variant="default" className="text-lg px-4 py-1">
-                      {totalPassengers}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {returningPlayers.length} jugadoras que vuelven + {parseInt(totalCoaches) || 0} entrenadores
+                  <p className="text-sm text-blue-700 font-medium">
+                    ℹ️ Tras crear el desplazamiento, cada entrenador podrá añadir las jugadoras de su equipo con la parada donde suben y si no vuelven en bus.
                   </p>
-                  {invitedPlayers.length !== returningPlayers.length && (
-                    <p className="text-xs text-amber-600">
-                      ⚠️ {invitedPlayers.length - returningPlayers.length} jugadora(s) no vuelven en bus
-                    </p>
-                  )}
+                  <p className="text-xs text-blue-600">
+                    Equipos seleccionados: {selectedTeams.map(t => teams.find(tm => tm.id === t)?.name).join(', ')}
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -700,7 +530,7 @@ export default function NewEvent() {
           />
         </div>
 
-        {/* Player selection for standard events */}
+        {/* Player selection for standard events only */}
         {type !== 'displacement' && teamId && (
           <div className="space-y-3">
             <Label>Convocar jugadoras ({invitedPlayers.length})</Label>
@@ -806,7 +636,7 @@ export default function NewEvent() {
         )}
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Creando...' : 'Crear Evento'}
+          {loading ? 'Creando...' : type === 'displacement' ? 'Crear Desplazamiento' : 'Crear Evento'}
         </Button>
       </form>
       <BottomNav />
