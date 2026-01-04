@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Trash2, Upload } from 'lucide-react';
+import { Plus, Search, Trash2, Upload, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -95,6 +95,11 @@ export default function Players() {
               </>
             ) : (
               <>
+                <Link to="/ratings">
+                  <Button variant="ghost" size="sm">
+                    <Star className="h-4 w-4" />
+                  </Button>
+                </Link>
                 <Button variant="ghost" size="sm" onClick={() => setIsSelecting(true)}>
                   Editar
                 </Button>
