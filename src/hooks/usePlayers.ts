@@ -12,6 +12,7 @@ export interface DbPlayer {
   number: number | null;
   birth_year: number | null;
   height: number | null;
+  photo_url: string | null;
   created_at: string;
   updated_at: string;
 }

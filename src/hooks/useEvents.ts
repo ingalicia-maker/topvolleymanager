@@ -25,14 +25,7 @@ export interface DbEvent {
   total_passengers: number | null;
 }
 
-export const AVAILABLE_STOPS = [
-  'Los Rosales',
-  'Sagrada',
-  'Os Carballos',
-  'Alfonso Molina',
-] as const;
-
-export type StopName = typeof AVAILABLE_STOPS[number];
+// Stops are now managed in the database via useStops hook
 
 export function useEvents() {
   const [events, setEvents] = useState<DbEvent[]>([]);

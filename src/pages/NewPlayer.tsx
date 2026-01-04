@@ -62,6 +62,7 @@ export default function NewPlayer() {
       number: number ? parseInt(number) : null,
       birth_year: birthYear ? parseInt(birthYear) : null,
       height: height ? parseInt(height) : null,
+      photo_url: null,
     });
 
     if (result) {

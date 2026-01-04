@@ -283,6 +283,7 @@ export type Database = {
           name: string
           number: number | null
           phone: string
+          photo_url: string | null
           surname1: string | null
           surname2: string | null
           teams: string[] | null
@@ -296,6 +297,7 @@ export type Database = {
           name: string
           number?: number | null
           phone: string
+          photo_url?: string | null
           surname1?: string | null
           surname2?: string | null
           teams?: string[] | null
@@ -309,6 +311,7 @@ export type Database = {
           name?: string
           number?: number | null
           phone?: string
+          photo_url?: string | null
           surname1?: string | null
           surname2?: string | null
           teams?: string[] | null
@@ -340,6 +343,30 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stops: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          order_index: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+          order_index?: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+          order_index?: number
         }
         Relationships: []
       }

@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
-import { useEvents, AVAILABLE_STOPS } from '@/hooks/useEvents';
+import { useEvents } from '@/hooks/useEvents';
 import { toast } from 'sonner';
 
 export default function EventDetail() {
