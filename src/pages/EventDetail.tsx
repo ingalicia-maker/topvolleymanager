@@ -354,11 +354,27 @@ export default function EventDetail() {
     </div>
   );
 
+  // Check if coach has pending action on displacement
+  const myTeamsNotSubmitted = myTeamsInEvent.filter(t => !coachSubmissions[t]?.submitted);
+  const hasPendingAction = isDisplacement && !isDirector && myTeamsNotSubmitted.length > 0;
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header title={event.title} showBack />
       
       <div className="p-4 space-y-4">
+        {/* Banner for coaches with pending action */}
+        {hasPendingAction && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-amber-800">Acción requerida</p>
+              <p className="text-sm text-amber-700">
+                Debes añadir las jugadoras de tu equipo a este desplazamiento e indicar la parada donde suben.
+              </p>
+            </div>
+          </div>
+        )}
         {/* Event Info Card */}
         <div 
           className="rounded-xl p-4 space-y-3"

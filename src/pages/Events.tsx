@@ -29,10 +29,18 @@ export default function Events() {
   const today = new Date().toISOString().split('T')[0];
 
   // Show only events from assigned teams (unless director)
+  // For displacements, check if any of coach's teams are in selected_teams
   const visibleEvents = useMemo(() => {
     if (isDirector) return events;
     if (assignedTeams.length === 0) return events; // Show all if no teams assigned yet
-    return events.filter(e => assignedTeams.includes(e.team_id));
+    return events.filter(e => {
+      // For displacement events, check if coach's teams are in selected_teams
+      if (e.type === 'displacement' && e.selected_teams?.length > 0) {
+        return e.selected_teams.some(t => assignedTeams.includes(t));
+      }
+      // For standard events, use team_id
+      return assignedTeams.includes(e.team_id);
+    });
   }, [events, assignedTeams, isDirector]);
 
   const filteredEvents = visibleEvents.filter(e =>
