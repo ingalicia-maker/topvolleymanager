@@ -5,9 +5,13 @@ import { toast } from 'sonner';
 export interface DbPlayer {
   id: string;
   name: string;
+  surname1: string | null;
+  surname2: string | null;
   phone: string;
   teams: string[];
   number: number | null;
+  birth_year: number | null;
+  height: number | null;
   created_at: string;
   updated_at: string;
 }

@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useTeams } from '@/hooks/useTeams';
 import { useEvents } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 export default function NewEvent() {
   const navigate = useNavigate();
   const { players } = usePlayers();
+  const { teams, loading: teamsLoading } = useTeams();
   const { addEvent } = useEvents();
   const { user } = useAuth();
   const { profile } = useUserRole();
@@ -49,9 +50,9 @@ export default function NewEvent() {
     }
   }
 
-  const selectedTeam = TEAMS.find(t => t.id === teamId);
-  const teamPlayers = players.filter(p => p.teams.includes(teamId));
-  const otherPlayers = players.filter(p => !p.teams.includes(teamId));
+  const selectedTeam = teams.find(t => t.id === teamId);
+  const teamPlayers = players.filter(p => p.teams?.includes(teamId));
+  const otherPlayers = players.filter(p => !p.teams?.includes(teamId));
 
   const togglePlayer = (playerId: string) => {
     setInvitedPlayers(prev =>
@@ -127,14 +128,14 @@ export default function NewEvent() {
     if (result) {
       // Notify coaches of players from other teams
       const otherTeamPlayers = players.filter(
-        p => invitedPlayers.includes(p.id) && !p.teams.includes(teamId)
+        p => invitedPlayers.includes(p.id) && !p.teams?.includes(teamId)
       );
 
       if (otherTeamPlayers.length > 0) {
         // Get coaches who have these players' teams assigned
         const affectedTeamIds = new Set<string>();
         otherTeamPlayers.forEach(p => {
-          p.teams.forEach(t => {
+          p.teams?.forEach(t => {
             if (t !== teamId) affectedTeamIds.add(t);
           });
         });
@@ -156,7 +157,7 @@ export default function NewEvent() {
             if (matchingTeams.length > 0) {
               // Find which players from this coach's teams were summoned
               const summonedFromCoach = otherTeamPlayers.filter(p =>
-                p.teams.some(t => matchingTeams.includes(t))
+                p.teams?.some(t => matchingTeams.includes(t))
               );
 
               for (const player of summonedFromCoach) {
@@ -199,22 +200,28 @@ export default function NewEvent() {
 
         <div className="space-y-2">
           <Label htmlFor="teamId">Equipo *</Label>
-          <select
-            id="teamId"
-            className={nativeSelectClassName}
-            value={teamId}
-            onChange={(e) => setTeamId(e.target.value)}
-            disabled={loading}
-          >
-            <option value="" disabled>
-              Selecciona equipo
-            </option>
-            {TEAMS.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
+          {teamsLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <select
+              id="teamId"
+              className={nativeSelectClassName}
+              value={teamId}
+              onChange={(e) => setTeamId(e.target.value)}
+              disabled={loading}
+            >
+              <option value="" disabled>
+                Selecciona equipo
               </option>
-            ))}
-          </select>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
 

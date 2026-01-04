@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, X, AlertTriangle, History, BarChart3, CheckCircle } from 'lucide-react';
@@ -26,8 +26,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { TEAMS } from '@/types/volleyball';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useTeams } from '@/hooks/useTeams';
 import { useAusencias, AbsenceType } from '@/hooks/useAusencias';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -35,26 +35,34 @@ import { cn } from '@/lib/utils';
 
 export default function Ausencias() {
   const { players } = usePlayers();
+  const { teams, loading: teamsLoading } = useTeams();
   const { ausencias, addAusencia, updateAusencia, deleteAusencia, isPlayerAbsent, getPlayerTeamAbsenceCount, getAbsencesByMonth } = useAusencias();
   const { user } = useAuth();
   const { isDirector, assignedTeams } = useUserRole();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedTeamId, setSelectedTeamId] = useState<string>(TEAMS[0]?.id || '');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'registrar' | 'historial' | 'estadisticas'>('registrar');
   const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
   const [absenceTypeInputs, setAbsenceTypeInputs] = useState<Record<string, AbsenceType>>({});
 
+  // Set initial team when teams are loaded
+  useEffect(() => {
+    if (teams.length > 0 && !selectedTeamId) {
+      setSelectedTeamId(teams[0].id);
+    }
+  }, [teams, selectedTeamId]);
+
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
   const formattedDate = format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es });
 
-  const selectedTeam = TEAMS.find(t => t.id === selectedTeamId);
+  const selectedTeam = teams.find(t => t.id === selectedTeamId);
 
   // Filter teams based on role
-  const availableTeams = isDirector ? TEAMS : TEAMS.filter(t => assignedTeams.includes(t.id));
+  const availableTeams = isDirector ? teams : teams.filter(t => assignedTeams.includes(t.id));
 
   // Players that belong to the selected team
   const teamPlayers = useMemo(() => 
-    players.filter(p => p.teams.includes(selectedTeamId)),
+    players.filter(p => p.teams?.includes(selectedTeamId)),
     [players, selectedTeamId]
   );
 

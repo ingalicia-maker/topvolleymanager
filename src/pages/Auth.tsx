@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TEAMS } from '@/types/volleyball';
+import { useTeams } from '@/hooks/useTeams';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -16,6 +16,7 @@ const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 c
 
 export default function Auth() {
   const navigate = useNavigate();
+  const { teams, loading: teamsLoading } = useTeams();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -230,24 +231,30 @@ export default function Auth() {
                 <div className="space-y-2">
                   <Label>Equipos que entrenas (opcional)</Label>
                   <p className="text-xs text-muted-foreground">Puedes ser director y entrenador a la vez</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {TEAMS.map(team => (
-                      <label
-                        key={team.id}
-                        className="flex items-center gap-2 p-2 rounded border border-border cursor-pointer hover:bg-muted/50"
-                      >
-                        <Checkbox 
-                          checked={assignedTeams.includes(team.id)} 
-                          onCheckedChange={() => toggleTeam(team.id)}
-                        />
-                        <span
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: team.color }}
-                        />
-                        <span className="text-sm">{team.name}</span>
-                      </label>
-                    ))}
-                  </div>
+                  {teamsLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {teams.map(team => (
+                        <label
+                          key={team.id}
+                          className="flex items-center gap-2 p-2 rounded border border-border cursor-pointer hover:bg-muted/50"
+                        >
+                          <Checkbox 
+                            checked={assignedTeams.includes(team.id)} 
+                            onCheckedChange={() => toggleTeam(team.id)}
+                          />
+                          <span
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: team.color }}
+                          />
+                          <span className="text-sm">{team.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>

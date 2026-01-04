@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { TEAMS } from '@/types/volleyball';
+import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +15,7 @@ import { User, Shield, Users, Save, LogOut, Settings } from 'lucide-react';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { teams, loading: teamsLoading } = useTeams();
   const { profile, isDirector, assignedTeams, updateAssignedTeams, loading, roles } = useUserRole();
   const { signOut, user } = useAuth();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
@@ -64,7 +65,7 @@ export default function Profile() {
 
   const hasChanges = JSON.stringify(selectedTeams.sort()) !== JSON.stringify(assignedTeams.sort()) || wantsDirector !== isDirector;
 
-  if (loading) {
+  if (loading || teamsLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <Header title="Mi Perfil" showBack />
@@ -174,7 +175,7 @@ export default function Profile() {
                 Puedes ser director y entrenador a la vez
               </p>
               <div className="space-y-2">
-                {TEAMS.map(team => (
+                {teams.map(team => (
                   <div
                   key={team.id}
                   className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 cursor-pointer transition-colors"
