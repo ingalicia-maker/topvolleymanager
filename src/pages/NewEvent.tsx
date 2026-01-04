@@ -13,13 +13,14 @@ import { Badge } from '@/components/ui/badge';
 
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
-import { useEvents, AVAILABLE_STOPS } from '@/hooks/useEvents';
+import { useEvents } from '@/hooks/useEvents';
+import { useStops } from '@/hooks/useStops';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bus, MapPin, Clock, Users } from 'lucide-react';
+import { Bus, MapPin, Clock, Users, Plus, Trash2 } from 'lucide-react';
 
 type EventType = 'training' | 'match' | 'displacement';
 
@@ -28,6 +29,7 @@ export default function NewEvent() {
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
   const { addEvent } = useEvents();
+  const { stops: availableStops, loading: stopsLoading } = useStops();
   const { user } = useAuth();
   const { profile } = useUserRole();
   const { notifyPlayerSummoned } = useNotifications();
@@ -362,21 +364,31 @@ export default function NewEvent() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {AVAILABLE_STOPS.map(stop => (
-                  <label
-                    key={stop}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedStops.includes(stop) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
-                    }`}
-                  >
-                    <Checkbox
-                      checked={selectedStops.includes(stop)}
-                      onCheckedChange={() => toggleStop(stop)}
-                      disabled={loading}
-                    />
-                    <span className="font-medium">{stop}</span>
-                  </label>
-                ))}
+                {stopsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  </div>
+                ) : availableStops.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No hay paradas configuradas. Configúralas en Ajustes del Club.
+                  </p>
+                ) : (
+                  availableStops.map(stop => (
+                    <label
+                      key={stop.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedStops.includes(stop.name) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={selectedStops.includes(stop.name)}
+                        onCheckedChange={() => toggleStop(stop.name)}
+                        disabled={loading}
+                      />
+                      <span className="font-medium">{stop.name}</span>
+                    </label>
+                  ))
+                )}
               </CardContent>
             </Card>
 

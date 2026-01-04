@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useClubSettings } from '@/hooks/useClubSettings';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useStops } from '@/hooks/useStops';
 import { toast } from 'sonner';
-import { Building2, Palette, Type, Upload, Save, Shield } from 'lucide-react';
+import { Building2, Palette, Type, Upload, Save, Shield, Bus, Plus, Trash2, GripVertical } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 const COLOR_PRESETS = [
@@ -35,6 +36,8 @@ const FONT_OPTIONS = [
 export default function ClubSettings() {
   const { settings, loading, updateSettings, uploadLogo } = useClubSettings();
   const { isDirector, loading: roleLoading } = useUserRole();
+  const { stops, loading: stopsLoading, addStop, updateStop, deleteStop } = useStops();
+  
   const [clubName, setClubName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('');
   const [accentColor, setAccentColor] = useState('');
@@ -43,6 +46,12 @@ export default function ClubSettings() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Stops management
+  const [newStopName, setNewStopName] = useState('');
+  const [editingStopId, setEditingStopId] = useState<string | null>(null);
+  const [editingStopName, setEditingStopName] = useState('');
+  const [addingStop, setAddingStop] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -118,6 +127,47 @@ export default function ClubSettings() {
     setSaving(false);
   };
 
+  const handleAddStop = async () => {
+    if (!newStopName.trim()) {
+      toast.error('El nombre de la parada es obligatorio');
+      return;
+    }
+
+    setAddingStop(true);
+    const result = await addStop(newStopName.trim());
+    if (result) {
+      setNewStopName('');
+    }
+    setAddingStop(false);
+  };
+
+  const handleEditStop = async (stopId: string) => {
+    if (!editingStopName.trim()) {
+      toast.error('El nombre de la parada es obligatorio');
+      return;
+    }
+
+    const success = await updateStop(stopId, { name: editingStopName.trim() });
+    if (success) {
+      setEditingStopId(null);
+      setEditingStopName('');
+    }
+  };
+
+  const startEditingStop = (stopId: string, name: string) => {
+    setEditingStopId(stopId);
+    setEditingStopName(name);
+  };
+
+  const cancelEditingStop = () => {
+    setEditingStopId(null);
+    setEditingStopName('');
+  };
+
+  const handleDeleteStop = async (stopId: string) => {
+    await deleteStop(stopId);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header title="Configuración del Club" showBack />
@@ -183,6 +233,104 @@ export default function ClubSettings() {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Bus Stops */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Bus className="h-5 w-5" />
+              Paradas de Bus
+            </CardTitle>
+            <CardDescription>Configura las paradas para los desplazamientos</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {stopsLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <>
+                {/* Existing stops */}
+                <div className="space-y-2">
+                  {stops.map((stop) => (
+                    <div
+                      key={stop.id}
+                      className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50"
+                    >
+                      <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                      {editingStopId === stop.id ? (
+                        <>
+                          <Input
+                            value={editingStopName}
+                            onChange={(e) => setEditingStopName(e.target.value)}
+                            className="flex-1"
+                            autoFocus
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => handleEditStop(stop.id)}
+                          >
+                            Guardar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEditingStop}
+                          >
+                            Cancelar
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="flex-1 font-medium">{stop.name}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => startEditingStop(stop.id, stop.name)}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteStop(stop.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {stops.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No hay paradas configuradas
+                    </p>
+                  )}
+                </div>
+
+                {/* Add new stop */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Nombre de la nueva parada"
+                    value={newStopName}
+                    onChange={(e) => setNewStopName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddStop()}
+                  />
+                  <Button
+                    onClick={handleAddStop}
+                    disabled={addingStop || !newStopName.trim()}
+                    className="gap-2 shrink-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Añadir
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 

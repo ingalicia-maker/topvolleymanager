@@ -1,10 +1,11 @@
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DbPlayer } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 interface PlayerCardProps {
   player: DbPlayer;
@@ -39,6 +40,8 @@ export function PlayerCard({ player, selectable, selected, onSelect, showTeams =
     .filter(Boolean)
     .join(' ');
 
+  const initials = player.name.charAt(0).toUpperCase() + (player.surname1?.charAt(0).toUpperCase() || '');
+
   return (
     <Card 
       className={`transition-all cursor-pointer hover:shadow-md active:scale-[0.98] ${selected ? 'ring-2 ring-primary' : ''}`}
@@ -56,6 +59,12 @@ export function PlayerCard({ player, selectable, selected, onSelect, showTeams =
               className="h-4 w-4 shrink-0 rounded-sm border border-primary bg-background text-primary accent-primary"
             />
           )}
+          <Avatar className="h-10 w-10 shrink-0">
+            <AvatarImage src={player.photo_url || undefined} alt={fullName} />
+            <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
+              {player.number ? `#${player.number}` : initials}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-foreground truncate">{fullName}</span>
