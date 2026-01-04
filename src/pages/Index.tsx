@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -11,6 +11,7 @@ import { useTeams } from '@/hooks/useTeams';
 import { useEvents } from '@/hooks/useEvents';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useClubTheme } from '@/components/ClubThemeProvider';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export default function Index() {
   const { players } = usePlayers();
@@ -18,6 +19,7 @@ export default function Index() {
   const { events } = useEvents();
   const { profile, isDirector, assignedTeams } = useUserRole();
   const { clubName, logoUrl } = useClubTheme();
+  const { unreadCount } = useNotifications();
 
   const today = new Date().toISOString().split('T')[0];
   
@@ -39,6 +41,30 @@ export default function Index() {
 
   const totalMatches = visibleEvents.filter(e => e.type === 'match').length;
   const totalTrainings = visibleEvents.filter(e => e.type === 'training').length;
+  
+  // Count pending displacements
+  const pendingDisplacements = events.filter(e => {
+    if (e.type !== 'displacement' || e.date < today) return false;
+    
+    if (isDirector) {
+      // For directors, check if any team hasn't submitted
+      return (e.selected_teams || []).some(teamId => {
+        const submission = e.coach_submissions?.[teamId];
+        return !submission?.submitted;
+      });
+    } else {
+      // For coaches, check their assigned teams
+      const myTeamsInEvent = (e.selected_teams || []).filter(tid => 
+        assignedTeams.includes(tid)
+      );
+      return myTeamsInEvent.some(teamId => {
+        const submission = e.coach_submissions?.[teamId];
+        return !submission?.submitted;
+      });
+    }
+  }).length;
+  
+  const totalPendingTasks = pendingDisplacements + unreadCount;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -66,6 +92,30 @@ export default function Index() {
     </div>
 
     <div className="px-4 -mt-6 space-y-6">
+      {/* Pending Tasks Alert */}
+      {totalPendingTasks > 0 && (
+        <Link to="/pending-tasks">
+          <Card className="shadow-lg border-destructive/50 bg-destructive/5">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Tienes {totalPendingTasks} tarea{totalPendingTasks > 1 ? 's' : ''} pendiente{totalPendingTasks > 1 ? 's' : ''}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {pendingDisplacements > 0 && `${pendingDisplacements} desplazamiento${pendingDisplacements > 1 ? 's' : ''}`}
+                    {pendingDisplacements > 0 && unreadCount > 0 && ' · '}
+                    {unreadCount > 0 && `${unreadCount} notificación${unreadCount > 1 ? 'es' : ''}`}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </Link>
+      )}
+      
       {/* Player of the Week */}
       <PlayerOfTheWeek />
         {/* Stats Cards */}

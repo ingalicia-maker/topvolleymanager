@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import Ratings from "./pages/Ratings";
 import ClubSettings from "./pages/ClubSettings";
 import DisplacementCalendar from "./pages/DisplacementCalendar";
+import PendingTasks from "./pages/PendingTasks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -140,6 +141,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <DisplacementCalendar />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/pending-tasks"
+            element={
+              <AuthGuard>
+                <PendingTasks />
               </AuthGuard>
             }
           />
