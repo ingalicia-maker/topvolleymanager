@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Trash2 } from 'lucide-react';
+import { Plus, Search, Trash2, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -7,6 +7,7 @@ import { PlayerCard } from '@/components/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePlayers } from '@/hooks/usePlayers';
+import { ImportPlayersDialog } from '@/components/ImportPlayersDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,10 +21,11 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function Players() {
-  const { players, loading, deletePlayer } = usePlayers();
+  const { players, loading, deletePlayer, refetch } = usePlayers();
   const [search, setSearch] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const filteredPlayers = players.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -96,6 +98,9 @@ export default function Players() {
                 <Button variant="ghost" size="sm" onClick={() => setIsSelecting(true)}>
                   Editar
                 </Button>
+                <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
+                  <Upload className="h-4 w-4" />
+                </Button>
                 <Link to="/players/new">
                   <Button size="sm" className="gap-1">
                     <Plus className="h-4 w-4" />
@@ -135,6 +140,13 @@ export default function Players() {
           )}
         </div>
       </div>
+      
+      <ImportPlayersDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onSuccess={refetch}
+      />
+      
       <BottomNav />
     </div>
   );
