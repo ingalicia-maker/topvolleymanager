@@ -332,6 +332,7 @@ export type Database = {
         Row: {
           assigned_teams: string[] | null
           created_at: string | null
+          director_declaration_accepted_at: string | null
           email: string
           id: string
           name: string
@@ -340,6 +341,7 @@ export type Database = {
         Insert: {
           assigned_teams?: string[] | null
           created_at?: string | null
+          director_declaration_accepted_at?: string | null
           email: string
           id: string
           name: string
@@ -348,6 +350,7 @@ export type Database = {
         Update: {
           assigned_teams?: string[] | null
           created_at?: string | null
+          director_declaration_accepted_at?: string | null
           email?: string
           id?: string
           name?: string
