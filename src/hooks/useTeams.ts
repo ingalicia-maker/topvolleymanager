@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useClub } from './useClub';
 
 export interface DbTeam {
   id: string;
@@ -10,11 +11,13 @@ export interface DbTeam {
   created_at: string | null;
   updated_at: string | null;
   created_by: string | null;
+  club_id: string | null;
 }
 
 export function useTeams() {
   const [teams, setTeams] = useState<DbTeam[]>([]);
   const [loading, setLoading] = useState(true);
+  const { club } = useClub();
 
   const fetchTeams = async () => {
     const { data, error } = await supabase
@@ -35,12 +38,12 @@ export function useTeams() {
     fetchTeams();
   }, []);
 
-  const addTeam = async (team: Omit<DbTeam, 'created_at' | 'updated_at' | 'created_by'>) => {
+  const addTeam = async (team: Omit<DbTeam, 'created_at' | 'updated_at' | 'created_by' | 'club_id'>) => {
     const { data: userData } = await supabase.auth.getUser();
     
     const { data, error } = await supabase
       .from('teams')
-      .insert([{ ...team, created_by: userData.user?.id }])
+      .insert([{ ...team, created_by: userData.user?.id, club_id: club?.id || null }])
       .select()
       .single();
 

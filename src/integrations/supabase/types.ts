@@ -17,6 +17,7 @@ export type Database = {
       ausencias: {
         Row: {
           absence_type: Database["public"]["Enums"]["absence_type"]
+          club_id: string | null
           created_at: string | null
           created_by: string | null
           date: string
@@ -27,6 +28,7 @@ export type Database = {
         }
         Insert: {
           absence_type?: Database["public"]["Enums"]["absence_type"]
+          club_id?: string | null
           created_at?: string | null
           created_by?: string | null
           date: string
@@ -37,6 +39,7 @@ export type Database = {
         }
         Update: {
           absence_type?: Database["public"]["Enums"]["absence_type"]
+          club_id?: string | null
           created_at?: string | null
           created_by?: string | null
           date?: string
@@ -47,10 +50,93 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "ausencias_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ausencias_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_invitations: {
+        Row: {
+          club_id: string
+          created_at: string
+          created_by: string | null
+          email: string | null
+          expires_at: string
+          id: string
+          role: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_at?: string
+          id?: string
+          role?: string
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_at?: string
+          id?: string
+          role?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_invitations_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_members: {
+        Row: {
+          club_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_members_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
             referencedColumns: ["id"]
           },
         ]
@@ -91,8 +177,45 @@ export type Database = {
         }
         Relationships: []
       }
+      clubs: {
+        Row: {
+          accent_color: string
+          created_at: string
+          created_by: string | null
+          font_family: string
+          id: string
+          logo_url: string | null
+          name: string
+          primary_color: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          created_at?: string
+          created_by?: string | null
+          font_family?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          primary_color?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          created_at?: string
+          created_by?: string | null
+          font_family?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          primary_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
+          club_id: string | null
           coach_submissions: Json | null
           confirmed_players: string[] | null
           created_at: string | null
@@ -117,6 +240,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          club_id?: string | null
           coach_submissions?: Json | null
           confirmed_players?: string[] | null
           created_at?: string | null
@@ -141,6 +265,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          club_id?: string | null
           coach_submissions?: Json | null
           confirmed_players?: string[] | null
           created_at?: string | null
@@ -164,7 +289,15 @@ export type Database = {
           type?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -222,6 +355,7 @@ export type Database = {
       }
       player_ratings: {
         Row: {
+          club_id: string | null
           communication_cooperation: number
           created_at: string | null
           decision_making: number
@@ -237,6 +371,7 @@ export type Database = {
           technical_execution: number
         }
         Insert: {
+          club_id?: string | null
           communication_cooperation: number
           created_at?: string | null
           decision_making: number
@@ -252,6 +387,7 @@ export type Database = {
           technical_execution: number
         }
         Update: {
+          club_id?: string | null
           communication_cooperation?: number
           created_at?: string | null
           decision_making?: number
@@ -267,6 +403,13 @@ export type Database = {
           technical_execution?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "player_ratings_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "player_ratings_event_id_fkey"
             columns: ["event_id"]
@@ -286,6 +429,7 @@ export type Database = {
       players: {
         Row: {
           birth_year: number | null
+          club_id: string | null
           created_at: string | null
           height: number | null
           id: string
@@ -300,6 +444,7 @@ export type Database = {
         }
         Insert: {
           birth_year?: number | null
+          club_id?: string | null
           created_at?: string | null
           height?: number | null
           id?: string
@@ -314,6 +459,7 @@ export type Database = {
         }
         Update: {
           birth_year?: number | null
+          club_id?: string | null
           created_at?: string | null
           height?: number | null
           id?: string
@@ -326,7 +472,15 @@ export type Database = {
           teams?: string[] | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "players_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -387,6 +541,7 @@ export type Database = {
       }
       stops: {
         Row: {
+          club_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
@@ -394,6 +549,7 @@ export type Database = {
           order_index: number
         }
         Insert: {
+          club_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -401,16 +557,26 @@ export type Database = {
           order_index?: number
         }
         Update: {
+          club_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           name?: string
           order_index?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stops_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       teams: {
         Row: {
+          club_id: string | null
           coach: string
           color: string
           created_at: string | null
@@ -420,6 +586,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          club_id?: string | null
           coach: string
           color?: string
           created_at?: string | null
@@ -429,6 +596,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          club_id?: string | null
           coach?: string
           color?: string
           created_at?: string | null
@@ -437,7 +605,15 @@ export type Database = {
           name?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teams_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -462,6 +638,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_club_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -469,7 +646,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_club_director: {
+        Args: { _club_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_director: { Args: { _user_id: string }; Returns: boolean }
+      user_belongs_to_club: {
+        Args: { _club_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       absence_type: "justified" | "unjustified"

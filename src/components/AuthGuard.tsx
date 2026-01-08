@@ -1,20 +1,33 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useClub } from '@/hooks/useClub';
 
 interface AuthGuardProps {
   children: React.ReactNode;
+  requireClub?: boolean;
 }
 
-export function AuthGuard({ children }: AuthGuardProps) {
-  const { user, loading } = useAuth();
+export function AuthGuard({ children, requireClub = true }: AuthGuardProps) {
+  const { user, loading: authLoading } = useAuth();
+  const { hasClub, loading: clubLoading } = useClub();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const loading = authLoading || (user && clubLoading);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (authLoading) return;
+    
+    if (!user) {
       navigate('/auth');
+      return;
     }
-  }, [user, loading, navigate]);
+
+    if (!clubLoading && requireClub && hasClub === false && location.pathname !== '/club-onboarding') {
+      navigate('/club-onboarding');
+    }
+  }, [user, authLoading, hasClub, clubLoading, navigate, requireClub, location.pathname]);
 
   if (loading) {
     return (
@@ -28,6 +41,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (!user) {
+    return null;
+  }
+
+  if (requireClub && hasClub === false) {
     return null;
   }
 

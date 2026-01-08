@@ -10,16 +10,18 @@ import { Switch } from '@/components/ui/switch';
 import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
+import { useClub } from '@/hooks/useClub';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff } from 'lucide-react';
+import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2 } from 'lucide-react';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { teams, loading: teamsLoading } = useTeams();
   const { profile, isDirector, assignedTeams, updateAssignedTeams, loading, roles } = useUserRole();
   const { signOut, user } = useAuth();
+  const { club, isDirector: isClubDirector } = useClub();
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
   const [wantsDirector, setWantsDirector] = useState(isDirector);
@@ -133,29 +135,45 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        {/* Director Options */}
-        {isDirector && (
+        {/* Club Management - visible to all */}
+        {club && (
           <Card className="border-primary/30 bg-primary/5">
             <CardContent className="p-4 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                <span className="font-medium">{club.name}</span>
+              </div>
               <Button
                 variant="outline"
-                onClick={() => navigate('/coach-management')}
+                onClick={() => navigate('/club-management')}
                 className="w-full gap-2"
               >
-                <Users className="h-4 w-4" />
-                Gestión de Entrenadores
+                <Building2 className="h-4 w-4" />
+                Gestión del Club
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate('/club-settings')}
-                className="w-full gap-2"
-              >
-                <Settings className="h-4 w-4" />
-                Configuración del Club
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                Opciones exclusivas de Director Deportivo
-              </p>
+              {isClubDirector && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/coach-management')}
+                    className="w-full gap-2"
+                  >
+                    <Users className="h-4 w-4" />
+                    Gestión de Entrenadores
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/club-settings')}
+                    className="w-full gap-2"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Configuración Visual
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Opciones exclusivas de Director Deportivo
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         )}
