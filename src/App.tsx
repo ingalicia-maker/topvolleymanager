@@ -21,6 +21,7 @@ import ClubSettings from "./pages/ClubSettings";
 import DisplacementCalendar from "./pages/DisplacementCalendar";
 import PendingTasks from "./pages/PendingTasks";
 import WeeklySummary from "./pages/WeeklySummary";
+import CoachManagement from "./pages/CoachManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -158,6 +159,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <WeeklySummary />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/coach-management"
+            element={
+              <AuthGuard>
+                <CoachManagement />
               </AuthGuard>
             }
           />

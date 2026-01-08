@@ -133,10 +133,18 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        {/* Club Settings - Only for Directors */}
+        {/* Director Options */}
         {isDirector && (
           <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="p-4">
+            <CardContent className="p-4 space-y-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/coach-management')}
+                className="w-full gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Gestión de Entrenadores
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => navigate('/club-settings')}
@@ -145,8 +153,8 @@ export default function Profile() {
                 <Settings className="h-4 w-4" />
                 Configuración del Club
               </Button>
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Cambia el nombre, colores, fuentes y escudo del club
+              <p className="text-xs text-muted-foreground text-center">
+                Opciones exclusivas de Director Deportivo
               </p>
             </CardContent>
           </Card>
