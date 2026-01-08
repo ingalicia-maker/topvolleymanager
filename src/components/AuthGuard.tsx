@@ -6,9 +6,10 @@ import { useClub } from '@/hooks/useClub';
 interface AuthGuardProps {
   children: React.ReactNode;
   requireClub?: boolean;
+  unauthenticatedRedirect?: string;
 }
 
-export function AuthGuard({ children, requireClub = true }: AuthGuardProps) {
+export function AuthGuard({ children, requireClub = true, unauthenticatedRedirect = '/auth' }: AuthGuardProps) {
   const { user, loading: authLoading } = useAuth();
   const { hasClub, loading: clubLoading } = useClub();
   const navigate = useNavigate();
@@ -20,14 +21,14 @@ export function AuthGuard({ children, requireClub = true }: AuthGuardProps) {
     if (authLoading) return;
     
     if (!user) {
-      navigate('/auth');
+      navigate(unauthenticatedRedirect);
       return;
     }
 
     if (!clubLoading && requireClub && hasClub === false && location.pathname !== '/club-onboarding') {
       navigate('/club-onboarding');
     }
-  }, [user, authLoading, hasClub, clubLoading, navigate, requireClub, location.pathname]);
+  }, [user, authLoading, hasClub, clubLoading, navigate, requireClub, location.pathname, unauthenticatedRedirect]);
 
   if (loading) {
     return (
