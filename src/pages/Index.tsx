@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
 import { NotificationBell } from '@/components/NotificationBell';
 import { PlayerOfTheWeek } from '@/components/PlayerOfTheWeek';
+import { CreditsDisplay } from '@/components/CreditsDisplay';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { usePlayers } from '@/hooks/usePlayers';
@@ -13,6 +14,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useClubTheme } from '@/components/ClubThemeProvider';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export default function Index() {
   const { t } = useTranslation();
@@ -22,6 +24,7 @@ export default function Index() {
   const { profile, isDirector, assignedTeams } = useUserRole();
   const { clubName, logoUrl } = useClubTheme();
   const { unreadCount } = useNotifications();
+  const { isPremium, subscription } = useSubscription();
 
   const today = new Date().toISOString().split('T')[0];
   
@@ -94,6 +97,40 @@ export default function Index() {
     </div>
 
     <div className="px-4 -mt-6 space-y-6">
+      {/* Premium Upgrade Banner for Free Users */}
+      {!isPremium && (
+        <Link to="/subscription">
+          <Card className="shadow-lg border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="p-4 flex items-center justify-between relative">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
+                  <Crown className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-foreground">{t('subscription.upgradeToPremium')}</p>
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t('subscription.unlimitedTeams')} • {t('subscription.unlimitedCredits')}
+                  </p>
+                  <p className="text-sm font-semibold text-primary mt-1">
+                    {t('subscription.pricePerMonth', { price: '5€' })}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-primary" />
+            </CardContent>
+          </Card>
+        </Link>
+      )}
+
+      {/* Credits Display for Free Users */}
+      {!isPremium && (
+        <CreditsDisplay />
+      )}
+
       {/* Pending Tasks Alert */}
       {totalPendingTasks > 0 && (
         <Link to="/pending-tasks">
