@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useClub } from './useClub';
 
 export interface DbStop {
   id: string;
@@ -8,11 +9,13 @@ export interface DbStop {
   order_index: number;
   created_at: string | null;
   created_by: string | null;
+  club_id: string | null;
 }
 
 export function useStops() {
   const [stops, setStops] = useState<DbStop[]>([]);
   const [loading, setLoading] = useState(true);
+  const { club } = useClub();
 
   const fetchStops = async () => {
     const { data, error } = await supabase
@@ -42,7 +45,8 @@ export function useStops() {
       .insert([{ 
         name, 
         order_index: maxOrder + 1,
-        created_by: userData.user?.id 
+        created_by: userData.user?.id,
+        club_id: club?.id || null,
       }])
       .select()
       .single();
