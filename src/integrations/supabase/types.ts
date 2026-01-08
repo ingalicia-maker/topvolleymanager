@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_admins: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       ausencias: {
         Row: {
           absence_type: Database["public"]["Enums"]["absence_type"]
@@ -615,6 +633,30 @@ export type Database = {
           },
         ]
       }
+      user_credits: {
+        Row: {
+          created_at: string
+          credits_date: string
+          credits_remaining: number
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_date?: string
+          credits_remaining?: number
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_date?: string
+          credits_remaining?: number
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -633,12 +675,74 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vip_users: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      consume_credit: { Args: { _user_id: string }; Returns: boolean }
       get_user_club_id: { Args: { _user_id: string }; Returns: string }
+      get_user_credits: { Args: { _user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -646,11 +750,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_app_admin: { Args: { _email: string }; Returns: boolean }
       is_club_director: {
         Args: { _club_id: string; _user_id: string }
         Returns: boolean
       }
       is_director: { Args: { _user_id: string }; Returns: boolean }
+      is_vip_user: { Args: { _email: string }; Returns: boolean }
       user_belongs_to_club: {
         Args: { _club_id: string; _user_id: string }
         Returns: boolean
@@ -659,6 +765,7 @@ export type Database = {
     Enums: {
       absence_type: "justified" | "unjustified"
       app_role: "coach" | "director"
+      subscription_status: "free" | "premium" | "vip"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -788,6 +895,7 @@ export const Constants = {
     Enums: {
       absence_type: ["justified", "unjustified"],
       app_role: ["coach", "director"],
+      subscription_status: ["free", "premium", "vip"],
     },
   },
 } as const
