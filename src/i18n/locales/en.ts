@@ -22,6 +22,12 @@ export default {
     required: 'Required',
     optional: 'Optional',
     or: 'or',
+    viewAll: 'View all',
+    manageTeams: 'Manage your teams and events',
+    pendingTasks: 'You have {{count}} pending task(s)',
+    notifications: '{{count}} notification(s)',
+    weeklySummary: 'Weekly Summary',
+    teamStats: 'Your team stats',
   },
 
   // Navigation
@@ -76,23 +82,28 @@ export default {
     teams: 'Teams',
     photo: 'Photo',
     noPlayers: 'No players registered',
-    deleteConfirm: 'Delete this player?',
+    notFound: 'No players found',
+    deleteConfirm: 'Delete players?',
+    deleteCount: '{{count}} player(s) will be deleted. This cannot be undone.',
     importExcel: 'Import from Excel',
     exportExcel: 'Export to Excel',
-    searchPlaceholder: 'Search players...',
+    search: 'Search player...',
+    add: 'Add Player',
   },
 
   // Teams
   teams: {
     title: 'Teams',
+    new: 'New Team',
     newTeam: 'New Team',
     editTeam: 'Edit Team',
-    name: 'Name',
+    name: 'Team name',
     coach: 'Coach',
-    color: 'Color',
+    color: 'Team color',
     players: 'Players',
     noTeams: 'No teams registered',
     deleteConfirm: 'Delete this team?',
+    create: 'Create Team',
   },
 
   // Events
@@ -112,10 +123,16 @@ export default {
     tournament: 'Tournament',
     other: 'Other',
     noEvents: 'No scheduled events',
+    upcoming: 'Upcoming Events',
     upcomingEvents: 'Upcoming Events',
     confirmed: 'Confirmed',
     declined: 'Declined',
     pending: 'Pending',
+    matches: 'matches',
+    trainings: 'trainings',
+    noUpcoming: 'No upcoming events',
+    createFirst: 'Create first event',
+    create: 'Create Event',
   },
 
   // Absences
@@ -218,6 +235,9 @@ export default {
     dailyCredits: '5 daily credits',
     noExport: 'No export',
     noCharts: 'No evolution charts',
+    exportLimited: 'Export requires Premium',
+    teamLimitReached: 'Team limit reached',
+    upgradeForMore: 'Upgrade to Premium to create more teams',
   },
 
   // Admin
@@ -252,5 +272,6 @@ export default {
     declineAttendance: 'Cannot attend',
     returnWithBus: 'Return on bus',
     ownTransport: 'Own transport',
+    count: '{{count}} displacement(s)',
   },
 };

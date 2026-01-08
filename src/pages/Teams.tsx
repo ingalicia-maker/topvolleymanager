@@ -1,11 +1,16 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Lock, Crown } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { TeamCard } from '@/components/TeamCard';
 import { Button } from '@/components/ui/button';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -28,13 +33,17 @@ const TEAM_COLORS = [
 ];
 
 export default function Teams() {
+  const { t } = useTranslation();
   const { players } = usePlayers();
   const { teams, loading, addTeam } = useTeams();
+  const { maxTeams, isPremium } = useSubscription();
   const [open, setOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamCoach, setNewTeamCoach] = useState('');
   const [newTeamColor, setNewTeamColor] = useState(TEAM_COLORS[0]);
   const [saving, setSaving] = useState(false);
+  
+  const canAddTeam = isPremium || teams.length < maxTeams;
 
   const getPlayerCount = (teamId: string) => {
     return players.filter(p => p.teams?.includes(teamId)).length;
@@ -47,6 +56,14 @@ export default function Teams() {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
+  };
+
+  const handleOpenDialog = () => {
+    if (!canAddTeam) {
+      toast.error(t('subscription.teamLimitReached'));
+      return;
+    }
+    setOpen(true);
   };
 
   const handleCreateTeam = async () => {
@@ -72,7 +89,7 @@ export default function Teams() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Equipos" />
+        <Header title={t('nav.teams')} />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -84,21 +101,22 @@ export default function Teams() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header
-        title="Equipos"
+        title={t('nav.teams')}
         rightAction={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1">
+              <Button size="sm" className="gap-1" onClick={handleOpenDialog}>
+                {!canAddTeam && <Lock className="h-3 w-3" />}
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Nuevo Equipo</DialogTitle>
+                <DialogTitle>{t('teams.new')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="teamName">Nombre del equipo *</Label>
+                  <Label htmlFor="teamName">{t('teams.name')} *</Label>
                   <Input
                     id="teamName"
                     value={newTeamName}
@@ -108,7 +126,7 @@ export default function Teams() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="teamCoach">Entrenador/a *</Label>
+                  <Label htmlFor="teamCoach">{t('teams.coach')} *</Label>
                   <Input
                     id="teamCoach"
                     value={newTeamCoach}
@@ -118,7 +136,7 @@ export default function Teams() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Color del equipo</Label>
+                  <Label>{t('teams.color')}</Label>
                   <div className="flex flex-wrap gap-2">
                     {TEAM_COLORS.map(color => (
                       <button
@@ -139,7 +157,7 @@ export default function Teams() {
                   className="w-full"
                   disabled={saving || !newTeamName.trim() || !newTeamCoach.trim()}
                 >
-                  {saving ? 'Creando...' : 'Crear Equipo'}
+                  {saving ? t('common.loading') : t('teams.create')}
                 </Button>
               </div>
             </DialogContent>
@@ -147,9 +165,23 @@ export default function Teams() {
         }
       />
       <main className="p-4 space-y-3">
+        {!isPremium && teams.length >= maxTeams && (
+          <Link to="/subscription">
+            <Card className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30">
+              <CardContent className="p-4 flex items-center gap-3">
+                <Crown className="h-5 w-5 text-amber-500" />
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{t('subscription.teamLimitReached')}</p>
+                  <p className="text-xs text-muted-foreground">{t('subscription.upgradeForMore')}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+        
         {teams.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
-            No hay equipos registrados
+            {t('teams.noTeams')}
           </p>
         ) : (
           teams.map(team => (
