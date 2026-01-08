@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useClub } from './useClub';
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 
@@ -18,6 +19,7 @@ export interface PlayerRating {
   leadership_initiative: number;
   notes: string | null;
   created_at: string;
+  club_id: string | null;
 }
 
 export interface RatingInput {
@@ -44,6 +46,7 @@ export type RatingCategoryKey = typeof RATING_CATEGORIES[number]['key'];
 
 export function usePlayerRatings() {
   const { user } = useAuth();
+  const { club } = useClub();
   const [ratings, setRatings] = useState<PlayerRating[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -74,6 +77,7 @@ export function usePlayerRatings() {
         ...rating,
         rated_by: user?.id || null,
         rating_date: ratingDate,
+        club_id: club?.id || null,
       }])
       .select()
       .single();
@@ -88,7 +92,6 @@ export function usePlayerRatings() {
     return data;
   };
 
-  // Get player's average rating for current week
   const getWeeklyPlayerStats = (playerId: string, teamId?: string) => {
     const now = new Date();
     const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -121,7 +124,6 @@ export function usePlayerRatings() {
     return { avgByCategory, totalAvg, ratingsCount: weekRatings.length };
   };
 
-  // Get player of the week
   const getPlayerOfTheWeek = (teamId?: string) => {
     const now = new Date();
     const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -133,7 +135,6 @@ export function usePlayerRatings() {
       (!teamId || r.team_id === teamId)
     );
 
-    // Group by player
     const byPlayer: Record<string, PlayerRating[]> = {};
     weekRatings.forEach(r => {
       if (!byPlayer[r.player_id]) byPlayer[r.player_id] = [];
@@ -157,7 +158,6 @@ export function usePlayerRatings() {
     return topPlayer;
   };
 
-  // Get monthly evolution for a player
   const getMonthlyEvolution = (playerId: string, teamId?: string): Array<{
     month: string;
     effort_attitude: number;
@@ -172,7 +172,6 @@ export function usePlayerRatings() {
       (!teamId || r.team_id === teamId)
     );
 
-    // Group by month
     const byMonth: Record<string, PlayerRating[]> = {};
     playerRatings.forEach(r => {
       const monthKey = r.rating_date.substring(0, 7);
@@ -201,7 +200,6 @@ export function usePlayerRatings() {
       .sort((a, b) => a.month.localeCompare(b.month));
   };
 
-  // Detect trends for a player
   const getPlayerTrends = (playerId: string, teamId?: string) => {
     const evolution = getMonthlyEvolution(playerId, teamId);
     if (evolution.length < 2) return [];
@@ -219,10 +217,9 @@ export function usePlayerRatings() {
       }
     });
 
-    // Check for consistency in effort
     const recentRatings = ratings
       .filter(r => r.player_id === playerId && (!teamId || r.team_id === teamId))
-      .slice(0, 9); // Last 9 ratings (~3 weeks)
+      .slice(0, 9);
 
     if (recentRatings.length >= 6) {
       const highEffortCount = recentRatings.filter(r => r.effort_attitude >= 4).length;
@@ -234,11 +231,9 @@ export function usePlayerRatings() {
     return trends;
   };
 
-  // Get positive alerts for a player
   const getPositiveAlerts = (playerId: string, teamId?: string) => {
     const alerts: string[] = [];
     
-    // Check consecutive weeks of high effort
     const now = new Date();
     let consecutiveHighEffort = 0;
     
@@ -269,7 +264,6 @@ export function usePlayerRatings() {
       alerts.push(`¡Ha sido la más constante en esfuerzo durante ${consecutiveHighEffort} semanas!`);
     }
 
-    // Check for improvement in decision making
     const evolution = getMonthlyEvolution(playerId, teamId);
     if (evolution.length >= 2) {
       const [prev, curr] = evolution.slice(-2);

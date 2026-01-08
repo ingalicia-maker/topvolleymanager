@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useClub } from './useClub';
 
 export type AbsenceType = 'justified' | 'unjustified';
 
@@ -13,11 +14,13 @@ export interface DbAusencia {
   absence_type: AbsenceType;
   created_by: string | null;
   created_at: string;
+  club_id: string | null;
 }
 
 export function useAusencias() {
   const [ausencias, setAusencias] = useState<DbAusencia[]>([]);
   const [loading, setLoading] = useState(true);
+  const { club } = useClub();
 
   const fetchAusencias = async () => {
     const { data, error } = await supabase
@@ -38,10 +41,10 @@ export function useAusencias() {
     fetchAusencias();
   }, []);
 
-  const addAusencia = async (ausencia: Omit<DbAusencia, 'id' | 'created_at'>) => {
+  const addAusencia = async (ausencia: Omit<DbAusencia, 'id' | 'created_at' | 'club_id'>) => {
     const { data, error } = await supabase
       .from('ausencias')
-      .insert([ausencia])
+      .insert([{ ...ausencia, club_id: club?.id || null }])
       .select()
       .single();
 
@@ -86,7 +89,6 @@ export function useAusencias() {
     return true;
   };
 
-  // Check if a player is absent for a specific team on a specific date
   const isPlayerAbsent = (playerId: string, teamId: string, date: string) => {
     return ausencias.find(a => 
       a.player_id === playerId && 
@@ -95,7 +97,6 @@ export function useAusencias() {
     );
   };
 
-  // Get absences count for a player in a specific team
   const getPlayerTeamAbsenceCount = (playerId: string, teamId: string) => {
     return ausencias.filter(a => 
       a.player_id === playerId && 
@@ -103,13 +104,12 @@ export function useAusencias() {
     ).length;
   };
 
-  // Get absences by month for a team
   const getAbsencesByMonth = (teamId: string) => {
     const teamAusencias = ausencias.filter(a => a.team_id === teamId);
     const byMonth: Record<string, DbAusencia[]> = {};
     
     teamAusencias.forEach(a => {
-      const monthKey = a.date.substring(0, 7); // YYYY-MM
+      const monthKey = a.date.substring(0, 7);
       if (!byMonth[monthKey]) byMonth[monthKey] = [];
       byMonth[monthKey].push(a);
     });

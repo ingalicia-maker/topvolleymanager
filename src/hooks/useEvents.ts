@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useClub } from './useClub';
 
 export interface CoachSubmission {
   coach_id: string;
@@ -29,17 +30,17 @@ export interface DbEvent {
   departure_time: string | null;
   stops: string[];
   player_stops: Record<string, string>;
-  player_returns: Record<string, boolean>; // false = no vuelve en bus
+  player_returns: Record<string, boolean>;
   total_passengers: number | null;
   selected_teams: string[];
-  coach_submissions: Record<string, CoachSubmission>; // key is team_id
+  coach_submissions: Record<string, CoachSubmission>;
+  club_id: string | null;
 }
-
-// Stops are now managed in the database via useStops hook
 
 export function useEvents() {
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const { club } = useClub();
 
   const fetchEvents = async () => {
     const { data, error } = await supabase
@@ -51,7 +52,6 @@ export function useEvents() {
       console.error('Error fetching events:', error);
       toast.error('Error al cargar eventos');
     } else {
-      // Parse JSONB fields
       const parsed = (data || []).map(e => ({
         ...e,
         stops: Array.isArray(e.stops) ? e.stops : [],
@@ -69,13 +69,14 @@ export function useEvents() {
     fetchEvents();
   }, []);
 
-  const addEvent = async (event: Omit<DbEvent, 'id' | 'created_at' | 'updated_at'>) => {
+  const addEvent = async (event: Omit<DbEvent, 'id' | 'created_at' | 'updated_at' | 'club_id'>) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const eventToInsert = {
       ...event,
       player_stops: event.player_stops,
       player_returns: event.player_returns,
       coach_submissions: event.coach_submissions,
+      club_id: club?.id || null,
     } as any;
     
     const { data, error } = await supabase
