@@ -29,7 +29,7 @@ interface UserRole {
 }
 
 export default function CoachManagement() {
-  const { isDirector, loading: roleLoading } = useUserRole();
+  const { isDirector, loading: roleLoading, profile: currentUserProfile } = useUserRole();
   const { teams } = useTeams();
   const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -76,12 +76,31 @@ export default function CoachManagement() {
   const handleAssignCoachRole = async (userId: string) => {
     setProcessingId(userId);
     try {
+      // Find the coach profile to get their details
+      const coach = profiles?.find(p => p.id === userId);
+      
       const { error } = await supabase
         .from('user_roles')
         .insert({ user_id: userId, role: 'coach' as const });
       
       if (error) throw error;
-      toast.success('Rol de entrenador asignado');
+
+      // Send notification email to the approved coach
+      if (coach) {
+        try {
+          await supabase.functions.invoke('notify-coach-approved', {
+            body: {
+              coachEmail: coach.email,
+              coachName: coach.name,
+              approvedBy: currentUserProfile?.name || 'Director Deportivo'
+            }
+          });
+        } catch (emailError) {
+          console.error('Error sending approval email:', emailError);
+        }
+      }
+      
+      toast.success('Entrenador aprobado correctamente');
       refetch();
     } catch (error) {
       toast.error('Error al asignar rol');
