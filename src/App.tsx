@@ -24,6 +24,8 @@ import WeeklySummary from "./pages/WeeklySummary";
 import CoachManagement from "./pages/CoachManagement";
 import ClubOnboarding from "./pages/ClubOnboarding";
 import ClubManagement from "./pages/ClubManagement";
+import AdminPanel from "./pages/AdminPanel";
+import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -185,6 +187,22 @@ const App = () => (
             element={
               <AuthGuard>
                 <ClubManagement />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AuthGuard>
+                <AdminPanel />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/subscription"
+            element={
+              <AuthGuard>
+                <Subscription />
               </AuthGuard>
             }
           />
