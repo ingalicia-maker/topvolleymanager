@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -14,6 +15,7 @@ import { useClubTheme } from '@/components/ClubThemeProvider';
 import { useNotifications } from '@/hooks/useNotifications';
 
 export default function Index() {
+  const { t } = useTranslation();
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
   const { events } = useEvents();
@@ -77,7 +79,7 @@ export default function Index() {
           )}
           <div>
             <h1 className="text-2xl font-bold mb-1">{clubName}</h1>
-            <p className="text-primary-foreground/80 text-sm">Gestiona tus equipos y convocatorias</p>
+            <p className="text-primary-foreground/80 text-sm">{t('common.manageTeams')}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -102,11 +104,11 @@ export default function Index() {
                   <AlertTriangle className="h-5 w-5 text-destructive" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Tienes {totalPendingTasks} tarea{totalPendingTasks > 1 ? 's' : ''} pendiente{totalPendingTasks > 1 ? 's' : ''}</p>
+                  <p className="font-semibold text-foreground">{t('common.pendingTasks', { count: totalPendingTasks })}</p>
                   <p className="text-xs text-muted-foreground">
-                    {pendingDisplacements > 0 && `${pendingDisplacements} desplazamiento${pendingDisplacements > 1 ? 's' : ''}`}
+                    {pendingDisplacements > 0 && t('displacement.count', { count: pendingDisplacements })}
                     {pendingDisplacements > 0 && unreadCount > 0 && ' · '}
-                    {unreadCount > 0 && `${unreadCount} notificación${unreadCount > 1 ? 'es' : ''}`}
+                    {unreadCount > 0 && t('common.notifications', { count: unreadCount })}
                   </p>
                 </div>
               </div>
@@ -128,8 +130,8 @@ export default function Index() {
                 <TrendingUp className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="font-semibold text-foreground">Resumen Semanal</p>
-                <p className="text-xs text-muted-foreground">Estadísticas de tus equipos</p>
+                <p className="font-semibold text-foreground">{t('common.weeklySummary')}</p>
+                <p className="text-xs text-muted-foreground">{t('common.teamStats')}</p>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -145,7 +147,7 @@ export default function Index() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{players.length}</p>
-                <p className="text-xs text-muted-foreground">Jugadoras</p>
+                <p className="text-xs text-muted-foreground">{t('nav.players')}</p>
               </div>
             </CardContent>
           </Card>
@@ -156,7 +158,7 @@ export default function Index() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{teams.length}</p>
-                <p className="text-xs text-muted-foreground">Equipos</p>
+                <p className="text-xs text-muted-foreground">{t('nav.teams')}</p>
               </div>
             </CardContent>
           </Card>
@@ -166,11 +168,11 @@ export default function Index() {
         <div className="flex gap-4 justify-center">
           <div className="flex items-center gap-2 text-sm">
             <Trophy className="h-4 w-4 text-amber-500" />
-            <span className="text-muted-foreground">{totalMatches} partidos</span>
+            <span className="text-muted-foreground">{totalMatches} {t('events.matches')}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Dumbbell className="h-4 w-4 text-primary" />
-            <span className="text-muted-foreground">{totalTrainings} entrenamientos</span>
+            <span className="text-muted-foreground">{totalTrainings} {t('events.trainings')}</span>
           </div>
         </div>
 
@@ -179,13 +181,13 @@ export default function Index() {
           <Link to="/players/new">
             <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
               <UserPlus className="h-5 w-5" />
-              <span className="text-sm">Añadir Jugadora</span>
+              <span className="text-sm">{t('players.add')}</span>
             </Button>
           </Link>
           <Link to="/events/new">
             <Button className="w-full h-auto py-4 flex-col gap-2">
               <CalendarPlus className="h-5 w-5" />
-              <span className="text-sm">Crear Evento</span>
+              <span className="text-sm">{t('events.create')}</span>
             </Button>
           </Link>
         </div>
@@ -193,19 +195,19 @@ export default function Index() {
         {/* Upcoming Events */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-foreground">Próximos Eventos</h2>
+            <h2 className="font-bold text-foreground">{t('events.upcoming')}</h2>
             <Link to="/events" className="text-sm text-primary font-medium">
-              Ver todos
+              {t('common.viewAll')}
             </Link>
           </div>
           {upcomingEvents.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
                 <Calendar className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-muted-foreground text-sm">No hay eventos próximos</p>
+                <p className="text-muted-foreground text-sm">{t('events.noUpcoming')}</p>
                 <Link to="/events/new">
                   <Button variant="link" className="mt-2">
-                    Crear primer evento
+                    {t('events.createFirst')}
                   </Button>
                 </Link>
               </CardContent>
@@ -222,9 +224,9 @@ export default function Index() {
         {/* Teams Preview */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-foreground">Equipos</h2>
+            <h2 className="font-bold text-foreground">{t('nav.teams')}</h2>
             <Link to="/teams" className="text-sm text-primary font-medium">
-              Ver todos
+              {t('common.viewAll')}
             </Link>
           </div>
           {teamsLoading ? (

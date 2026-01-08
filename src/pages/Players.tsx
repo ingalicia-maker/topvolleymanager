@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { Plus, Search, Trash2, Upload, Star, Download } from 'lucide-react';
+import { Plus, Search, Trash2, Upload, Star, Download, Lock } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useSubscription } from '@/hooks/useSubscription';
 import { ImportPlayersDialog } from '@/components/ImportPlayersDialog';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,13 +25,19 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function Players() {
+  const { t } = useTranslation();
   const { players, loading, deletePlayer, refetch } = usePlayers();
+  const { canExport, isPremium } = useSubscription();
   const [search, setSearch] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
 
   const exportToExcel = () => {
+    if (!canExport) {
+      toast.error(t('subscription.exportLimited'));
+      return;
+    }
     const exportData = players.map(p => ({
       Nombre: p.name,
       'Apellido 1': p.surname1 || '',
@@ -67,7 +76,7 @@ export default function Players() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Jugadoras" />
+        <Header title={t('nav.players')} />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -79,7 +88,7 @@ export default function Players() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header
-        title="Jugadoras"
+        title={t('nav.players')}
         rightAction={
           <div className="flex gap-2">
             {isSelecting ? (
@@ -88,7 +97,7 @@ export default function Players() {
                   setIsSelecting(false);
                   setSelectedPlayers([]);
                 }}>
-                  Cancelar
+                  {t('common.cancel')}
                 </Button>
                 {selectedPlayers.length > 0 && (
                   <AlertDialog>
@@ -99,14 +108,14 @@ export default function Players() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>¿Eliminar jugadoras?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('players.deleteConfirm')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Se eliminarán {selectedPlayers.length} jugadora{selectedPlayers.length > 1 ? 's' : ''}. Esta acción no se puede deshacer.
+                          {t('players.deleteCount', { count: selectedPlayers.length })}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={deleteSelected}>Eliminar</AlertDialogAction>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteSelected}>{t('common.delete')}</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -120,9 +129,15 @@ export default function Players() {
                   </Button>
                 </Link>
                 <Button variant="ghost" size="sm" onClick={() => setIsSelecting(true)}>
-                  Editar
+                  {t('common.edit')}
                 </Button>
-                <Button variant="outline" size="sm" onClick={exportToExcel}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={exportToExcel}
+                  className={!canExport ? 'opacity-50' : ''}
+                >
+                  {!canExport && <Lock className="h-3 w-3 mr-1" />}
                   <Download className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
@@ -142,7 +157,7 @@ export default function Players() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar jugadora..."
+            placeholder={t('players.search')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-9"
@@ -152,7 +167,7 @@ export default function Players() {
         <div className="space-y-2">
           {filteredPlayers.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              {players.length === 0 ? 'No hay jugadoras registradas' : 'No se encontraron jugadoras'}
+              {players.length === 0 ? t('players.noPlayers') : t('players.notFound')}
             </p>
           ) : (
             filteredPlayers.map(player => (

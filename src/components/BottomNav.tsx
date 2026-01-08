@@ -1,15 +1,17 @@
 import { Home, Calendar, UserCircle, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { NavLink } from './NavLink';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const navItems = [
-  { to: '/', icon: Home, label: 'Inicio' },
-  { to: '/events', icon: Calendar, label: 'Eventos', showBadge: true },
-  { to: '/players', icon: UserCircle, label: 'Jugadoras' },
-  { to: '/ausencias', icon: AlertTriangle, label: 'Ausencias' },
+  { to: '/', icon: Home, labelKey: 'nav.home' },
+  { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true },
+  { to: '/players', icon: UserCircle, labelKey: 'nav.players' },
+  { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences' },
 ];
 
 export function BottomNav() {
+  const { t } = useTranslation();
   const { unreadCount } = useNotifications();
 
   return (
@@ -31,7 +33,7 @@ export function BottomNav() {
                 </span>
               )}
             </div>
-            <span className="text-[10px] font-medium truncate max-w-[56px]">{item.label}</span>
+            <span className="text-[10px] font-medium truncate max-w-[56px]">{t(item.labelKey)}</span>
           </NavLink>
         ))}
       </div>

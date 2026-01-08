@@ -22,6 +22,12 @@ export default {
     required: 'Obligatorio',
     optional: 'Opcional',
     or: 'o',
+    viewAll: 'Ver todos',
+    manageTeams: 'Gestiona tus equipos y convocatorias',
+    pendingTasks: 'Tienes {{count}} tarea(s) pendiente(s)',
+    notifications: '{{count}} notificación(es)',
+    weeklySummary: 'Resumen Semanal',
+    teamStats: 'Estadísticas de tus equipos',
   },
 
   // Navigation
@@ -76,23 +82,28 @@ export default {
     teams: 'Equipos',
     photo: 'Foto',
     noPlayers: 'No hay jugadoras registradas',
-    deleteConfirm: '¿Eliminar esta jugadora?',
+    notFound: 'No se encontraron jugadoras',
+    deleteConfirm: '¿Eliminar jugadoras?',
+    deleteCount: 'Se eliminarán {{count}} jugadora(s). Esta acción no se puede deshacer.',
     importExcel: 'Importar desde Excel',
     exportExcel: 'Exportar a Excel',
-    searchPlaceholder: 'Buscar jugadoras...',
+    search: 'Buscar jugadora...',
+    add: 'Añadir Jugadora',
   },
 
   // Teams
   teams: {
     title: 'Equipos',
+    new: 'Nuevo Equipo',
     newTeam: 'Nuevo Equipo',
     editTeam: 'Editar Equipo',
-    name: 'Nombre',
-    coach: 'Entrenador',
-    color: 'Color',
+    name: 'Nombre del equipo',
+    coach: 'Entrenador/a',
+    color: 'Color del equipo',
     players: 'Jugadoras',
     noTeams: 'No hay equipos registrados',
     deleteConfirm: '¿Eliminar este equipo?',
+    create: 'Crear Equipo',
   },
 
   // Events
@@ -112,10 +123,16 @@ export default {
     tournament: 'Torneo',
     other: 'Otro',
     noEvents: 'No hay eventos programados',
+    upcoming: 'Próximos Eventos',
     upcomingEvents: 'Próximos Eventos',
     confirmed: 'Confirmadas',
     declined: 'No asisten',
     pending: 'Pendientes',
+    matches: 'partidos',
+    trainings: 'entrenamientos',
+    noUpcoming: 'No hay eventos próximos',
+    createFirst: 'Crear primer evento',
+    create: 'Crear Evento',
   },
 
   // Absences
@@ -218,6 +235,9 @@ export default {
     dailyCredits: '5 créditos diarios',
     noExport: 'Sin exportación',
     noCharts: 'Sin gráficos de evolución',
+    exportLimited: 'La exportación requiere Premium',
+    teamLimitReached: 'Has alcanzado el límite de equipos',
+    upgradeForMore: 'Actualiza a Premium para crear más equipos',
   },
 
   // Admin
@@ -252,5 +272,6 @@ export default {
     declineAttendance: 'No puedo asistir',
     returnWithBus: 'Vuelvo en el bus',
     ownTransport: 'Me voy por mi cuenta',
+    count: '{{count}} desplazamiento(s)',
   },
 };
