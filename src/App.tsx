@@ -43,7 +43,7 @@ const App = () => (
           <Route
             path="/"
             element={
-              <AuthGuard>
+              <AuthGuard unauthenticatedRedirect="/landing">
                 <Index />
               </AuthGuard>
             }
