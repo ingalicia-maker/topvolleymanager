@@ -1,5 +1,6 @@
 import { useEffect, createContext, useContext, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ClubTheme {
   clubName: string;
@@ -31,29 +32,42 @@ const FONT_URLS: Record<string, string> = {
 };
 
 export function ClubThemeProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [theme, setTheme] = useState<ClubTheme>(defaultTheme);
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      const { data } = await supabase
-        .from('club_settings')
-        .select('*')
-        .limit(1)
+    const fetchClubSettings = async () => {
+      if (!user) return;
+
+      // Get user's club
+      const { data: membership } = await supabase
+        .from('club_members')
+        .select('club_id')
+        .eq('user_id', user.id)
         .maybeSingle();
 
-      if (data) {
+      if (!membership?.club_id) return;
+
+      // Get club settings
+      const { data: club } = await supabase
+        .from('clubs')
+        .select('name, primary_color, accent_color, font_family, logo_url')
+        .eq('id', membership.club_id)
+        .single();
+
+      if (club) {
         setTheme({
-          clubName: data.club_name,
-          primaryColor: data.primary_color,
-          accentColor: data.accent_color,
-          fontFamily: data.font_family,
-          logoUrl: data.logo_url,
+          clubName: club.name,
+          primaryColor: club.primary_color,
+          accentColor: club.accent_color,
+          fontFamily: club.font_family,
+          logoUrl: club.logo_url,
         });
       }
     };
 
-    fetchSettings();
-  }, []);
+    fetchClubSettings();
+  }, [user]);
 
   // Apply CSS variables
   useEffect(() => {
