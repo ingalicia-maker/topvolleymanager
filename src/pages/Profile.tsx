@@ -12,17 +12,22 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
 import { useClub } from '@/hooks/useClub';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useSubscription } from '@/hooks/useSubscription';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap } from 'lucide-react';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { teams, loading: teamsLoading } = useTeams();
   const { profile, isDirector, assignedTeams, updateAssignedTeams, loading, roles } = useUserRole();
   const { signOut, user } = useAuth();
   const { club, isDirector: isClubDirector } = useClub();
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  const { subscription, isPremium } = useSubscription();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
   const [wantsDirector, setWantsDirector] = useState(isDirector);
   const [saving, setSaving] = useState(false);
@@ -177,6 +182,39 @@ export default function Profile() {
             </CardContent>
           </Card>
         )}
+
+        {/* Subscription & Language */}
+        <Card>
+          <CardContent className="p-4 space-y-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/subscription')}
+              className="w-full gap-2"
+            >
+              {isPremium ? <Crown className="h-4 w-4 text-amber-500" /> : <Zap className="h-4 w-4" />}
+              {t('subscription.title')} - {isPremium ? t('subscription.premium') : `${subscription.creditsRemaining} ${t('subscription.creditsRemaining')}`}
+            </Button>
+            
+            {subscription.isAdmin && (
+              <Button
+                variant="outline"
+                onClick={() => navigate('/admin')}
+                className="w-full gap-2 border-amber-500 text-amber-600"
+              >
+                <Crown className="h-4 w-4" />
+                {t('admin.title')}
+              </Button>
+            )}
+            
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Globe className="h-4 w-4" />
+                {t('profile.language')}
+              </div>
+              <LanguageSelector />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Push Notifications */}
         {isSupported && (
