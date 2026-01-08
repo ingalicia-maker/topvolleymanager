@@ -274,4 +274,86 @@ export default {
     ownTransport: 'Own transport',
     count: '{{count}} displacement(s)',
   },
+
+  // Landing Page
+  landing: {
+    getStarted: 'Get started free',
+    hero: {
+      badge: 'Mobile app available',
+      title: 'Manage your volleyball team like a pro',
+      subtitle: 'The complete tool for coaches and sports directors. Organize events, track absences, rate players, and coordinate transportation.',
+      cta: 'Start now',
+      demo: 'Watch demo',
+      noCard: 'No credit card required • 5 free daily credits',
+    },
+    features: {
+      title: 'Everything you need',
+      subtitle: 'Tools specifically designed for volleyball team management',
+      players: {
+        title: 'Player Management',
+        desc: 'Keep a complete record of your roster with photos, data, and team assignments.',
+      },
+      events: {
+        title: 'Events & Callups',
+        desc: 'Create matches and trainings, manage confirmations and attendance tracking.',
+      },
+      absences: {
+        title: 'Absence Control',
+        desc: 'Record and analyze justified and unjustified absences for each player.',
+      },
+      ratings: {
+        title: 'Player Ratings',
+        desc: 'Evaluate performance with custom metrics and evolution tracking.',
+      },
+      transport: {
+        title: 'Transport Management',
+        desc: 'Coordinate travel with bus stops and passenger control.',
+      },
+      stats: {
+        title: 'Statistics & Reports',
+        desc: 'View evolution charts and export data for detailed analysis.',
+      },
+    },
+    credits: {
+      title: 'Transparent credit system',
+      description: 'Free users receive 5 credits every day. Credits do not accumulate and reset at midnight.',
+      daily: 'daily credits',
+      reset: 'midnight reset',
+      secure: 'Secure data',
+      available: 'credits',
+      resetIn: 'Reset in',
+    },
+    pricing: {
+      title: 'Simple and transparent pricing',
+      subtitle: 'Choose the plan that best fits your club',
+      month: 'month',
+      popular: 'Most popular',
+      subscribe: 'Subscribe to Premium',
+      free: {
+        desc: 'Perfect to get started',
+        feature1: '1 team',
+        feature2: '5 daily credits (reset at 00:00)',
+        feature3: 'Basic player management',
+        feature4: 'Events and callups',
+      },
+      premium: {
+        desc: 'For growing clubs',
+        feature1: 'Unlimited teams',
+        feature2: 'Unlimited credits',
+        feature3: 'Excel export',
+        feature4: 'Evolution charts',
+        feature5: 'Bus stop management',
+      },
+    },
+    cta: {
+      title: 'Ready to transform your club?',
+      subtitle: 'Join hundreds of coaches who already manage their teams professionally.',
+      button: 'Create free account',
+    },
+    footer: {
+      rights: 'All rights reserved.',
+      privacy: 'Privacy',
+      terms: 'Terms',
+    },
+  },
 };

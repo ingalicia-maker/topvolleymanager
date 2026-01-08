@@ -274,4 +274,86 @@ export default {
     ownTransport: 'Me voy por mi cuenta',
     count: '{{count}} desplazamiento(s)',
   },
+
+  // Landing Page
+  landing: {
+    getStarted: 'Comenzar gratis',
+    hero: {
+      badge: 'App móvil disponible',
+      title: 'Gestiona tu equipo de voleibol como un profesional',
+      subtitle: 'La herramienta completa para entrenadores y directores deportivos. Organiza convocatorias, controla ausencias, valora jugadoras y coordina desplazamientos.',
+      cta: 'Empezar ahora',
+      demo: 'Ver demo',
+      noCard: 'Sin tarjeta de crédito • 5 créditos diarios gratis',
+    },
+    features: {
+      title: 'Todo lo que necesitas',
+      subtitle: 'Herramientas diseñadas específicamente para la gestión de equipos de voleibol',
+      players: {
+        title: 'Gestión de Jugadoras',
+        desc: 'Mantén un registro completo de tu plantilla con fotos, datos y asignación a equipos.',
+      },
+      events: {
+        title: 'Convocatorias y Eventos',
+        desc: 'Crea partidos y entrenamientos, gestiona confirmaciones y seguimiento de asistencia.',
+      },
+      absences: {
+        title: 'Control de Ausencias',
+        desc: 'Registra y analiza ausencias justificadas e injustificadas de cada jugadora.',
+      },
+      ratings: {
+        title: 'Valoraciones',
+        desc: 'Evalúa el rendimiento con métricas personalizadas y seguimiento de evolución.',
+      },
+      transport: {
+        title: 'Gestión de Transporte',
+        desc: 'Coordina desplazamientos con paradas de bus y control de pasajeros.',
+      },
+      stats: {
+        title: 'Estadísticas y Reportes',
+        desc: 'Visualiza gráficos de evolución y exporta datos para análisis detallado.',
+      },
+    },
+    credits: {
+      title: 'Sistema de créditos transparente',
+      description: 'Los usuarios gratuitos reciben 5 créditos cada día. Los créditos no se acumulan y se reinician a medianoche.',
+      daily: 'créditos diarios',
+      reset: 'reset a medianoche',
+      secure: 'Datos seguros',
+      available: 'créditos',
+      resetIn: 'Se reinician en',
+    },
+    pricing: {
+      title: 'Planes simples y transparentes',
+      subtitle: 'Elige el plan que mejor se adapte a tu club',
+      month: 'mes',
+      popular: 'Más popular',
+      subscribe: 'Suscribirse a Premium',
+      free: {
+        desc: 'Perfecto para empezar',
+        feature1: '1 equipo',
+        feature2: '5 créditos diarios (se reinician a las 00:00)',
+        feature3: 'Gestión básica de jugadoras',
+        feature4: 'Convocatorias y eventos',
+      },
+      premium: {
+        desc: 'Para clubes en crecimiento',
+        feature1: 'Equipos ilimitados',
+        feature2: 'Créditos ilimitados',
+        feature3: 'Exportación a Excel',
+        feature4: 'Gráficos de evolución',
+        feature5: 'Gestión de paradas de bus',
+      },
+    },
+    cta: {
+      title: '¿Listo para transformar tu club?',
+      subtitle: 'Únete a cientos de entrenadores que ya gestionan sus equipos de forma profesional.',
+      button: 'Crear cuenta gratis',
+    },
+    footer: {
+      rights: 'Todos los derechos reservados.',
+      privacy: 'Privacidad',
+      terms: 'Términos',
+    },
+  },
 };

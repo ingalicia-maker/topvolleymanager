@@ -274,4 +274,86 @@ export default {
     ownTransport: 'Mezzo proprio',
     count: '{{count}} spostamento(i)',
   },
+
+  // Landing Page
+  landing: {
+    getStarted: 'Inizia gratis',
+    hero: {
+      badge: 'App mobile disponibile',
+      title: 'Gestisci la tua squadra di pallavolo come un professionista',
+      subtitle: 'Lo strumento completo per allenatori e direttori sportivi. Organizza eventi, monitora assenze, valuta giocatrici e coordina trasporti.',
+      cta: 'Inizia ora',
+      demo: 'Guarda demo',
+      noCard: 'Nessuna carta di credito • 5 crediti giornalieri gratuiti',
+    },
+    features: {
+      title: 'Tutto ciò di cui hai bisogno',
+      subtitle: 'Strumenti progettati specificamente per la gestione delle squadre di pallavolo',
+      players: {
+        title: 'Gestione Giocatrici',
+        desc: 'Mantieni un registro completo della tua rosa con foto, dati e assegnazioni alle squadre.',
+      },
+      events: {
+        title: 'Eventi e Convocazioni',
+        desc: 'Crea partite e allenamenti, gestisci conferme e monitoraggio presenze.',
+      },
+      absences: {
+        title: 'Controllo Assenze',
+        desc: 'Registra e analizza assenze giustificate e ingiustificate per ogni giocatrice.',
+      },
+      ratings: {
+        title: 'Valutazioni',
+        desc: 'Valuta le prestazioni con metriche personalizzate e monitoraggio evoluzione.',
+      },
+      transport: {
+        title: 'Gestione Trasporti',
+        desc: 'Coordina spostamenti con fermate bus e controllo passeggeri.',
+      },
+      stats: {
+        title: 'Statistiche e Report',
+        desc: 'Visualizza grafici evoluzione ed esporta dati per analisi dettagliate.',
+      },
+    },
+    credits: {
+      title: 'Sistema crediti trasparente',
+      description: 'Gli utenti gratuiti ricevono 5 crediti ogni giorno. I crediti non si accumulano e si azzerano a mezzanotte.',
+      daily: 'crediti giornalieri',
+      reset: 'reset a mezzanotte',
+      secure: 'Dati sicuri',
+      available: 'crediti',
+      resetIn: 'Reset tra',
+    },
+    pricing: {
+      title: 'Prezzi semplici e trasparenti',
+      subtitle: 'Scegli il piano più adatto al tuo club',
+      month: 'mese',
+      popular: 'Più popolare',
+      subscribe: 'Abbonati a Premium',
+      free: {
+        desc: 'Perfetto per iniziare',
+        feature1: '1 squadra',
+        feature2: '5 crediti giornalieri (reset alle 00:00)',
+        feature3: 'Gestione base giocatrici',
+        feature4: 'Eventi e convocazioni',
+      },
+      premium: {
+        desc: 'Per club in crescita',
+        feature1: 'Squadre illimitate',
+        feature2: 'Crediti illimitati',
+        feature3: 'Esportazione Excel',
+        feature4: 'Grafici evoluzione',
+        feature5: 'Gestione fermate bus',
+      },
+    },
+    cta: {
+      title: 'Pronto a trasformare il tuo club?',
+      subtitle: 'Unisciti a centinaia di allenatori che già gestiscono le loro squadre professionalmente.',
+      button: 'Crea account gratuito',
+    },
+    footer: {
+      rights: 'Tutti i diritti riservati.',
+      privacy: 'Privacy',
+      terms: 'Termini',
+    },
+  },
 };
