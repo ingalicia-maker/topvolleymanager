@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useClub } from '@/hooks/useClub';
+import { useStops } from '@/hooks/useStops';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -22,6 +24,12 @@ import {
   Loader2,
   Settings,
   Mail,
+  Palette,
+  Type,
+  Upload,
+  Bus,
+  Plus,
+  GripVertical,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -34,13 +42,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+const COLOR_PRESETS = [
+  { name: 'Azul', value: '221 83% 53%', hex: '#2563eb' },
+  { name: 'Rojo', value: '0 84% 60%', hex: '#ef4444' },
+  { name: 'Verde', value: '142 76% 36%', hex: '#16a34a' },
+  { name: 'Naranja', value: '25 95% 53%', hex: '#f97316' },
+  { name: 'Morado', value: '271 81% 56%', hex: '#a855f7' },
+  { name: 'Rosa', value: '330 81% 60%', hex: '#ec4899' },
+  { name: 'Cian', value: '186 94% 41%', hex: '#06b6d4' },
+  { name: 'Amarillo', value: '45 93% 47%', hex: '#eab308' },
+];
+
+const FONT_OPTIONS = ['Inter', 'Poppins', 'Roboto', 'Open Sans', 'Montserrat', 'Lato'];
 
 interface MemberWithProfile {
   id: string;
@@ -66,13 +79,29 @@ export default function ClubManagement() {
     refetch,
   } = useClub();
 
+  const { stops, loading: stopsLoading, addStop, updateStop, deleteStop } = useStops();
+  
   const [clubName, setClubName] = useState(club?.name || '');
+  const [primaryColor, setPrimaryColor] = useState(club?.primary_color || '221 83% 53%');
+  const [accentColor, setAccentColor] = useState(club?.accent_color || '25 95% 53%');
+  const [fontFamily, setFontFamily] = useState(club?.font_family || 'Inter');
+  const [logoUrl, setLogoUrl] = useState<string | null>(club?.logo_url || null);
+  
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [inviteRole, setInviteRole] = useState<'coach' | 'director'>('coach');
   const [inviteEmail, setInviteEmail] = useState('');
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [membersWithProfiles, setMembersWithProfiles] = useState<MemberWithProfile[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
+  
+  // Stops management
+  const [newStopName, setNewStopName] = useState('');
+  const [editingStopId, setEditingStopId] = useState<string | null>(null);
+  const [editingStopName, setEditingStopName] = useState('');
+  const [addingStop, setAddingStop] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch member profiles
   useState(() => {
@@ -100,6 +129,43 @@ export default function ClubManagement() {
     fetchProfiles();
   });
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor selecciona una imagen');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('La imagen debe ser menor a 5MB');
+      return;
+    }
+
+    setUploading(true);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `club-${club?.id}-logo-${Date.now()}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('club-logos')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error('Error al subir el logo');
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('club-logos')
+      .getPublicUrl(fileName);
+
+    setLogoUrl(urlData.publicUrl);
+    toast.success('Logo subido correctamente');
+    setUploading(false);
+  };
+
   const handleSaveClub = async () => {
     if (!clubName.trim()) {
       toast.error('El nombre del club es obligatorio');
@@ -107,14 +173,47 @@ export default function ClubManagement() {
     }
 
     setSaving(true);
-    const success = await updateClub({ name: clubName.trim() });
+    const success = await updateClub({
+      name: clubName.trim(),
+      primary_color: primaryColor,
+      accent_color: accentColor,
+      font_family: fontFamily,
+      logo_url: logoUrl,
+    });
     setSaving(false);
 
     if (success) {
-      toast.success('Club actualizado');
+      toast.success('Configuración guardada. Recarga para ver los cambios.');
     } else {
       toast.error('Error al actualizar el club');
     }
+  };
+
+  const handleAddStop = async () => {
+    if (!newStopName.trim()) {
+      toast.error('El nombre de la parada es obligatorio');
+      return;
+    }
+    setAddingStop(true);
+    const result = await addStop(newStopName.trim());
+    if (result) setNewStopName('');
+    setAddingStop(false);
+  };
+
+  const handleEditStop = async (stopId: string) => {
+    if (!editingStopName.trim()) {
+      toast.error('El nombre de la parada es obligatorio');
+      return;
+    }
+    const success = await updateStop(stopId, { name: editingStopName.trim() });
+    if (success) {
+      setEditingStopId(null);
+      setEditingStopName('');
+    }
+  };
+
+  const handleDeleteStop = async (stopId: string) => {
+    await deleteStop(stopId);
   };
 
   const handleCreateInvitation = async () => {
@@ -173,18 +272,22 @@ export default function ClubManagement() {
 
       <div className="p-4">
         <Tabs defaultValue="general">
-          <TabsList className="w-full mb-4">
-            <TabsTrigger value="general" className="flex-1 gap-1">
+          <TabsList className="w-full mb-4 grid grid-cols-4">
+            <TabsTrigger value="general" className="gap-1">
               <Settings className="h-4 w-4" />
-              General
+              <span className="hidden sm:inline">General</span>
             </TabsTrigger>
-            <TabsTrigger value="members" className="flex-1 gap-1">
+            <TabsTrigger value="visual" className="gap-1">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Visual</span>
+            </TabsTrigger>
+            <TabsTrigger value="members" className="gap-1">
               <Users className="h-4 w-4" />
-              Miembros
+              <span className="hidden sm:inline">Miembros</span>
             </TabsTrigger>
-            <TabsTrigger value="invitations" className="flex-1 gap-1">
+            <TabsTrigger value="invitations" className="gap-1">
               <Link2 className="h-4 w-4" />
-              Invitaciones
+              <span className="hidden sm:inline">Invitar</span>
             </TabsTrigger>
           </TabsList>
 
@@ -193,8 +296,9 @@ export default function ClubManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5" />
-                  Información del Club
+                  Identidad del Club
                 </CardTitle>
+                <CardDescription>Nombre y escudo del club</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -208,15 +312,176 @@ export default function ClubManagement() {
                 </div>
 
                 {isDirector && (
-                  <Button onClick={handleSaveClub} disabled={saving}>
-                    {saving ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : null}
-                    Guardar cambios
-                  </Button>
+                  <div className="space-y-2">
+                    <Label>Escudo del Club</Label>
+                    <div className="flex items-center gap-4">
+                      {logoUrl ? (
+                        <img src={logoUrl} alt="Logo" className="w-20 h-20 object-contain rounded-lg border bg-background" />
+                      ) : (
+                        <div className="w-20 h-20 rounded-lg border-2 border-dashed flex items-center justify-center bg-muted">
+                          <Building2 className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div>
+                        <input type="file" ref={fileInputRef} onChange={handleLogoUpload} accept="image/*" className="hidden" />
+                        <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="gap-2">
+                          <Upload className="h-4 w-4" />
+                          {uploading ? 'Subiendo...' : 'Subir escudo'}
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-1">PNG, JPG hasta 5MB</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
+
+            {/* Bus Stops */}
+            {isDirector && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Bus className="h-5 w-5" />
+                    Paradas de Bus
+                  </CardTitle>
+                  <CardDescription>Configura las paradas para desplazamientos</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {stopsLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        {stops.map((stop) => (
+                          <div key={stop.id} className="flex items-center gap-2 p-3 rounded-lg border bg-muted/50">
+                            <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                            {editingStopId === stop.id ? (
+                              <>
+                                <Input value={editingStopName} onChange={(e) => setEditingStopName(e.target.value)} className="flex-1" autoFocus />
+                                <Button size="sm" onClick={() => handleEditStop(stop.id)}>Guardar</Button>
+                                <Button size="sm" variant="outline" onClick={() => { setEditingStopId(null); setEditingStopName(''); }}>Cancelar</Button>
+                              </>
+                            ) : (
+                              <>
+                                <span className="flex-1 font-medium">{stop.name}</span>
+                                <Button size="sm" variant="ghost" onClick={() => { setEditingStopId(stop.id); setEditingStopName(stop.name); }}>Editar</Button>
+                                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDeleteStop(stop.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                        {stops.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No hay paradas configuradas</p>}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input placeholder="Nueva parada" value={newStopName} onChange={(e) => setNewStopName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddStop()} />
+                        <Button onClick={handleAddStop} disabled={addingStop || !newStopName.trim()} className="gap-2 shrink-0">
+                          <Plus className="h-4 w-4" />
+                          Añadir
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {isDirector && (
+              <Button onClick={handleSaveClub} disabled={saving} className="w-full">
+                {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Guardar cambios
+              </Button>
+            )}
+          </TabsContent>
+
+          <TabsContent value="visual" className="space-y-4">
+            {!isDirector ? (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Solo los directores pueden modificar la configuración visual.
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Palette className="h-5 w-5" />
+                      Colores
+                    </CardTitle>
+                    <CardDescription>Personaliza los colores de la interfaz</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Color Principal</Label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {COLOR_PRESETS.map((color) => (
+                          <button
+                            key={color.value}
+                            onClick={() => setPrimaryColor(color.value)}
+                            className={`p-3 rounded-lg border-2 transition-all ${primaryColor === color.value ? 'border-foreground scale-105' : 'border-transparent'}`}
+                            style={{ backgroundColor: color.hex }}
+                          >
+                            <span className="sr-only">{color.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Seleccionado: {COLOR_PRESETS.find(c => c.value === primaryColor)?.name || 'Personalizado'}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Color de Acento</Label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {COLOR_PRESETS.map((color) => (
+                          <button
+                            key={color.value}
+                            onClick={() => setAccentColor(color.value)}
+                            className={`p-3 rounded-lg border-2 transition-all ${accentColor === color.value ? 'border-foreground scale-105' : 'border-transparent'}`}
+                            style={{ backgroundColor: color.hex }}
+                          >
+                            <span className="sr-only">{color.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Seleccionado: {COLOR_PRESETS.find(c => c.value === accentColor)?.name || 'Personalizado'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Type className="h-5 w-5" />
+                      Tipografía
+                    </CardTitle>
+                    <CardDescription>Elige la fuente de la aplicación</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Select value={fontFamily} onValueChange={setFontFamily}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona una fuente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FONT_OPTIONS.map((font) => (
+                          <SelectItem key={font} value={font} style={{ fontFamily: font }}>{font}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </CardContent>
+                </Card>
+
+                <Button onClick={handleSaveClub} disabled={saving} className="w-full">
+                  {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  Guardar configuración visual
+                </Button>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="members" className="space-y-4">
