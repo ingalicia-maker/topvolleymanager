@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useTeams } from '@/hooks/useTeams';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -16,17 +17,20 @@ import { User, Shield, CheckCircle2, Mail, AlertCircle } from 'lucide-react';
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres');
 
+type AccountType = 'coach' | 'director';
+
 export default function Auth() {
   const navigate = useNavigate();
   const { teams, loading: teamsLoading } = useTeams();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
-  const [isDirector, setIsDirector] = useState(false);
+  const [accountType, setAccountType] = useState<AccountType>('coach');
   const [directorDeclarationAccepted, setDirectorDeclarationAccepted] = useState(false);
   const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({}); 
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; name?: string }>({}); 
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
 
   useEffect(() => {
@@ -48,12 +52,12 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Reset declaration when director is unchecked
+  // Reset declaration when switching away from director
   useEffect(() => {
-    if (!isDirector) {
+    if (accountType !== 'director') {
       setDirectorDeclarationAccepted(false);
     }
-  }, [isDirector]);
+  }, [accountType]);
 
   const validateInputs = (isSignUp: boolean) => {
     const newErrors: typeof errors = {};
@@ -70,8 +74,13 @@ export default function Auth() {
       newErrors.password = 'Mínimo 6 caracteres';
     }
 
-    if (isSignUp && !name.trim()) {
-      newErrors.name = 'El nombre es obligatorio';
+    if (isSignUp) {
+      if (!name.trim()) {
+        newErrors.name = 'El nombre es obligatorio';
+      }
+      if (password !== confirmPassword) {
+        newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      }
     }
 
     setErrors(newErrors);
@@ -91,6 +100,8 @@ export default function Auth() {
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         toast.error('Email o contraseña incorrectos');
+      } else if (error.message.includes('Email not confirmed')) {
+        toast.error('Email no confirmado. Revisa tu bandeja de entrada.');
       } else {
         toast.error(error.message);
       }
@@ -100,9 +111,21 @@ export default function Auth() {
     setLoading(false);
   };
 
+  const notifyDirectorsAboutNewCoach = async (coachName: string, coachEmail: string) => {
+    try {
+      await supabase.functions.invoke('notify-new-coach', {
+        body: { coachName, coachEmail }
+      });
+    } catch (error) {
+      console.error('Error notifying directors:', error);
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateInputs(true)) return;
+
+    const isDirector = accountType === 'director';
 
     // Director must accept declaration
     if (isDirector && !directorDeclarationAccepted) {
@@ -137,14 +160,15 @@ export default function Auth() {
       return;
     }
 
+    // Notify directors about new coach registration (if not a director themselves)
+    if (!isDirector && data.user) {
+      notifyDirectorsAboutNewCoach(name.trim(), email.trim());
+    }
+
     // Check if email confirmation is needed
     if (data.user && !data.session) {
       // User created but session is null means email confirmation is required
-      if (isDirector) {
-        setShowEmailConfirmation(true);
-      } else {
-        toast.success('Cuenta creada correctamente. Ya puedes iniciar sesión.');
-      }
+      setShowEmailConfirmation(true);
     } else if (data.session) {
       // Auto-confirmed, redirect will happen via onAuthStateChange
       toast.success('¡Cuenta creada correctamente!');
@@ -280,74 +304,109 @@ export default function Auth() {
                   />
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-confirm-password">Confirmar contraseña *</Label>
+                  <Input
+                    id="register-confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="Repite tu contraseña"
+                    disabled={loading}
+                  />
+                  {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
+                </div>
 
-                {/* Account type section */}
+                {/* Account type section with RadioGroup */}
                 <div className="space-y-3 pt-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <User className="w-4 h-4" />
-                    <span>Por defecto te registras como <strong>Entrenador</strong></span>
-                  </div>
+                  <Label className="text-sm font-medium">Tipo de cuenta *</Label>
                   
-                  <div className={`rounded-lg border p-4 transition-colors ${isDirector ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        id="is-director"
-                        checked={isDirector}
-                        onCheckedChange={(checked) => setIsDirector(checked === true)}
-                      />
-                      <div className="space-y-1 flex-1">
-                        <label
-                          htmlFor="is-director"
-                          className="text-sm font-medium flex items-center gap-2 cursor-pointer"
-                        >
-                          <Shield className="w-4 h-4 text-primary" />
-                          Soy Director Deportivo
-                        </label>
-                        <p className="text-xs text-muted-foreground">
-                          Acceso total a todos los equipos, configuración del club y gestión de entrenadores
-                        </p>
+                  <RadioGroup 
+                    value={accountType} 
+                    onValueChange={(value) => setAccountType(value as AccountType)}
+                    className="space-y-3"
+                  >
+                    {/* Coach option */}
+                    <div className={`rounded-lg border p-4 transition-colors cursor-pointer ${
+                      accountType === 'coach' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'
+                    }`}>
+                      <div className="flex items-start space-x-3">
+                        <RadioGroupItem value="coach" id="type-coach" className="mt-1" />
+                        <div className="space-y-1 flex-1">
+                          <label
+                            htmlFor="type-coach"
+                            className="text-sm font-medium flex items-center gap-2 cursor-pointer"
+                          >
+                            <User className="w-4 h-4 text-primary" />
+                            Entrenador
+                          </label>
+                          <p className="text-xs text-muted-foreground">
+                            Gestiona los equipos que te asignen, convocatorias y valoraciones de jugadoras
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    
-                    {/* Director declaration - only shown when director is checked */}
-                    {isDirector && (
-                      <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
-                        <div className="flex items-start space-x-3">
-                          <Checkbox
-                            id="director-declaration"
-                            checked={directorDeclarationAccepted}
-                            onCheckedChange={(checked) => setDirectorDeclarationAccepted(checked === true)}
-                          />
+
+                    {/* Director option */}
+                    <div className={`rounded-lg border p-4 transition-colors cursor-pointer ${
+                      accountType === 'director' ? 'border-amber-500 bg-amber-500/5' : 'border-border hover:border-amber-500/30'
+                    }`}>
+                      <div className="flex items-start space-x-3">
+                        <RadioGroupItem value="director" id="type-director" className="mt-1" />
+                        <div className="space-y-1 flex-1">
                           <label
-                            htmlFor="director-declaration"
-                            className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
+                            htmlFor="type-director"
+                            className="text-sm font-medium flex items-center gap-2 cursor-pointer"
                           >
-                            Declaro la autenticidad de mis datos y confirmo que actúo como Director Deportivo del club que voy a representar en esta aplicación
+                            <Shield className="w-4 h-4 text-amber-500" />
+                            Director Deportivo
                           </label>
+                          <p className="text-xs text-muted-foreground">
+                            Acceso total a todos los equipos, configuración del club y gestión de entrenadores
+                          </p>
                         </div>
-                        
-                        {directorDeclarationAccepted && (
-                          <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                            <CheckCircle2 className="w-4 h-4" />
-                            <span>Declaración aceptada</span>
-                          </div>
-                        )}
-                        
-                        <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
-                          <Mail className="w-4 h-4 shrink-0 mt-0.5" />
-                          <span>
-                            Se te enviará un email de confirmación para verificar tu identidad como Director Deportivo
-                          </span>
-                        </p>
                       </div>
-                    )}
-                  </div>
+                      
+                      {/* Director declaration - only shown when director is selected */}
+                      {accountType === 'director' && (
+                        <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+                          <div className="flex items-start space-x-3">
+                            <Checkbox
+                              id="director-declaration"
+                              checked={directorDeclarationAccepted}
+                              onCheckedChange={(checked) => setDirectorDeclarationAccepted(checked === true)}
+                            />
+                            <label
+                              htmlFor="director-declaration"
+                              className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
+                            >
+                              Declaro la autenticidad de mis datos y confirmo que actúo como Director Deportivo del club que voy a representar en esta aplicación
+                            </label>
+                          </div>
+                          
+                          {directorDeclarationAccepted && (
+                            <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>Declaración aceptada</span>
+                            </div>
+                          )}
+                          
+                          <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
+                            <Mail className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span>
+                              Se te enviará un email de confirmación para verificar tu identidad
+                            </span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </RadioGroup>
                 </div>
 
                 {/* Team selection */}
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">
-                    {isDirector ? 'Equipos del club (opcional)' : 'Equipos que entrenas (opcional)'}
+                    {accountType === 'director' ? 'Equipos del club (opcional)' : 'Equipos que entrenas (opcional)'}
                   </Label>
                   {teamsLoading ? (
                     <div className="flex items-center justify-center py-4">
@@ -386,12 +445,12 @@ export default function Auth() {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={loading || (isDirector && !directorDeclarationAccepted)}
+                  disabled={loading || (accountType === 'director' && !directorDeclarationAccepted)}
                 >
                   {loading ? 'Creando cuenta...' : 'Crear cuenta'}
                 </Button>
                 
-                {isDirector && !directorDeclarationAccepted && (
+                {accountType === 'director' && !directorDeclarationAccepted && (
                   <p className="text-xs text-center text-muted-foreground">
                     Acepta la declaración de autenticidad para continuar
                   </p>
