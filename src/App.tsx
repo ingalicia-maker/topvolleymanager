@@ -22,6 +22,8 @@ import DisplacementCalendar from "./pages/DisplacementCalendar";
 import PendingTasks from "./pages/PendingTasks";
 import WeeklySummary from "./pages/WeeklySummary";
 import CoachManagement from "./pages/CoachManagement";
+import ClubOnboarding from "./pages/ClubOnboarding";
+import ClubManagement from "./pages/ClubManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -167,6 +169,22 @@ const App = () => (
             element={
               <AuthGuard>
                 <CoachManagement />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/club-onboarding"
+            element={
+              <AuthGuard requireClub={false}>
+                <ClubOnboarding />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/club-management"
+            element={
+              <AuthGuard>
+                <ClubManagement />
               </AuthGuard>
             }
           />
