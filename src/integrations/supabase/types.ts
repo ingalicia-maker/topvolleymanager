@@ -456,6 +456,7 @@ export type Database = {
       }
       players: {
         Row: {
+          additional_measurements: Json | null
           birth_year: number | null
           club_id: string | null
           created_at: string | null
@@ -465,6 +466,9 @@ export type Database = {
           name: string
           number: number | null
           phone: string
+          phone_type: string | null
+          phone2: string | null
+          phone2_type: string | null
           photo_url: string | null
           surname1: string | null
           surname2: string | null
@@ -472,6 +476,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          additional_measurements?: Json | null
           birth_year?: number | null
           club_id?: string | null
           created_at?: string | null
@@ -481,6 +486,9 @@ export type Database = {
           name: string
           number?: number | null
           phone: string
+          phone_type?: string | null
+          phone2?: string | null
+          phone2_type?: string | null
           photo_url?: string | null
           surname1?: string | null
           surname2?: string | null
@@ -488,6 +496,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          additional_measurements?: Json | null
           birth_year?: number | null
           club_id?: string | null
           created_at?: string | null
@@ -497,6 +506,9 @@ export type Database = {
           name?: string
           number?: number | null
           phone?: string
+          phone_type?: string | null
+          phone2?: string | null
+          phone2_type?: string | null
           photo_url?: string | null
           surname1?: string | null
           surname2?: string | null
@@ -656,6 +668,7 @@ export type Database = {
           color: string
           created_at: string | null
           created_by: string | null
+          gender: string | null
           id: string
           name: string
           updated_at: string | null
@@ -666,6 +679,7 @@ export type Database = {
           color?: string
           created_at?: string | null
           created_by?: string | null
+          gender?: string | null
           id: string
           name: string
           updated_at?: string | null
@@ -676,6 +690,7 @@ export type Database = {
           color?: string
           created_at?: string | null
           created_by?: string | null
+          gender?: string | null
           id?: string
           name?: string
           updated_at?: string | null

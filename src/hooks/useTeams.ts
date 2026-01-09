@@ -8,6 +8,7 @@ export interface DbTeam {
   name: string;
   coach: string;
   color: string;
+  gender?: string;
   created_at: string | null;
   updated_at: string | null;
   created_by: string | null;
