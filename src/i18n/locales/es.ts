@@ -87,6 +87,7 @@ export default {
     surname2: 'Segundo Apellido',
     birthYear: 'Año de Nacimiento',
     height: 'Altura (cm)',
+    heightMeasuredAt: 'Fecha de medición de altura',
     phone: 'Teléfono',
     number: 'Dorsal',
     teams: 'Equipos',
@@ -177,6 +178,10 @@ export default {
     clickToRate: 'Pulsa para valorar',
     registered: 'valoraciones registradas',
     saveRating: 'Guardar valoración',
+    previousRatings: 'Valoraciones anteriores',
+    editRating: 'Editar valoración',
+    newRating: 'Nueva valoración',
+    updateRating: 'Actualizar valoración',
   },
 
   // Club

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
@@ -14,6 +14,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
@@ -22,6 +23,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useClubTheme } from '@/components/ClubThemeProvider';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useAuth } from '@/hooks/useAuth';
 
 const LANGUAGES = [
   { code: 'es', name: 'Español', flag: '🇪🇸' },
@@ -38,6 +40,7 @@ export default function Index() {
   const { clubName, logoUrl } = useClubTheme();
   const { unreadCount } = useNotifications();
   const { isPremium, subscription } = useSubscription();
+  const { signOut } = useAuth();
 
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
@@ -118,6 +121,14 @@ export default function Index() {
                   {lang.name}
                 </DropdownMenuItem>
               ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={signOut}
+                className="text-destructive focus:text-destructive"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                {t('auth.logout')}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <NotificationBell />

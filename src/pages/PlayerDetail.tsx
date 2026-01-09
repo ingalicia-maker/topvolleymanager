@@ -32,7 +32,7 @@ import { useSeasons } from '@/hooks/useSeasons';
 import { RatingInput } from '@/components/RatingInput';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
+import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight, Edit2, Calendar } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,7 +59,7 @@ export default function PlayerDetail() {
   const { t } = useTranslation();
   const { players, updatePlayer, deletePlayer, loading } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
-  const { ratings, addRating, refetch: refetchRatings } = usePlayerRatings();
+  const { ratings, addRating, updateRating, deleteRating, refetch: refetchRatings } = usePlayerRatings();
   const { seasons } = useSeasons();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,6 +72,7 @@ export default function PlayerDetail() {
   const [number, setNumber] = useState('');
   const [birthYear, setBirthYear] = useState('');
   const [height, setHeight] = useState('');
+  const [heightMeasuredAt, setHeightMeasuredAt] = useState('');
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -90,6 +91,8 @@ export default function PlayerDetail() {
   });
   const [ratingNotes, setRatingNotes] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
+  const [editingRatingId, setEditingRatingId] = useState<string | null>(null);
+  const [deletingRatingId, setDeletingRatingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (player) {
@@ -100,6 +103,7 @@ export default function PlayerDetail() {
       setNumber(player.number?.toString() || '');
       setBirthYear(player.birth_year?.toString() || '');
       setHeight(player.height?.toString() || '');
+      setHeightMeasuredAt((player as any).height_measured_at || '');
       setSelectedTeams(player.teams || []);
       setPhotoUrl(player.photo_url || null);
     }
@@ -201,10 +205,45 @@ export default function PlayerDetail() {
       leadership_initiative: 5,
     });
     setRatingNotes('');
+    setEditingRatingId(null);
     setRatingDialogOpen(true);
   };
 
-  // Submit rating
+  // Get ratings for selected month
+  const ratingsForSelectedMonth = useMemo(() => {
+    if (!playerId) return [];
+    return ratings.filter(r => 
+      r.player_id === playerId && 
+      r.rating_date.startsWith(selectedMonth) &&
+      (!ratingTeamId || r.team_id === ratingTeamId)
+    );
+  }, [playerId, ratings, selectedMonth, ratingTeamId]);
+
+  // Edit existing rating
+  const handleEditRating = (rating: any) => {
+    setEditingRatingId(rating.id);
+    setRatingValues({
+      effort_attitude: rating.effort_attitude,
+      communication_cooperation: rating.communication_cooperation,
+      technical_execution: rating.technical_execution,
+      decision_making: rating.decision_making,
+      leadership_initiative: rating.leadership_initiative,
+    });
+    setRatingNotes(rating.notes || '');
+    setRatingTeamId(rating.team_id);
+  };
+
+  // Delete rating
+  const handleDeleteRating = async (ratingId: string) => {
+    setDeletingRatingId(ratingId);
+    const success = await deleteRating(ratingId);
+    setDeletingRatingId(null);
+    if (success) {
+      refetchRatings();
+    }
+  };
+
+  // Submit rating (new or update)
   const handleSubmitRating = async () => {
     if (!playerId || !ratingTeamId) {
       toast.error(t('ratings.selectTeam'));
@@ -214,18 +253,27 @@ export default function PlayerDetail() {
     setSubmittingRating(true);
     const activeSeason = seasons.find(s => s.is_active);
     
-    const result = await addRating({
-      player_id: playerId,
-      team_id: ratingTeamId,
-      ...ratingValues,
-      notes: ratingNotes || undefined,
-      rating_date: `${selectedMonth}-15`,
-    }, activeSeason?.id);
+    let result;
+    if (editingRatingId) {
+      result = await updateRating(editingRatingId, {
+        ...ratingValues,
+        notes: ratingNotes || undefined,
+        rating_date: `${selectedMonth}-15`,
+      });
+    } else {
+      result = await addRating({
+        player_id: playerId,
+        team_id: ratingTeamId,
+        ...ratingValues,
+        notes: ratingNotes || undefined,
+        rating_date: `${selectedMonth}-15`,
+      }, activeSeason?.id);
+    }
 
     setSubmittingRating(false);
 
     if (result) {
-      setRatingDialogOpen(false);
+      setEditingRatingId(null);
       refetchRatings();
     }
   };
@@ -324,8 +372,9 @@ export default function PlayerDetail() {
       number: number ? parseInt(number) : null,
       birth_year: birthYear ? parseInt(birthYear) : null,
       height: height ? parseInt(height) : null,
+      height_measured_at: heightMeasuredAt || null,
       photo_url: photoUrl,
-    });
+    } as any);
 
     if (success) {
       navigate(-1);
@@ -542,8 +591,95 @@ export default function PlayerDetail() {
                 </div>
               )}
 
+              {/* Previous Ratings for Selected Month */}
+              {ratingsForSelectedMonth.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {t('ratings.previousRatings')}
+                  </Label>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {ratingsForSelectedMonth.map(rating => {
+                      const avgScore = (rating.effort_attitude + rating.communication_cooperation + 
+                        rating.technical_execution + rating.decision_making + rating.leadership_initiative) / 5;
+                      const isEditing = editingRatingId === rating.id;
+                      return (
+                        <div 
+                          key={rating.id} 
+                          className={`flex items-center justify-between p-2 rounded-lg border ${isEditing ? 'border-primary bg-primary/5' : 'border-border'}`}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className={getScoreColor(avgScore)}>
+                                {avgScore.toFixed(1)}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(rating.rating_date), 'dd/MM/yyyy')}
+                              </span>
+                            </div>
+                            {rating.notes && (
+                              <p className="text-xs text-muted-foreground mt-1 truncate max-w-[200px]">
+                                {rating.notes}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleEditRating(rating)}
+                              disabled={isEditing}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleDeleteRating(rating.id)}
+                              disabled={deletingRatingId === rating.id}
+                            >
+                              {deletingRatingId === rating.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Rating Inputs */}
               <div className="border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">
+                    {editingRatingId ? t('ratings.editRating') : t('ratings.newRating')}
+                  </span>
+                  {editingRatingId && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingRatingId(null);
+                        setRatingValues({
+                          effort_attitude: 5,
+                          communication_cooperation: 5,
+                          technical_execution: 5,
+                          decision_making: 5,
+                          leadership_initiative: 5,
+                        });
+                        setRatingNotes('');
+                      }}
+                    >
+                      {t('common.cancel')}
+                    </Button>
+                  )}
+                </div>
                 {RATING_CATEGORIES.map(cat => (
                   <RatingInput
                     key={cat.key}
@@ -577,7 +713,7 @@ export default function PlayerDetail() {
                 ) : (
                   <Star className="h-4 w-4" />
                 )}
-                {submittingRating ? t('common.loading') : t('ratings.saveRating')}
+                {submittingRating ? t('common.loading') : (editingRatingId ? t('ratings.updateRating') : t('ratings.saveRating'))}
               </Button>
             </div>
           </DialogContent>
@@ -669,6 +805,18 @@ export default function PlayerDetail() {
                   disabled={saving}
                 />
               </div>
+            </div>
+
+            {/* Height measurement date */}
+            <div className="space-y-2">
+              <Label htmlFor="heightMeasuredAt">{t('players.heightMeasuredAt')}</Label>
+              <Input
+                id="heightMeasuredAt"
+                type="month"
+                value={heightMeasuredAt}
+                onChange={e => setHeightMeasuredAt(e.target.value)}
+                disabled={saving}
+              />
             </div>
           </CardContent>
         </Card>
