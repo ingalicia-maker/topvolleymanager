@@ -1,17 +1,35 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
 import { usePlayerRatings, RATING_CATEGORIES, RatingCategoryKey } from '@/hooks/usePlayerRatings';
+import { useSeasons } from '@/hooks/useSeasons';
+import { RatingInput } from '@/components/RatingInput';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
@@ -38,9 +56,11 @@ const RATING_EMOJIS: Record<string, string> = {
 export default function PlayerDetail() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { players, updatePlayer, deletePlayer, loading } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
-  const { ratings } = usePlayerRatings();
+  const { ratings, addRating, refetch: refetchRatings } = usePlayerRatings();
+  const { seasons } = useSeasons();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const player = players.find(p => p.id === playerId);
@@ -56,6 +76,20 @@ export default function PlayerDetail() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  // Rating dialog state
+  const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
+  const [ratingTeamId, setRatingTeamId] = useState<string>('');
+  const [ratingValues, setRatingValues] = useState<Record<RatingCategoryKey, number>>({
+    effort_attitude: 5,
+    communication_cooperation: 5,
+    technical_execution: 5,
+    decision_making: 5,
+    leadership_initiative: 5,
+  });
+  const [ratingNotes, setRatingNotes] = useState('');
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   useEffect(() => {
     if (player) {
@@ -131,6 +165,69 @@ export default function PlayerDetail() {
     setSelectedTeams(prev =>
       prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId]
     );
+  };
+
+  // Generate month options (last 12 months)
+  const monthOptions = useMemo(() => {
+    const options = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      options.push({
+        value: format(d, 'yyyy-MM'),
+        label: format(d, 'MMMM yyyy'),
+      });
+    }
+    return options;
+  }, []);
+
+  // Get player's teams for rating
+  const playerTeamOptions = useMemo(() => {
+    if (!player?.teams) return [];
+    return teams.filter(t => player.teams?.includes(t.id));
+  }, [player, teams]);
+
+  // Open rating dialog
+  const handleOpenRatingDialog = () => {
+    if (playerTeamOptions.length > 0) {
+      setRatingTeamId(playerTeamOptions[0].id);
+    }
+    setSelectedMonth(format(new Date(), 'yyyy-MM'));
+    setRatingValues({
+      effort_attitude: 5,
+      communication_cooperation: 5,
+      technical_execution: 5,
+      decision_making: 5,
+      leadership_initiative: 5,
+    });
+    setRatingNotes('');
+    setRatingDialogOpen(true);
+  };
+
+  // Submit rating
+  const handleSubmitRating = async () => {
+    if (!playerId || !ratingTeamId) {
+      toast.error(t('ratings.selectTeam'));
+      return;
+    }
+
+    setSubmittingRating(true);
+    const activeSeason = seasons.find(s => s.is_active);
+    
+    const result = await addRating({
+      player_id: playerId,
+      team_id: ratingTeamId,
+      ...ratingValues,
+      notes: ratingNotes || undefined,
+      rating_date: `${selectedMonth}-15`,
+    }, activeSeason?.id);
+
+    setSubmittingRating(false);
+
+    if (result) {
+      setRatingDialogOpen(false);
+      refetchRatings();
+    }
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -346,56 +443,145 @@ export default function PlayerDetail() {
         </Card>
 
         {/* Ratings Summary Card */}
-        <Link to="/ratings">
-          <Card className="shadow-lg hover:shadow-xl transition-all cursor-pointer border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-amber-500/10">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-amber-500" />
-                  <h3 className="font-semibold">Valoraciones</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  {ratingStats && (
-                    <>
-                      {getTrendIcon()}
-                      <span className={`text-xl font-bold ${getScoreColor(ratingStats.totalAvg)}`}>
-                        {ratingStats.totalAvg.toFixed(1)}
-                      </span>
-                    </>
-                  )}
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </div>
+        <Card 
+          className="shadow-lg hover:shadow-xl transition-all cursor-pointer border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-amber-500/10"
+          onClick={handleOpenRatingDialog}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-amber-500" />
+                <h3 className="font-semibold">{t('nav.ratings')}</h3>
               </div>
-              
-              {ratingStats ? (
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-1">
-                    {RATING_CATEGORIES.map(cat => (
-                      <Badge
-                        key={cat.key}
-                        variant="outline"
-                        className={`text-xs ${getScoreColor(ratingStats.avgByCategory[cat.key])}`}
-                      >
-                        {RATING_EMOJIS[cat.key]} {ratingStats.avgByCategory[cat.key].toFixed(1)}
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {ratingStats.ratingsCount} valoraciones registradas
-                  </p>
+              <div className="flex items-center gap-2">
+                {ratingStats && (
+                  <>
+                    {getTrendIcon()}
+                    <span className={`text-xl font-bold ${getScoreColor(ratingStats.totalAvg)}`}>
+                      {ratingStats.totalAvg.toFixed(1)}
+                    </span>
+                  </>
+                )}
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </div>
+            
+            {ratingStats ? (
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-1">
+                  {RATING_CATEGORIES.map(cat => (
+                    <Badge
+                      key={cat.key}
+                      variant="outline"
+                      className={`text-xs ${getScoreColor(ratingStats.avgByCategory[cat.key])}`}
+                    >
+                      {RATING_EMOJIS[cat.key]} {ratingStats.avgByCategory[cat.key].toFixed(1)}
+                    </Badge>
+                  ))}
                 </div>
-              ) : (
-                <div className="text-center py-2">
-                  <p className="text-sm text-muted-foreground mb-2">Sin valoraciones todavía</p>
-                  <Badge variant="secondary" className="gap-1">
-                    <Star className="h-3 w-3" />
-                    Pulsa para valorar
-                  </Badge>
+                <p className="text-xs text-muted-foreground">
+                  {ratingStats.ratingsCount} {t('ratings.registered')}
+                </p>
+              </div>
+            ) : (
+              <div className="text-center py-2">
+                <p className="text-sm text-muted-foreground mb-2">{t('ratings.noRatings')}</p>
+                <Badge variant="secondary" className="gap-1">
+                  <Star className="h-3 w-3" />
+                  {t('ratings.clickToRate')}
+                </Badge>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Rating Dialog */}
+        <Dialog open={ratingDialogOpen} onOpenChange={setRatingDialogOpen}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-amber-500" />
+                {t('ratings.ratePlayer')}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Month Selector */}
+              <div className="space-y-2">
+                <Label>{t('ratings.selectMonth')}</Label>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {monthOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Team Selector (if player has multiple teams) */}
+              {playerTeamOptions.length > 1 && (
+                <div className="space-y-2">
+                  <Label>{t('teams.title')}</Label>
+                  <Select value={ratingTeamId} onValueChange={setRatingTeamId}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {playerTeamOptions.map(team => (
+                        <SelectItem key={team.id} value={team.id}>
+                          {team.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </Link>
+
+              {/* Rating Inputs */}
+              <div className="border rounded-lg p-3">
+                {RATING_CATEGORIES.map(cat => (
+                  <RatingInput
+                    key={cat.key}
+                    label={cat.shortLabel}
+                    emoji={RATING_EMOJIS[cat.key]}
+                    value={ratingValues[cat.key]}
+                    onChange={(val) => setRatingValues(prev => ({ ...prev, [cat.key]: val }))}
+                  />
+                ))}
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label>{t('ratings.notes')} ({t('common.optional')})</Label>
+                <Textarea
+                  value={ratingNotes}
+                  onChange={(e) => setRatingNotes(e.target.value)}
+                  placeholder={t('ratings.notesPlaceholder')}
+                  rows={3}
+                />
+              </div>
+
+              {/* Submit Button */}
+              <Button 
+                onClick={handleSubmitRating} 
+                className="w-full gap-2"
+                disabled={submittingRating || !ratingTeamId}
+              >
+                {submittingRating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Star className="h-4 w-4" />
+                )}
+                {submittingRating ? t('common.loading') : t('ratings.saveRating')}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Form */}
         <Card>
