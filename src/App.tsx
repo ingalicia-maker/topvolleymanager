@@ -27,6 +27,7 @@ import ClubManagement from "./pages/ClubManagement";
 import AdminPanel from "./pages/AdminPanel";
 import Subscription from "./pages/Subscription";
 import Landing from "./pages/Landing";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,8 +39,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
         <Routes>
-          <Route path="/landing" element={<Landing />} />
+        <Route path="/landing" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             path="/"
             element={
