@@ -175,30 +175,36 @@ export default function Index() {
           </CardContent>
         </Card>
       </Link>
-        {/* Stats Cards */}
+      {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-3">
-          <Card className="shadow-lg">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Users className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{players.length}</p>
-                <p className="text-xs text-muted-foreground">{t('nav.players')}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-lg">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-secondary-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{teams.length}</p>
-                <p className="text-xs text-muted-foreground">{t('nav.teams')}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <Link to="/players">
+            <Card className="shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-2xl font-bold text-foreground">{players.length}</p>
+                  <p className="text-xs text-muted-foreground">{t('nav.players')}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to="/teams">
+            <Card className="shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-secondary-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-2xl font-bold text-foreground">{teams.length}</p>
+                  <p className="text-xs text-muted-foreground">{t('nav.teams')}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Quick Stats */}
