@@ -138,6 +138,8 @@ export default {
     blockJump: 'Two-hand jump (block)',
     measurementDate: 'Measurement date',
     addMeasurement: 'Add measurement',
+    customMeasurement: 'Custom measurement',
+    customMeasurementPlaceholder: 'E.g.: Wingspan, Weight, etc.',
   },
 
   // Teams

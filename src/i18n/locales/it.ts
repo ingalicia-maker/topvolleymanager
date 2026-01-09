@@ -138,6 +138,8 @@ export default {
     blockJump: 'Salto a due mani (muro)',
     measurementDate: 'Data misurazione',
     addMeasurement: 'Aggiungi misurazione',
+    customMeasurement: 'Altra misurazione personalizzata',
+    customMeasurementPlaceholder: 'Es: Apertura braccia, Peso, ecc.',
   },
 
   // Teams

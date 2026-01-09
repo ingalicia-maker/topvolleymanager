@@ -138,6 +138,8 @@ export default {
     blockJump: 'Salto con dos manos (bloqueo)',
     measurementDate: 'Fecha de medición',
     addMeasurement: 'Añadir medición',
+    customMeasurement: 'Otra medición personalizada',
+    customMeasurementPlaceholder: 'Ej: Envergadura, Peso, etc.',
   },
 
   // Teams
