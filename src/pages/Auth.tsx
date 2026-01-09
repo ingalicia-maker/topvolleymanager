@@ -177,17 +177,22 @@ export default function Auth() {
         return;
       }
 
-      toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
-      localStorage.setItem('is_new_director', 'true');
-      
-      // Wait for auth state to update and let onAuthStateChange handle navigation
-      setShowEmailConfirmation(false);
-      
-      // Try to sign in after verification
-      await supabase.auth.signInWithPassword({
+      // Sign in after verification to get fresh JWT with confirmed status
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
+
+      if (signInError) {
+        toast.error(signInError.message);
+        setVerifying(false);
+        return;
+      }
+
+      toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
+      localStorage.setItem('is_new_director', 'true');
+      setShowEmailConfirmation(false);
+      // onAuthStateChange will handle navigation
     } catch (error) {
       console.error('Error verifying code:', error);
       toast.error(t('auth.verificationError', 'Error al verificar el código'));
