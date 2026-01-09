@@ -54,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to each director
     const emailPromises = directorProfiles?.map(director => 
       resend.emails.send({
-        from: "Voleibol Manager <onboarding@resend.dev>",
+        from: "Top Volley Manager <onboarding@resend.dev>",
         to: [director.email],
         subject: "Nuevo entrenador registrado",
         html: `
@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
             <p style="font-size: 12px; color: #9ca3af;">
-              Este email fue enviado automáticamente por Voleibol Manager.
+              Este email fue enviado automáticamente por Top Volley Manager.
             </p>
           </div>
         `,

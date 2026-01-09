@@ -23,7 +23,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { coachEmail, coachName, approvedBy }: NotifyCoachApprovedRequest = await req.json();
 
     const emailResponse = await resend.emails.send({
-      from: "Voleibol Manager <onboarding@resend.dev>",
+      from: "Top Volley Manager <onboarding@resend.dev>",
       to: [coachEmail],
       subject: "¡Tu cuenta ha sido aprobada!",
       html: `
@@ -54,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            Este email fue enviado automáticamente por Voleibol Manager.
+            Este email fue enviado automáticamente por Top Volley Manager.
           </p>
         </div>
       `,
