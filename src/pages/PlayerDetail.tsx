@@ -78,6 +78,7 @@ export default function PlayerDetail() {
   const [heightMeasuredAt, setHeightMeasuredAt] = useState('');
   const [additionalMeasurements, setAdditionalMeasurements] = useState<Array<{type: string, value: string, measured_at: string}>>([]);
   const [showAddMeasurement, setShowAddMeasurement] = useState(false);
+  const [customMeasurementName, setCustomMeasurementName] = useState('');
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -404,8 +405,10 @@ export default function PlayerDetail() {
   };
 
   const handleAddMeasurement = (type: string) => {
-    setAdditionalMeasurements(prev => [...prev, { type, value: '', measured_at: format(new Date(), 'yyyy-MM') }]);
+    if (!type.trim()) return;
+    setAdditionalMeasurements(prev => [...prev, { type: type.trim(), value: '', measured_at: format(new Date(), 'yyyy-MM') }]);
     setShowAddMeasurement(false);
+    setCustomMeasurementName('');
   };
 
   const handleUpdateMeasurement = (index: number, field: 'value' | 'measured_at', value: string) => {
@@ -945,8 +948,8 @@ export default function PlayerDetail() {
                   {t('players.addOtherMeasurements')}
                 </Button>
               ) : (
-                <div className="p-3 border rounded-lg space-y-2">
-                  <Label className="text-sm">{t('players.addMeasurement')}</Label>
+                <div className="p-3 border rounded-lg space-y-3">
+                  <Label className="text-sm font-medium">{t('players.addMeasurement')}</Label>
                   <div className="flex flex-wrap gap-2">
                     {measurementSuggestions.map(suggestion => (
                       <Button
@@ -960,25 +963,44 @@ export default function PlayerDetail() {
                       </Button>
                     ))}
                   </div>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      placeholder={t('common.optional') + '...'}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
-                          handleAddMeasurement((e.target as HTMLInputElement).value.trim());
-                          (e.target as HTMLInputElement).value = '';
-                        }
-                      }}
-                      disabled={saving}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowAddMeasurement(false)}
-                    >
-                      {t('common.cancel')}
-                    </Button>
+                  
+                  {/* Custom measurement option */}
+                  <div className="pt-2 border-t space-y-2">
+                    <Label className="text-sm text-muted-foreground">{t('players.customMeasurement')}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={customMeasurementName}
+                        onChange={(e) => setCustomMeasurementName(e.target.value)}
+                        placeholder={t('players.customMeasurementPlaceholder')}
+                        disabled={saving}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && customMeasurementName.trim()) {
+                            handleAddMeasurement(customMeasurementName);
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleAddMeasurement(customMeasurementName)}
+                        disabled={saving || !customMeasurementName.trim()}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowAddMeasurement(false);
+                      setCustomMeasurementName('');
+                    }}
+                    className="w-full"
+                  >
+                    {t('common.cancel')}
+                  </Button>
                 </div>
               )}
             </div>
