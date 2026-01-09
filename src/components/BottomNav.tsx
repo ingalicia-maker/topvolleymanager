@@ -1,13 +1,14 @@
-import { Home, Calendar, UserCircle, AlertTriangle } from 'lucide-react';
+import { Home, Calendar, UserCircle, AlertTriangle, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from './NavLink';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const navItems = [
-  { to: '/', icon: Home, labelKey: 'nav.home' },
-  { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true },
-  { to: '/players', icon: UserCircle, labelKey: 'nav.players' },
-  { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences' },
+  { to: '/', icon: Home, labelKey: 'nav.home', tourId: 'home' },
+  { to: '/teams', icon: Calendar, labelKey: 'nav.teams', tourId: 'teams' },
+  { to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' },
+  { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true, tourId: 'events' },
+  { to: '/ratings', icon: Star, labelKey: 'nav.ratings', tourId: 'ratings' },
 ];
 
 export function BottomNav() {
@@ -24,6 +25,7 @@ export function BottomNav() {
             end={item.to === '/'}
             className="relative flex flex-col items-center gap-0.5 px-1 py-1.5 text-muted-foreground transition-colors min-w-0"
             activeClassName="text-primary"
+            data-tour={item.tourId}
           >
             <div className="relative">
               <item.icon className="h-5 w-5 shrink-0" />
