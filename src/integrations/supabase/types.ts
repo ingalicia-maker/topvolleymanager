@@ -231,6 +231,36 @@ export type Database = {
         }
         Relationships: []
       }
+      email_verification_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          language: string
+          token: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          language?: string
+          token: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          language?: string
+          token?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           club_id: string | null
@@ -821,6 +851,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_verification_tokens: { Args: never; Returns: undefined }
       consume_credit: { Args: { _user_id: string }; Returns: boolean }
       get_grace_period_days_remaining: {
         Args: { _user_id: string }
