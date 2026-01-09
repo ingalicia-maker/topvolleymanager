@@ -140,6 +140,9 @@ export default {
     addMeasurement: 'Añadir medición',
     customMeasurement: 'Otra medición personalizada',
     customMeasurementPlaceholder: 'Ej: Envergadura, Peso, etc.',
+    measurementEntries: 'registros',
+    measurementHistory: 'Historial de mediciones',
+    addNewEntry: 'Añadir nueva medición',
   },
 
   // Teams

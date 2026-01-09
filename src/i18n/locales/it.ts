@@ -140,6 +140,9 @@ export default {
     addMeasurement: 'Aggiungi misurazione',
     customMeasurement: 'Altra misurazione personalizzata',
     customMeasurementPlaceholder: 'Es: Apertura braccia, Peso, ecc.',
+    measurementEntries: 'voci',
+    measurementHistory: 'Storico misurazioni',
+    addNewEntry: 'Aggiungi nuova misurazione',
   },
 
   // Teams
