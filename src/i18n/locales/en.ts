@@ -348,6 +348,13 @@ export default {
       demo: 'Watch demo',
       noCard: 'No credit card required • 5 free daily credits',
     },
+    demo: {
+      title: 'Discover the app',
+      subtitle: 'Explore the main screens of Top Volley Manager',
+      dashboard: 'Main dashboard',
+      players: 'Player management',
+      calendar: 'Events calendar',
+    },
     features: {
       title: 'Everything you need',
       subtitle: 'Tools specifically designed for volleyball team management',

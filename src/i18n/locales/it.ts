@@ -348,6 +348,13 @@ export default {
       demo: 'Guarda demo',
       noCard: 'Nessuna carta di credito • 5 crediti giornalieri gratuiti',
     },
+    demo: {
+      title: 'Scopri l\'app',
+      subtitle: 'Esplora le schermate principali di Top Volley Manager',
+      dashboard: 'Dashboard principale',
+      players: 'Gestione giocatrici',
+      calendar: 'Calendario eventi',
+    },
     features: {
       title: 'Tutto ciò di cui hai bisogno',
       subtitle: 'Strumenti progettati specificamente per la gestione delle squadre di pallavolo',
