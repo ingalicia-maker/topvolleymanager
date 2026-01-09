@@ -32,7 +32,7 @@ import { useSeasons } from '@/hooks/useSeasons';
 import { RatingInput } from '@/components/RatingInput';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight, Edit2, Calendar, Plus } from 'lucide-react';
+import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight, Edit2, Calendar, Plus, History, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,6 +79,7 @@ export default function PlayerDetail() {
   const [additionalMeasurements, setAdditionalMeasurements] = useState<Array<{type: string, value: string, measured_at: string}>>([]);
   const [showAddMeasurement, setShowAddMeasurement] = useState(false);
   const [customMeasurementName, setCustomMeasurementName] = useState('');
+  const [expandedMeasurementTypes, setExpandedMeasurementTypes] = useState<Set<string>>(new Set());
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -106,6 +107,38 @@ export default function PlayerDetail() {
     { key: 'verticalJump', label: t('players.verticalJump') },
     { key: 'blockJump', label: t('players.blockJump') },
   ];
+
+  // Group measurements by type for history view
+  const groupedMeasurements = useMemo(() => {
+    const grouped: Record<string, Array<{value: string, measured_at: string, index: number}>> = {};
+    additionalMeasurements.forEach((m, index) => {
+      if (!grouped[m.type]) {
+        grouped[m.type] = [];
+      }
+      grouped[m.type].push({ value: m.value, measured_at: m.measured_at, index });
+    });
+    // Sort each group by date (newest first)
+    Object.keys(grouped).forEach(type => {
+      grouped[type].sort((a, b) => b.measured_at.localeCompare(a.measured_at));
+    });
+    return grouped;
+  }, [additionalMeasurements]);
+
+  const toggleMeasurementType = (type: string) => {
+    setExpandedMeasurementTypes(prev => {
+      const next = new Set(prev);
+      if (next.has(type)) {
+        next.delete(type);
+      } else {
+        next.add(type);
+      }
+      return next;
+    });
+  };
+
+  const handleAddEntryToType = (type: string) => {
+    setAdditionalMeasurements(prev => [...prev, { type, value: '', measured_at: format(new Date(), 'yyyy-MM') }]);
+  };
 
   useEffect(() => {
     if (player) {
@@ -896,43 +929,148 @@ export default function PlayerDetail() {
               />
             </div>
 
-            {/* Additional Measurements */}
+            {/* Additional Measurements with History */}
             <div className="space-y-3">
-              {additionalMeasurements.length > 0 && (
-                <div className="space-y-2">
-                  <Label>{t('players.otherMeasurements')}</Label>
-                  {additionalMeasurements.map((m, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 border rounded-lg">
-                      <div className="flex-1 space-y-2">
-                        <span className="text-sm font-medium">{m.type}</span>
-                        <div className="flex gap-2">
-                          <Input
-                            value={m.value}
-                            onChange={(e) => handleUpdateMeasurement(index, 'value', e.target.value)}
-                            placeholder="Ej: 285 cm"
-                            disabled={saving}
-                            className="flex-1"
-                          />
-                          <Input
-                            type="month"
-                            value={m.measured_at}
-                            onChange={(e) => handleUpdateMeasurement(index, 'measured_at', e.target.value)}
-                            disabled={saving}
-                            className="w-[140px]"
-                          />
+              {Object.keys(groupedMeasurements).length > 0 && (
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <History className="h-4 w-4" />
+                    {t('players.otherMeasurements')}
+                  </Label>
+                  {Object.entries(groupedMeasurements).map(([type, entries]) => {
+                    const isExpanded = expandedMeasurementTypes.has(type);
+                    const latestEntry = entries[0];
+                    const hasHistory = entries.length > 1;
+                    
+                    // Calculate trend if there's history
+                    let trendValue: number | null = null;
+                    if (hasHistory && entries[0].value && entries[1].value) {
+                      const latest = parseFloat(entries[0].value.replace(/[^\d.,]/g, '').replace(',', '.'));
+                      const previous = parseFloat(entries[1].value.replace(/[^\d.,]/g, '').replace(',', '.'));
+                      if (!isNaN(latest) && !isNaN(previous)) {
+                        trendValue = latest - previous;
+                      }
+                    }
+                    
+                    return (
+                      <div key={type} className="border rounded-lg overflow-hidden">
+                        {/* Header with latest value */}
+                        <div 
+                          className={`p-3 bg-muted/30 flex items-center justify-between ${hasHistory ? 'cursor-pointer hover:bg-muted/50' : ''}`}
+                          onClick={() => hasHistory && toggleMeasurementType(type)}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{type}</span>
+                              {hasHistory && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {entries.length} {t('players.measurementEntries')}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-lg font-semibold text-primary">
+                                {latestEntry.value || '-'}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                ({latestEntry.measured_at})
+                              </span>
+                              {trendValue !== null && trendValue !== 0 && (
+                                <span className={`text-xs flex items-center gap-0.5 ${trendValue > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {trendValue > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                  {trendValue > 0 ? '+' : ''}{trendValue.toFixed(1)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddEntryToType(type);
+                              }}
+                              disabled={saving}
+                              title={t('players.addNewEntry')}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                            {hasHistory && (
+                              isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
                         </div>
+                        
+                        {/* Expanded history */}
+                        {isExpanded && (
+                          <div className="p-2 space-y-2 border-t bg-background">
+                            <Label className="text-xs text-muted-foreground px-1">{t('players.measurementHistory')}</Label>
+                            {entries.map((entry, idx) => (
+                              <div key={entry.index} className="flex items-center gap-2 p-2 rounded-lg bg-muted/20">
+                                <div className="flex-1 flex gap-2">
+                                  <Input
+                                    value={entry.value}
+                                    onChange={(e) => handleUpdateMeasurement(entry.index, 'value', e.target.value)}
+                                    placeholder="Ej: 285 cm"
+                                    disabled={saving}
+                                    className="flex-1"
+                                  />
+                                  <Input
+                                    type="month"
+                                    value={entry.measured_at}
+                                    onChange={(e) => handleUpdateMeasurement(entry.index, 'measured_at', e.target.value)}
+                                    disabled={saving}
+                                    className="w-[140px]"
+                                  />
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleRemoveMeasurement(entry.index)}
+                                  disabled={saving}
+                                  className="text-destructive h-8 w-8"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Single entry edit (when not expanded) */}
+                        {!hasHistory && (
+                          <div className="p-2 border-t bg-background">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={latestEntry.value}
+                                onChange={(e) => handleUpdateMeasurement(latestEntry.index, 'value', e.target.value)}
+                                placeholder="Ej: 285 cm"
+                                disabled={saving}
+                                className="flex-1"
+                              />
+                              <Input
+                                type="month"
+                                value={latestEntry.measured_at}
+                                onChange={(e) => handleUpdateMeasurement(latestEntry.index, 'measured_at', e.target.value)}
+                                disabled={saving}
+                                className="w-[140px]"
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveMeasurement(latestEntry.index)}
+                                disabled={saving}
+                                className="text-destructive h-8 w-8"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveMeasurement(index)}
-                        disabled={saving}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 

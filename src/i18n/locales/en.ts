@@ -140,6 +140,9 @@ export default {
     addMeasurement: 'Add measurement',
     customMeasurement: 'Custom measurement',
     customMeasurementPlaceholder: 'E.g.: Wingspan, Weight, etc.',
+    measurementEntries: 'entries',
+    measurementHistory: 'Measurement history',
+    addNewEntry: 'Add new measurement',
   },
 
   // Teams
