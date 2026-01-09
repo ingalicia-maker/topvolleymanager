@@ -1,1 +1,16 @@
 project_id = "wjfrrtuupmxjxyhpprhh"
+
+[functions.notify-coach-approved]
+verify_jwt = false
+
+[functions.notify-new-coach]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false
+
+[functions.customer-portal]
+verify_jwt = false
