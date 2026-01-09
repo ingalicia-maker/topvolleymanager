@@ -250,12 +250,12 @@ export default function Landing() {
               © {new Date().getFullYear()} Top Volley Manager. {t('landing.footer.rights')}
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm">
+              <Link to="/privacy" className="text-muted-foreground hover:text-foreground text-sm">
                 {t('landing.footer.privacy')}
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm">
+              </Link>
+              <Link to="/terms" className="text-muted-foreground hover:text-foreground text-sm">
                 {t('landing.footer.terms')}
-              </a>
+              </Link>
             </div>
           </div>
         </div>
