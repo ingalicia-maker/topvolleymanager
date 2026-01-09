@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useTeams } from '@/hooks/useTeams';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { User, Shield, CheckCircle2, Mail, AlertCircle } from 'lucide-react';
@@ -18,7 +17,6 @@ const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 c
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { teams, loading: teamsLoading } = useTeams();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +24,6 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [alsoCoach, setAlsoCoach] = useState(false);
   const [directorDeclarationAccepted, setDirectorDeclarationAccepted] = useState(false);
-  const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
 const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; name?: string }>({}); 
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
@@ -160,7 +157,7 @@ const [errors, setErrors] = useState<{ email?: string; password?: string; confir
           name: name.trim(),
           is_director: true,
           is_also_coach: alsoCoach,
-          assigned_teams: assignedTeams,
+          assigned_teams: [],
           director_declaration_accepted_at: new Date().toISOString(),
         },
       },
@@ -180,19 +177,17 @@ const [errors, setErrors] = useState<{ email?: string; password?: string; confir
     if (data.user && !data.session) {
       // User created but session is null means email confirmation is required
       setShowEmailConfirmation(true);
+      // Mark as new director for onboarding tour
+      localStorage.setItem('is_new_director', 'true');
     } else if (data.session) {
       // Auto-confirmed, redirect will happen via onAuthStateChange
+      localStorage.setItem('is_new_director', 'true');
       toast.success('¡Cuenta creada correctamente!');
     }
 
     setLoading(false);
   };
 
-  const toggleTeam = (teamId: string) => {
-    setAssignedTeams(prev =>
-      prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId]
-    );
-  };
 
   // Show password reset form
   if (showPasswordReset) {
@@ -484,45 +479,6 @@ const [errors, setErrors] = useState<{ email?: string; password?: string; confir
                       </span>
                     </p>
                   </div>
-                </div>
-
-                {/* Team selection */}
-                <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">
-                    Equipos del club (opcional - puedes crearlos después)
-                  </Label>
-                  {teamsLoading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                    </div>
-                  ) : teams.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      {teams.map(team => (
-                        <label
-                          key={team.id}
-                          className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors ${
-                            assignedTeams.includes(team.id)
-                              ? 'border-primary bg-primary/10'
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                        >
-                          <Checkbox 
-                            checked={assignedTeams.includes(team.id)} 
-                            onCheckedChange={() => toggleTeam(team.id)}
-                          />
-                          <span
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: team.color }}
-                          />
-                          <span className="text-sm">{team.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Podrás asignar equipos después de crear tu cuenta
-                    </p>
-                  )}
                 </div>
 
                 <Button 

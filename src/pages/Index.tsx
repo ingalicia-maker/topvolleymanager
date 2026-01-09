@@ -6,6 +6,7 @@ import { EventCard } from '@/components/EventCard';
 import { NotificationBell } from '@/components/NotificationBell';
 import { PlayerOfTheWeek } from '@/components/PlayerOfTheWeek';
 import { CreditsDisplay } from '@/components/CreditsDisplay';
+import { OnboardingTour } from '@/components/OnboardingTour';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { usePlayers } from '@/hooks/usePlayers';
@@ -87,7 +88,7 @@ export default function Index() {
         </div>
         <div className="flex items-center gap-2">
           <NotificationBell />
-          <Link to="/profile">
+          <Link to="/profile" data-tour="profile">
             <Button variant="ghost" size="icon" className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
               <User className="h-5 w-5" />
             </Button>
@@ -298,6 +299,7 @@ export default function Index() {
         </div>
       </div>
       <BottomNav />
+      <OnboardingTour />
     </div>
   );
 }
