@@ -172,6 +172,11 @@ export default {
     monthlyRanking: 'Classifica Mensile',
     playerOfWeek: 'Giocatrice della Settimana',
     noRatings: 'Nessuna valutazione',
+    selectMonth: 'Seleziona il mese',
+    selectTeam: 'Seleziona una squadra',
+    clickToRate: 'Clicca per valutare',
+    registered: 'valutazioni registrate',
+    saveRating: 'Salva valutazione',
   },
 
   // Club

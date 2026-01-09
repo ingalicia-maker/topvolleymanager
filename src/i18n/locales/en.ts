@@ -172,6 +172,11 @@ export default {
     monthlyRanking: 'Monthly Ranking',
     playerOfWeek: 'Player of the Week',
     noRatings: 'No ratings',
+    selectMonth: 'Select month',
+    selectTeam: 'Select a team',
+    clickToRate: 'Click to rate',
+    registered: 'ratings registered',
+    saveRating: 'Save rating',
   },
 
   // Club
