@@ -9,6 +9,8 @@ export interface Subscription {
   creditsRemaining: number;
   isAdmin: boolean;
   isVip: boolean;
+  inGracePeriod: boolean;
+  gracePeriodDaysRemaining: number;
 }
 
 export function useSubscription() {
@@ -18,6 +20,8 @@ export function useSubscription() {
     creditsRemaining: 5,
     isAdmin: false,
     isVip: false,
+    inGracePeriod: false,
+    gracePeriodDaysRemaining: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +52,13 @@ export function useSubscription() {
         const { data: creditsData } = await supabase
           .rpc('get_user_credits', { _user_id: user.id });
 
+        // Check grace period
+        const { data: inGracePeriod } = await supabase
+          .rpc('is_in_grace_period', { _user_id: user.id });
+
+        const { data: graceDaysRemaining } = await supabase
+          .rpc('get_grace_period_days_remaining', { _user_id: user.id });
+
         const status = subData?.status as SubscriptionStatus || 'free';
         const isAdmin = isAdminData || false;
         const isVip = isVipData || false;
@@ -62,6 +73,8 @@ export function useSubscription() {
           creditsRemaining: credits,
           isAdmin,
           isVip,
+          inGracePeriod: inGracePeriod || false,
+          gracePeriodDaysRemaining: graceDaysRemaining || 0,
         });
       } catch (error) {
         console.error('Error fetching subscription:', error);

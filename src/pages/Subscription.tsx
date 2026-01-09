@@ -9,6 +9,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Crown,
   Zap,
@@ -23,6 +24,7 @@ import {
   AlertTriangle,
   Gift,
   Settings,
+  Clock,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -148,6 +150,28 @@ export default function Subscription() {
       <Header title={t('subscription.title')} showBack />
 
       <div className="p-4 space-y-4">
+        {/* Grace Period Banner */}
+        {subscription.inGracePeriod && (
+          <Alert variant="destructive" className="border-orange-500 bg-orange-500/10">
+            <Clock className="h-4 w-4" />
+            <AlertTitle className="text-orange-600">Período de gracia activo</AlertTitle>
+            <AlertDescription className="text-orange-600/80">
+              Tu suscripción ha sido cancelada. Tienes {subscription.gracePeriodDaysRemaining} día{subscription.gracePeriodDaysRemaining !== 1 ? 's' : ''} para 
+              reactivar tu suscripción antes de que tus datos Premium sean eliminados.
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full border-orange-500 text-orange-600 hover:bg-orange-500/20"
+                onClick={() => handleCheckout('monthly')}
+                disabled={processingCheckout}
+              >
+                {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Reactivar suscripción
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Current Plan */}
         <Card className={isPremium ? 'border-primary bg-primary/5' : ''}>
           <CardHeader>
