@@ -104,8 +104,8 @@ export function useClub() {
     fetchClub();
   }, [user]);
 
-  const createClub = async (name: string, role: 'coach' | 'director' = 'director') => {
-    if (!user) return null;
+  const createClub = async (name: string, role: 'coach' | 'director' = 'director'): Promise<{ club: Club | null; error: string | null }> => {
+    if (!user) return { club: null, error: 'Usuario no autenticado' };
 
     try {
       // Create the club
@@ -118,7 +118,10 @@ export function useClub() {
         .select()
         .single();
 
-      if (clubError) throw clubError;
+      if (clubError) {
+        console.error('Error creating club:', clubError);
+        return { club: null, error: clubError.message };
+      }
 
       // Add user as member with specified role
       const { error: memberError } = await supabase
@@ -129,13 +132,18 @@ export function useClub() {
           role,
         });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Error adding member:', memberError);
+        // Try to delete the club if member creation failed
+        await supabase.from('clubs').delete().eq('id', newClub.id);
+        return { club: null, error: memberError.message };
+      }
 
       await fetchClub();
-      return newClub as Club;
-    } catch (error) {
+      return { club: newClub as Club, error: null };
+    } catch (error: any) {
       console.error('Error creating club:', error);
-      return null;
+      return { club: null, error: error.message || 'Error desconocido' };
     }
   };
 
