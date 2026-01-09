@@ -731,9 +731,12 @@ export type Database = {
       }
       user_subscriptions: {
         Row: {
+          canceled_at: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
+          data_deleted_at: string | null
+          grace_period_ends_at: string | null
           id: string
           status: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id: string | null
@@ -742,9 +745,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          canceled_at?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          data_deleted_at?: string | null
+          grace_period_ends_at?: string | null
           id?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
@@ -753,9 +759,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          canceled_at?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          data_deleted_at?: string | null
+          grace_period_ends_at?: string | null
           id?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
@@ -795,6 +804,10 @@ export type Database = {
     }
     Functions: {
       consume_credit: { Args: { _user_id: string }; Returns: boolean }
+      get_grace_period_days_remaining: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       get_user_club_id: { Args: { _user_id: string }; Returns: string }
       get_user_credits: { Args: { _user_id: string }; Returns: number }
       has_role: {
@@ -810,6 +823,7 @@ export type Database = {
         Returns: boolean
       }
       is_director: { Args: { _user_id: string }; Returns: boolean }
+      is_in_grace_period: { Args: { _user_id: string }; Returns: boolean }
       is_vip_user: { Args: { _email: string }; Returns: boolean }
       user_belongs_to_club: {
         Args: { _club_id: string; _user_id: string }
