@@ -30,8 +30,10 @@ export default function Auth() {
   const [accountType, setAccountType] = useState<AccountType>('coach');
   const [directorDeclarationAccepted, setDirectorDeclarationAccepted] = useState(false);
   const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; name?: string }>({}); 
+const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; name?: string }>({}); 
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -111,6 +113,30 @@ export default function Auth() {
     setLoading(false);
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      emailSchema.parse(email);
+    } catch {
+      setErrors({ email: 'Email inválido' });
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth?reset=true`,
+    });
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setResetEmailSent(true);
+      toast.success('Email de recuperación enviado');
+    }
+    setLoading(false);
+  };
+
   const notifyDirectorsAboutNewCoach = async (coachName: string, coachEmail: string) => {
     try {
       await supabase.functions.invoke('notify-new-coach', {
@@ -183,6 +209,90 @@ export default function Auth() {
     );
   };
 
+  // Show password reset form
+  if (showPasswordReset) {
+    if (resetEmailSent) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <Mail className="w-8 h-8 text-primary" />
+              </div>
+              <CardTitle className="text-2xl">Revisa tu email</CardTitle>
+              <CardDescription className="text-base">
+                Te hemos enviado un enlace para restablecer tu contraseña a <strong>{email}</strong>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Haz clic en el enlace del email para crear una nueva contraseña. 
+                  Si no lo ves, revisa tu carpeta de spam.
+                </AlertDescription>
+              </Alert>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setShowPasswordReset(false);
+                  setResetEmailSent(false);
+                  setEmail('');
+                }}
+              >
+                Volver al inicio de sesión
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Recuperar contraseña</CardTitle>
+            <CardDescription>
+              Introduce tu email y te enviaremos un enlace para restablecer tu contraseña
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  disabled={loading}
+                />
+                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setShowPasswordReset(false);
+                  setErrors({});
+                }}
+              >
+                Volver al inicio de sesión
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Show email confirmation screen for directors
   if (showEmailConfirmation) {
     return (
@@ -249,7 +359,16 @@ export default function Auth() {
                   {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Contraseña</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="login-password">Contraseña</Label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordReset(true)}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
                   <Input
                     id="login-password"
                     type="password"
