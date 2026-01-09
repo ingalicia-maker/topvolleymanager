@@ -87,6 +87,7 @@ export default {
     surname2: 'Secondo Cognome',
     birthYear: 'Anno di Nascita',
     height: 'Altezza (cm)',
+    heightMeasuredAt: 'Data misurazione altezza',
     phone: 'Telefono',
     number: 'Numero',
     teams: 'Squadre',
@@ -177,6 +178,10 @@ export default {
     clickToRate: 'Clicca per valutare',
     registered: 'valutazioni registrate',
     saveRating: 'Salva valutazione',
+    previousRatings: 'Valutazioni precedenti',
+    editRating: 'Modifica valutazione',
+    newRating: 'Nuova valutazione',
+    updateRating: 'Aggiorna valutazione',
   },
 
   // Club

@@ -94,6 +94,40 @@ export function usePlayerRatings() {
     return data;
   };
 
+  const updateRating = async (id: string, updates: Partial<RatingInput & { rating_date?: string }>) => {
+    const { data, error } = await supabase
+      .from('player_ratings')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error('Error al actualizar puntuación');
+      return null;
+    }
+
+    setRatings(prev => prev.map(r => r.id === id ? data : r));
+    toast.success('Puntuación actualizada');
+    return data;
+  };
+
+  const deleteRating = async (id: string) => {
+    const { error } = await supabase
+      .from('player_ratings')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Error al eliminar puntuación');
+      return false;
+    }
+
+    setRatings(prev => prev.filter(r => r.id !== id));
+    toast.success('Puntuación eliminada');
+    return true;
+  };
+
   const getWeeklyPlayerStats = (playerId: string, teamId?: string) => {
     const now = new Date();
     const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -281,6 +315,8 @@ export function usePlayerRatings() {
     ratings,
     loading,
     addRating,
+    updateRating,
+    deleteRating,
     getWeeklyPlayerStats,
     getPlayerOfTheWeek,
     getMonthlyEvolution,

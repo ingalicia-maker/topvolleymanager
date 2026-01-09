@@ -87,6 +87,7 @@ export default {
     surname2: 'Second Surname',
     birthYear: 'Birth Year',
     height: 'Height (cm)',
+    heightMeasuredAt: 'Height measurement date',
     phone: 'Phone',
     number: 'Number',
     teams: 'Teams',
@@ -177,6 +178,10 @@ export default {
     clickToRate: 'Click to rate',
     registered: 'ratings registered',
     saveRating: 'Save rating',
+    previousRatings: 'Previous ratings',
+    editRating: 'Edit rating',
+    newRating: 'New rating',
+    updateRating: 'Update rating',
   },
 
   // Club

@@ -460,6 +460,7 @@ export type Database = {
           club_id: string | null
           created_at: string | null
           height: number | null
+          height_measured_at: string | null
           id: string
           name: string
           number: number | null
@@ -475,6 +476,7 @@ export type Database = {
           club_id?: string | null
           created_at?: string | null
           height?: number | null
+          height_measured_at?: string | null
           id?: string
           name: string
           number?: number | null
@@ -490,6 +492,7 @@ export type Database = {
           club_id?: string | null
           created_at?: string | null
           height?: number | null
+          height_measured_at?: string | null
           id?: string
           name?: string
           number?: number | null
