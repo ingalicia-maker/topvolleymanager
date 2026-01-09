@@ -47,11 +47,11 @@ export default function ClubOnboarding() {
     const result = await createClub(clubName.trim());
     setSubmitting(false);
 
-    if (result) {
+    if (result.club) {
       toast.success('¡Club creado correctamente!');
       navigate('/', { replace: true });
     } else {
-      toast.error('Error al crear el club');
+      toast.error(result.error || 'Error al crear el club');
     }
   };
 
