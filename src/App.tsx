@@ -28,6 +28,7 @@ import AdminPanel from "./pages/AdminPanel";
 import Subscription from "./pages/Subscription";
 import Landing from "./pages/Landing";
 import ResetPassword from "./pages/ResetPassword";
+import SeasonManagement from "./pages/SeasonManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -207,6 +208,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <Subscription />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/seasons"
+            element={
+              <AuthGuard>
+                <SeasonManagement />
               </AuthGuard>
             }
           />

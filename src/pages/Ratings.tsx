@@ -11,6 +11,7 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams, DbTeam } from '@/hooks/useTeams';
 import { usePlayerRatings, RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useSeasons } from '@/hooks/useSeasons';
 import { PlayerProgressChart } from '@/components/PlayerProgressChart';
 import { TeamProgressChart } from '@/components/TeamProgressChart';
 import { RatingInput } from '@/components/RatingInput';
@@ -34,6 +35,7 @@ export default function Ratings() {
   const { teams, loading: teamsLoading } = useTeams();
   const { addRating, ratings, getMonthlyEvolution, getPlayerTrends, getPositiveAlerts } = usePlayerRatings();
   const { assignedTeams, isDirector } = useUserRole();
+  const { activeSeason } = useSeasons();
 
   const [activeTab, setActiveTab] = useState<'add' | 'players' | 'team'>('add');
   const [step, setStep] = useState<'select-team' | 'select-player' | 'rate'>('select-team');
@@ -109,10 +111,9 @@ export default function Ratings() {
       ...ratingsValues,
       notes: notes.trim() || null,
       rating_date: ratingDate,
-    });
+    }, activeSeason?.id);
 
     if (success) {
-      toast.success('Puntuación guardada');
       setRatedPlayers(prev => [...prev, selectedPlayer]);
       setStep('select-player');
     }
