@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -8,11 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
+import { usePlayerRatings, RATING_CATEGORIES, RatingCategoryKey } from '@/hooks/usePlayerRatings';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Save, Trash2, MessageCircle, Camera, Loader2 } from 'lucide-react';
+import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,11 +27,20 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
+const RATING_EMOJIS: Record<string, string> = {
+  effort_attitude: '💪',
+  communication_cooperation: '🤝',
+  technical_execution: '🏐',
+  decision_making: '🧠',
+  leadership_initiative: '⭐',
+};
+
 export default function PlayerDetail() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const { players, updatePlayer, deletePlayer, loading } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
+  const { ratings } = usePlayerRatings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const player = players.find(p => p.id === playerId);
@@ -59,6 +70,62 @@ export default function PlayerDetail() {
       setPhotoUrl(player.photo_url || null);
     }
   }, [player]);
+
+  // Calculate player rating stats
+  const ratingStats = useMemo(() => {
+    if (!playerId) return null;
+    
+    const playerRatings = ratings.filter(r => r.player_id === playerId);
+    if (playerRatings.length === 0) return null;
+
+    // Group by month
+    const byMonth: Record<string, typeof playerRatings> = {};
+    playerRatings.forEach(r => {
+      const monthKey = r.rating_date.substring(0, 7);
+      if (!byMonth[monthKey]) byMonth[monthKey] = [];
+      byMonth[monthKey].push(r);
+    });
+
+    const months = Object.keys(byMonth).sort();
+    if (months.length === 0) return null;
+
+    const latestMonth = months[months.length - 1];
+    const prevMonth = months.length > 1 ? months[months.length - 2] : null;
+
+    const calcAvg = (monthRatings: typeof playerRatings) => {
+      const avgByCategory: Record<RatingCategoryKey, number> = {} as any;
+      RATING_CATEGORIES.forEach(cat => {
+        avgByCategory[cat.key] = monthRatings.reduce((acc, r) => acc + r[cat.key], 0) / monthRatings.length;
+      });
+      const totalAvg = Object.values(avgByCategory).reduce((a, b) => a + b, 0) / 5;
+      return { avgByCategory, totalAvg };
+    };
+
+    const current = calcAvg(byMonth[latestMonth]);
+    const previous = prevMonth ? calcAvg(byMonth[prevMonth]) : null;
+    const trend = previous ? current.totalAvg - previous.totalAvg : 0;
+
+    return {
+      avgByCategory: current.avgByCategory,
+      totalAvg: current.totalAvg,
+      trend,
+      ratingsCount: playerRatings.length,
+      latestMonth,
+    };
+  }, [playerId, ratings]);
+
+  const getTrendIcon = () => {
+    if (!ratingStats || ratingStats.trend === 0) return <Minus className="h-4 w-4 text-muted-foreground" />;
+    if (ratingStats.trend > 0) return <TrendingUp className="h-4 w-4 text-green-600" />;
+    return <TrendingDown className="h-4 w-4 text-red-600" />;
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score <= 3) return 'text-red-600';
+    if (score <= 5) return 'text-amber-600';
+    if (score <= 7) return 'text-blue-600';
+    return 'text-green-600';
+  };
 
   const toggleTeam = (teamId: string) => {
     setSelectedTeams(prev =>
@@ -277,6 +344,58 @@ export default function PlayerDetail() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Ratings Summary Card */}
+        <Link to="/ratings">
+          <Card className="shadow-lg hover:shadow-xl transition-all cursor-pointer border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-amber-500/10">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-amber-500" />
+                  <h3 className="font-semibold">Valoraciones</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  {ratingStats && (
+                    <>
+                      {getTrendIcon()}
+                      <span className={`text-xl font-bold ${getScoreColor(ratingStats.totalAvg)}`}>
+                        {ratingStats.totalAvg.toFixed(1)}
+                      </span>
+                    </>
+                  )}
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </div>
+              
+              {ratingStats ? (
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1">
+                    {RATING_CATEGORIES.map(cat => (
+                      <Badge
+                        key={cat.key}
+                        variant="outline"
+                        className={`text-xs ${getScoreColor(ratingStats.avgByCategory[cat.key])}`}
+                      >
+                        {RATING_EMOJIS[cat.key]} {ratingStats.avgByCategory[cat.key].toFixed(1)}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {ratingStats.ratingsCount} valoraciones registradas
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-2">
+                  <p className="text-sm text-muted-foreground mb-2">Sin valoraciones todavía</p>
+                  <Badge variant="secondary" className="gap-1">
+                    <Star className="h-3 w-3" />
+                    Pulsa para valorar
+                  </Badge>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
 
         {/* Edit Form */}
         <Card>
