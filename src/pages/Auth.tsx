@@ -177,23 +177,22 @@ export default function Auth() {
         return;
       }
 
+      toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
+      localStorage.setItem('is_new_director', 'true');
+      
+      // Wait for auth state to update and let onAuthStateChange handle navigation
+      setShowEmailConfirmation(false);
+      
       // Try to sign in after verification
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-
-      if (signInError) {
-        toast.error(signInError.message);
-      } else {
-        toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
-        localStorage.setItem('is_new_director', 'true');
-      }
     } catch (error) {
       console.error('Error verifying code:', error);
       toast.error(t('auth.verificationError', 'Error al verificar el código'));
+      setVerifying(false);
     }
-    setVerifying(false);
   };
 
   const handleResendEmail = async () => {
