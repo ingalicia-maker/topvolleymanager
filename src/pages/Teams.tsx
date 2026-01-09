@@ -18,6 +18,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -41,6 +48,7 @@ export default function Teams() {
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamCoach, setNewTeamCoach] = useState('');
   const [newTeamColor, setNewTeamColor] = useState(TEAM_COLORS[0]);
+  const [newTeamGender, setNewTeamGender] = useState<'male' | 'female'>('female');
   const [saving, setSaving] = useState(false);
   
   const canAddTeam = isPremium || teams.length < maxTeams;
@@ -75,12 +83,14 @@ export default function Teams() {
       name: newTeamName.trim(),
       coach: newTeamCoach.trim(),
       color: newTeamColor,
+      gender: newTeamGender,
     });
     
     if (result) {
       setNewTeamName('');
       setNewTeamCoach('');
       setNewTeamColor(TEAM_COLORS[0]);
+      setNewTeamGender('female');
       setOpen(false);
     }
     setSaving(false);
@@ -134,6 +144,18 @@ export default function Teams() {
                     placeholder="Nombre del entrenador"
                     disabled={saving}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('teams.gender')}</Label>
+                  <Select value={newTeamGender} onValueChange={(v) => setNewTeamGender(v as 'male' | 'female')}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="female">{t('teams.female')}</SelectItem>
+                      <SelectItem value="male">{t('teams.male')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>{t('teams.color')}</Label>

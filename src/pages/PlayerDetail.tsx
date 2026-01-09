@@ -32,7 +32,7 @@ import { useSeasons } from '@/hooks/useSeasons';
 import { RatingInput } from '@/components/RatingInput';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight, Edit2, Calendar } from 'lucide-react';
+import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight, Edit2, Calendar, Plus } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,10 +69,15 @@ export default function PlayerDetail() {
   const [surname1, setSurname1] = useState('');
   const [surname2, setSurname2] = useState('');
   const [phone, setPhone] = useState('');
+  const [phoneType, setPhoneType] = useState<'player' | 'parent' | 'tutor'>('player');
+  const [phone2, setPhone2] = useState('');
+  const [phone2Type, setPhone2Type] = useState<'player' | 'parent' | 'tutor'>('player');
   const [number, setNumber] = useState('');
   const [birthYear, setBirthYear] = useState('');
   const [height, setHeight] = useState('');
   const [heightMeasuredAt, setHeightMeasuredAt] = useState('');
+  const [additionalMeasurements, setAdditionalMeasurements] = useState<Array<{type: string, value: string, measured_at: string}>>([]);
+  const [showAddMeasurement, setShowAddMeasurement] = useState(false);
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -94,16 +99,28 @@ export default function PlayerDetail() {
   const [editingRatingId, setEditingRatingId] = useState<string | null>(null);
   const [deletingRatingId, setDeletingRatingId] = useState<string | null>(null);
 
+  // Measurement suggestions
+  const measurementSuggestions = [
+    { key: 'reach1Hand', label: t('players.reach1Hand') },
+    { key: 'verticalJump', label: t('players.verticalJump') },
+    { key: 'blockJump', label: t('players.blockJump') },
+  ];
+
   useEffect(() => {
     if (player) {
       setName(player.name || '');
       setSurname1(player.surname1 || '');
       setSurname2(player.surname2 || '');
       setPhone(player.phone || '');
+      setPhoneType(((player as any).phone_type as 'player' | 'parent' | 'tutor') || 'player');
+      setPhone2((player as any).phone2 || '');
+      setPhone2Type(((player as any).phone2_type as 'player' | 'parent' | 'tutor') || 'player');
       setNumber(player.number?.toString() || '');
       setBirthYear(player.birth_year?.toString() || '');
       setHeight(player.height?.toString() || '');
       setHeightMeasuredAt((player as any).height_measured_at || '');
+      const measurements = (player as any).additional_measurements;
+      setAdditionalMeasurements(Array.isArray(measurements) ? measurements : []);
       setSelectedTeams(player.teams || []);
       setPhotoUrl(player.photo_url || null);
     }
@@ -368,11 +385,15 @@ export default function PlayerDetail() {
       surname1: surname1.trim() || null,
       surname2: surname2.trim() || null,
       phone: phone.trim(),
+      phone_type: phoneType,
+      phone2: phone2.trim() || null,
+      phone2_type: phone2.trim() ? phone2Type : null,
       teams: selectedTeams,
       number: number ? parseInt(number) : null,
       birth_year: birthYear ? parseInt(birthYear) : null,
       height: height ? parseInt(height) : null,
       height_measured_at: heightMeasuredAt || null,
+      additional_measurements: additionalMeasurements,
       photo_url: photoUrl,
     } as any);
 
@@ -380,6 +401,19 @@ export default function PlayerDetail() {
       navigate(-1);
     }
     setSaving(false);
+  };
+
+  const handleAddMeasurement = (type: string) => {
+    setAdditionalMeasurements(prev => [...prev, { type, value: '', measured_at: format(new Date(), 'yyyy-MM') }]);
+    setShowAddMeasurement(false);
+  };
+
+  const handleUpdateMeasurement = (index: number, field: 'value' | 'measured_at', value: string) => {
+    setAdditionalMeasurements(prev => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
+  };
+
+  const handleRemoveMeasurement = (index: number) => {
+    setAdditionalMeasurements(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleDelete = async () => {
@@ -759,16 +793,56 @@ export default function PlayerDetail() {
               </div>
             </div>
 
+            {/* Phone 1 with type */}
             <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono (WhatsApp) *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="+34 600 000 000"
-                disabled={saving}
-              />
+              <Label htmlFor="phone">{t('players.phone')} (WhatsApp) *</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  placeholder="+34 600 000 000"
+                  disabled={saving}
+                  className="flex-1"
+                />
+                <Select value={phoneType} onValueChange={(v) => setPhoneType(v as 'player' | 'parent' | 'tutor')}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="player">{t('players.phonePlayer')}</SelectItem>
+                    <SelectItem value="parent">{t('players.phoneParent')}</SelectItem>
+                    <SelectItem value="tutor">{t('players.phoneTutor')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Phone 2 (optional) with type */}
+            <div className="space-y-2">
+              <Label htmlFor="phone2">{t('players.phone2')} ({t('common.optional')})</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="phone2"
+                  type="tel"
+                  value={phone2}
+                  onChange={e => setPhone2(e.target.value)}
+                  placeholder="+34 600 000 000"
+                  disabled={saving}
+                  className="flex-1"
+                />
+                <Select value={phone2Type} onValueChange={(v) => setPhone2Type(v as 'player' | 'parent' | 'tutor')}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="player">{t('players.phonePlayer')}</SelectItem>
+                    <SelectItem value="parent">{t('players.phoneParent')}</SelectItem>
+                    <SelectItem value="tutor">{t('players.phoneTutor')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -817,6 +891,96 @@ export default function PlayerDetail() {
                 onChange={e => setHeightMeasuredAt(e.target.value)}
                 disabled={saving}
               />
+            </div>
+
+            {/* Additional Measurements */}
+            <div className="space-y-3">
+              {additionalMeasurements.length > 0 && (
+                <div className="space-y-2">
+                  <Label>{t('players.otherMeasurements')}</Label>
+                  {additionalMeasurements.map((m, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 border rounded-lg">
+                      <div className="flex-1 space-y-2">
+                        <span className="text-sm font-medium">{m.type}</span>
+                        <div className="flex gap-2">
+                          <Input
+                            value={m.value}
+                            onChange={(e) => handleUpdateMeasurement(index, 'value', e.target.value)}
+                            placeholder="Ej: 285 cm"
+                            disabled={saving}
+                            className="flex-1"
+                          />
+                          <Input
+                            type="month"
+                            value={m.measured_at}
+                            onChange={(e) => handleUpdateMeasurement(index, 'measured_at', e.target.value)}
+                            disabled={saving}
+                            className="w-[140px]"
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveMeasurement(index)}
+                        disabled={saving}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!showAddMeasurement ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddMeasurement(true)}
+                  disabled={saving}
+                  className="gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  {t('players.addOtherMeasurements')}
+                </Button>
+              ) : (
+                <div className="p-3 border rounded-lg space-y-2">
+                  <Label className="text-sm">{t('players.addMeasurement')}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {measurementSuggestions.map(suggestion => (
+                      <Button
+                        key={suggestion.key}
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleAddMeasurement(suggestion.label)}
+                        disabled={saving}
+                      >
+                        {suggestion.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      placeholder={t('common.optional') + '...'}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                          handleAddMeasurement((e.target as HTMLInputElement).value.trim());
+                          (e.target as HTMLInputElement).value = '';
+                        }
+                      }}
+                      disabled={saving}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAddMeasurement(false)}
+                    >
+                      {t('common.cancel')}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
