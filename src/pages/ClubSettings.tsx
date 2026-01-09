@@ -10,8 +10,8 @@ import { useClubSettings } from '@/hooks/useClubSettings';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useStops } from '@/hooks/useStops';
 import { toast } from 'sonner';
-import { Building2, Palette, Type, Upload, Save, Shield, Bus, Plus, Trash2, GripVertical } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Building2, Palette, Type, Upload, Save, Shield, Bus, Plus, Trash2, GripVertical, Calendar, ChevronRight } from 'lucide-react';
+import { Navigate, Link } from 'react-router-dom';
 
 const COLOR_PRESETS = [
   { name: 'Azul', value: '221 83% 53%', hex: '#2563eb' },
@@ -177,6 +177,26 @@ export default function ClubSettings() {
           <Shield className="h-5 w-5 text-amber-500" />
           <p className="text-sm text-amber-600">Solo los directores pueden modificar estas opciones</p>
         </div>
+
+        {/* Season Management Link */}
+        <Link to="/seasons">
+          <Card className="cursor-pointer hover:bg-accent/50 transition-colors border-primary/30">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Calendar className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">Gestión de Temporadas</p>
+                  <p className="text-xs text-muted-foreground">
+                    Iniciar nueva temporada, reutilizar jugadoras y equipos
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </Link>
 
         {/* Club Identity */}
         <Card>

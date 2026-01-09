@@ -20,6 +20,7 @@ export interface PlayerRating {
   notes: string | null;
   created_at: string;
   club_id: string | null;
+  season_id: string | null;
 }
 
 export interface RatingInput {
@@ -69,7 +70,7 @@ export function usePlayerRatings() {
     fetchRatings();
   }, []);
 
-  const addRating = async (rating: RatingInput & { rating_date?: string }) => {
+  const addRating = async (rating: RatingInput & { rating_date?: string }, seasonId?: string) => {
     const ratingDate = rating.rating_date || format(new Date(), 'yyyy-MM-dd');
     const { data, error } = await supabase
       .from('player_ratings')
@@ -78,6 +79,7 @@ export function usePlayerRatings() {
         rated_by: user?.id || null,
         rating_date: ratingDate,
         club_id: club?.id || null,
+        season_id: seasonId || null,
       }])
       .select()
       .single();

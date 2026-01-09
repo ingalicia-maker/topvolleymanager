@@ -385,6 +385,7 @@ export type Database = {
           player_id: string
           rated_by: string | null
           rating_date: string
+          season_id: string | null
           team_id: string
           technical_execution: number
         }
@@ -401,6 +402,7 @@ export type Database = {
           player_id: string
           rated_by?: string | null
           rating_date?: string
+          season_id?: string | null
           team_id: string
           technical_execution: number
         }
@@ -417,6 +419,7 @@ export type Database = {
           player_id?: string
           rated_by?: string | null
           rating_date?: string
+          season_id?: string | null
           team_id?: string
           technical_execution?: number
         }
@@ -440,6 +443,13 @@ export type Database = {
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_ratings_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -556,6 +566,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      seasons: {
+        Row: {
+          club_id: string | null
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean
+          name: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          club_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          club_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasons_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stops: {
         Row: {
