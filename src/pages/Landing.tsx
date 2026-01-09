@@ -16,6 +16,16 @@ import {
   ChevronRight,
   Volleyball
 } from 'lucide-react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import mockupDashboard from '@/assets/mockup-dashboard.png';
+import mockupPlayers from '@/assets/mockup-players.png';
+import mockupCalendar from '@/assets/mockup-calendar.png';
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -89,13 +99,74 @@ export default function Landing() {
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="text-lg px-8">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg px-8"
+              onClick={() => document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' })}
+            >
               {t('landing.hero.demo')}
             </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             {t('landing.hero.noCard')}
           </p>
+        </div>
+      </section>
+
+      {/* Demo Section */}
+      <section id="demo" className="py-20 px-4">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">
+            {t('landing.demo.title')}
+          </h2>
+          <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
+            {t('landing.demo.subtitle')}
+          </p>
+          <div className="max-w-md mx-auto">
+            <Carousel className="w-full">
+              <CarouselContent>
+                <CarouselItem>
+                  <div className="p-2">
+                    <div className="flex flex-col items-center">
+                      <img 
+                        src={mockupDashboard} 
+                        alt={t('landing.demo.dashboard')} 
+                        className="rounded-2xl shadow-2xl max-h-[500px] object-contain"
+                      />
+                      <p className="mt-4 font-medium text-center">{t('landing.demo.dashboard')}</p>
+                    </div>
+                  </div>
+                </CarouselItem>
+                <CarouselItem>
+                  <div className="p-2">
+                    <div className="flex flex-col items-center">
+                      <img 
+                        src={mockupPlayers} 
+                        alt={t('landing.demo.players')} 
+                        className="rounded-2xl shadow-2xl max-h-[500px] object-contain"
+                      />
+                      <p className="mt-4 font-medium text-center">{t('landing.demo.players')}</p>
+                    </div>
+                  </div>
+                </CarouselItem>
+                <CarouselItem>
+                  <div className="p-2">
+                    <div className="flex flex-col items-center">
+                      <img 
+                        src={mockupCalendar} 
+                        alt={t('landing.demo.calendar')} 
+                        className="rounded-2xl shadow-2xl max-h-[500px] object-contain"
+                      />
+                      <p className="mt-4 font-medium text-center">{t('landing.demo.calendar')}</p>
+                    </div>
+                  </div>
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious className="-left-4 md:-left-12" />
+              <CarouselNext className="-right-4 md:-right-12" />
+            </Carousel>
+          </div>
         </div>
       </section>
 
