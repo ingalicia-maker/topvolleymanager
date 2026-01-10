@@ -16,16 +16,10 @@ import {
   ChevronRight,
   Volleyball
 } from 'lucide-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import mockupDashboard from '@/assets/mockup-dashboard.png';
-import mockupPlayers from '@/assets/mockup-players.png';
-import mockupCalendar from '@/assets/mockup-calendar.png';
+import demoDashboard from '@/assets/demo-dashboard.png';
+import demoPlayers from '@/assets/demo-players.png';
+import demoEvents from '@/assets/demo-events.png';
+import demoRatings from '@/assets/demo-ratings.png';
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -52,6 +46,29 @@ export default function Landing() {
     'landing.pricing.premium.feature3',
     'landing.pricing.premium.feature4',
     'landing.pricing.premium.feature5',
+  ];
+
+  const demoScreens = [
+    {
+      image: demoDashboard,
+      titleKey: 'landing.demo.dashboardTitle',
+      descKey: 'landing.demo.dashboardDesc',
+    },
+    {
+      image: demoPlayers,
+      titleKey: 'landing.demo.playersTitle',
+      descKey: 'landing.demo.playersDesc',
+    },
+    {
+      image: demoEvents,
+      titleKey: 'landing.demo.eventsTitle',
+      descKey: 'landing.demo.eventsDesc',
+    },
+    {
+      image: demoRatings,
+      titleKey: 'landing.demo.ratingsTitle',
+      descKey: 'landing.demo.ratingsDesc',
+    },
   ];
 
   return (
@@ -114,64 +131,47 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Demo Section */}
-      <section id="demo" className="py-20 px-4">
+      {/* Demo Section - Redesigned */}
+      <section id="demo" className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             {t('landing.demo.title')}
           </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
+          <p className="text-muted-foreground text-center mb-16 max-w-2xl mx-auto text-lg">
             {t('landing.demo.subtitle')}
           </p>
-          <div className="max-w-md mx-auto">
-            <Carousel className="w-full">
-              <CarouselContent>
-                <CarouselItem>
-                  <div className="p-2">
-                    <div className="flex flex-col items-center">
-                      <img 
-                        src={mockupDashboard} 
-                        alt={t('landing.demo.dashboard')} 
-                        className="rounded-2xl shadow-2xl max-h-[500px] object-contain"
-                      />
-                      <p className="mt-4 font-medium text-center">{t('landing.demo.dashboard')}</p>
-                    </div>
-                  </div>
-                </CarouselItem>
-                <CarouselItem>
-                  <div className="p-2">
-                    <div className="flex flex-col items-center">
-                      <img 
-                        src={mockupPlayers} 
-                        alt={t('landing.demo.players')} 
-                        className="rounded-2xl shadow-2xl max-h-[500px] object-contain"
-                      />
-                      <p className="mt-4 font-medium text-center">{t('landing.demo.players')}</p>
-                    </div>
-                  </div>
-                </CarouselItem>
-                <CarouselItem>
-                  <div className="p-2">
-                    <div className="flex flex-col items-center">
-                      <img 
-                        src={mockupCalendar} 
-                        alt={t('landing.demo.calendar')} 
-                        className="rounded-2xl shadow-2xl max-h-[500px] object-contain"
-                      />
-                      <p className="mt-4 font-medium text-center">{t('landing.demo.calendar')}</p>
-                    </div>
-                  </div>
-                </CarouselItem>
-              </CarouselContent>
-              <CarouselPrevious className="-left-4 md:-left-12" />
-              <CarouselNext className="-right-4 md:-right-12" />
-            </Carousel>
+          
+          {/* Demo Screens Grid */}
+          <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            {demoScreens.map((screen, index) => (
+              <div 
+                key={index} 
+                className={`flex flex-col ${index % 2 === 1 ? 'md:flex-col-reverse' : ''} gap-6 items-center`}
+              >
+                <div className="relative group">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-primary/5 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <img 
+                    src={screen.image} 
+                    alt={t(screen.titleKey)} 
+                    className="relative rounded-2xl shadow-2xl max-h-[500px] w-auto object-contain border border-border/50"
+                  />
+                </div>
+                <div className="text-center md:text-left max-w-sm">
+                  <h3 className="text-2xl font-bold mb-3 text-foreground">
+                    {t(screen.titleKey)}
+                  </h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    {t(screen.descKey)}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="py-20 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4">
             {t('landing.features.title')}
@@ -196,7 +196,7 @@ export default function Landing() {
       </section>
 
       {/* Credits System Info */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto">
           <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-3xl p-8 md:p-12">
             <div className="max-w-3xl">
@@ -226,7 +226,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="py-20 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4">
             {t('landing.pricing.title')}
@@ -292,7 +292,7 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             {t('landing.cta.title')}
@@ -310,7 +310,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t bg-muted/30">
+      <footer className="py-12 px-4 border-t">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">

@@ -90,7 +90,6 @@ export default function ClubManagement() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [inviteRole, setInviteRole] = useState<'coach' | 'director'>('coach');
-  const [inviteEmail, setInviteEmail] = useState('');
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [membersWithProfiles, setMembersWithProfiles] = useState<MemberWithProfile[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
@@ -218,12 +217,11 @@ export default function ClubManagement() {
 
   const handleCreateInvitation = async () => {
     setCreatingInvite(true);
-    const invitation = await createInvitation(inviteRole, inviteEmail || undefined);
+    const invitation = await createInvitation(inviteRole);
     setCreatingInvite(false);
 
     if (invitation) {
-      toast.success('Invitación creada');
-      setInviteEmail('');
+      toast.success('Enlace de invitación creado. ¡Cópialo y compártelo!');
     } else {
       toast.error('Error al crear la invitación');
     }
@@ -569,95 +567,108 @@ export default function ClubManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <UserPlus className="h-5 w-5" />
-                  Crear Invitación
+                  Crear Enlace de Invitación
                 </CardTitle>
                 <CardDescription>
-                  Genera un enlace para invitar a nuevos miembros
+                  Genera un enlace que puedes compartir con quien quieras invitar
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Rol del invitado</Label>
-                    <Select
-                      value={inviteRole}
-                      onValueChange={(v) => setInviteRole(v as 'coach' | 'director')}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="coach">Entrenador</SelectItem>
-                        <SelectItem value="director">Director Deportivo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email (opcional)</Label>
-                    <Input
-                      type="email"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      placeholder="email@ejemplo.com"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Rol del invitado</Label>
+                  <Select
+                    value={inviteRole}
+                    onValueChange={(v) => setInviteRole(v as 'coach' | 'director')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="coach">Entrenador</SelectItem>
+                      <SelectItem value="director">Director Deportivo</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Button onClick={handleCreateInvitation} disabled={creatingInvite}>
+                <Button onClick={handleCreateInvitation} disabled={creatingInvite} className="w-full">
                   {creatingInvite ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
                     <Link2 className="h-4 w-4 mr-2" />
                   )}
-                  Crear invitación
+                  Generar enlace de invitación
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  El enlace será válido por 7 días
+                </p>
               </CardContent>
             </Card>
 
             {invitations.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Invitaciones pendientes</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link2 className="h-5 w-5" />
+                    Enlaces de invitación activos
+                  </CardTitle>
+                  <CardDescription>
+                    Copia y comparte estos enlaces para invitar nuevos miembros
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  {invitations.map((inv) => (
-                    <div
-                      key={inv.id}
-                      className="flex items-center justify-between p-3 rounded-lg border"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">
+                <CardContent className="space-y-3">
+                  {invitations.map((inv) => {
+                    const inviteLink = `${window.location.origin}/club-onboarding?invite=${inv.token}`;
+                    return (
+                      <div
+                        key={inv.id}
+                        className="p-4 rounded-lg border bg-muted/50 space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <Badge variant={inv.role === 'director' ? 'default' : 'secondary'}>
                             {inv.role === 'director' ? 'Director' : 'Entrenador'}
                           </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            Expira: {new Date(inv.expires_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        
+                        {/* Copyable Link */}
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={inviteLink}
+                            readOnly
+                            className="flex-1 text-xs font-mono bg-background"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copyInviteLink(inv.token)}
+                            className="shrink-0 gap-2"
+                          >
+                            <Copy className="h-4 w-4" />
+                            Copiar
+                          </Button>
+                        </div>
+
+                        <div className="flex items-center justify-between">
                           {inv.email && (
                             <span className="text-sm text-muted-foreground flex items-center gap-1">
                               <Mail className="h-3 w-3" />
                               {inv.email}
                             </span>
                           )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteInvitation(inv.id)}
+                            className="text-destructive hover:text-destructive ml-auto"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Eliminar
+                          </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1 truncate">
-                          Expira: {new Date(inv.expires_at).toLocaleDateString()}
-                        </p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => copyInviteLink(inv.token)}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteInvitation(inv.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </CardContent>
               </Card>
             )}
