@@ -1,16 +1,27 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, Download, Check, X, Trophy, Dumbbell, Copy, Send, Bus, ArrowLeftRight, CheckCircle, AlertCircle } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Calendar, MapPin, Clock, Users, Download, Trophy, Dumbbell, Copy, Send, Bus, ArrowLeftRight, CheckCircle, AlertCircle, Edit, Trash2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { EditEventDialog } from '@/components/EditEventDialog';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
 import { useEvents, CoachSubmission } from '@/hooks/useEvents';
@@ -20,11 +31,14 @@ import { toast } from 'sonner';
 
 export default function EventDetail() {
   const { eventId } = useParams<{ eventId: string }>();
-  const { events, updateEvent, refetch } = useEvents();
+  const navigate = useNavigate();
+  const { events, updateEvent, deleteEvent, refetch } = useEvents();
   const { players } = usePlayers();
   const { teams } = useTeams();
   const { user } = useAuth();
   const { isDirector, profile } = useUserRole();
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const event = events.find(e => e.id === eventId);
   const team = event ? teams.find(t => t.id === event.team_id) : null;
@@ -78,11 +92,6 @@ export default function EventDetail() {
 
   const isDisplacement = event.type === 'displacement';
   const invitedPlayersList = players.filter(p => event.invited_players?.includes(p.id));
-  const confirmedPlayersList = players.filter(p => event.confirmed_players?.includes(p.id));
-  const declinedPlayersList = players.filter(p => event.declined_players?.includes(p.id));
-  const pendingPlayersList = invitedPlayersList.filter(
-    p => !event.confirmed_players?.includes(p.id) && !event.declined_players?.includes(p.id)
-  );
 
   // For displacement: check submission status
   const coachSubmissions = event.coach_submissions || {};
@@ -197,32 +206,6 @@ export default function EventDetail() {
     setSaving(false);
   };
 
-  const toggleConfirm = async (playerId: string) => {
-    const isConfirmed = event.confirmed_players?.includes(playerId);
-    const newConfirmed = isConfirmed
-      ? event.confirmed_players.filter(id => id !== playerId)
-      : [...(event.confirmed_players || []), playerId];
-    const newDeclined = (event.declined_players || []).filter(id => id !== playerId);
-    
-    await updateEvent(event.id, {
-      confirmed_players: newConfirmed,
-      declined_players: newDeclined,
-    });
-  };
-
-  const toggleDecline = async (playerId: string) => {
-    const isDeclined = event.declined_players?.includes(playerId);
-    const newDeclined = isDeclined
-      ? event.declined_players.filter(id => id !== playerId)
-      : [...(event.declined_players || []), playerId];
-    const newConfirmed = (event.confirmed_players || []).filter(id => id !== playerId);
-    
-    await updateEvent(event.id, {
-      confirmed_players: newConfirmed,
-      declined_players: newDeclined,
-    });
-  };
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -250,11 +233,9 @@ export default function EventDetail() {
       return `🚌 *${event.title}*\n📅 ${formatDate(event.date)}\n⏰ Salida: ${event.time}\n📍 Destino: ${event.destination}\n\n👥 *Total pasajeros (vuelta): ${event.total_passengers}*\n\n*Paradas:*\n${stopsInfo}${notReturningInfo}`;
     }
 
-    const confirmedNames = confirmedPlayersList.map(p => `✅ ${getPlayerName(p)}`).join('\n');
-    const pendingNames = pendingPlayersList.map(p => `⏳ ${getPlayerName(p)}`).join('\n');
-    const declinedNames = declinedPlayersList.map(p => `❌ ${getPlayerName(p)}`).join('\n');
-    
-    return `*${event.title}*\n📅 ${formatDate(event.date)}\n⏰ ${event.time}\n📍 ${event.location}\n\n*Confirmadas (${confirmedPlayersList.length}):*\n${confirmedNames || 'Ninguna'}\n\n*Pendientes (${pendingPlayersList.length}):*\n${pendingNames || 'Ninguna'}\n\n*No pueden (${declinedPlayersList.length}):*\n${declinedNames || 'Ninguna'}`;
+    // Simple list for training/match events
+    const playerNames = invitedPlayersList.map(p => `  - ${getPlayerName(p)}`).join('\n');
+    return `*${event.title}*\n📅 ${formatDate(event.date)}\n⏰ ${event.time}\n📍 ${event.location}\n\n*Convocadas (${invitedPlayersList.length}):*\n${playerNames || 'Ninguna'}`;
   };
 
   const copyToClipboard = () => {
@@ -328,41 +309,61 @@ export default function EventDetail() {
 
   const badge = getEventBadge();
 
-  const PlayerWithActions = ({ player, status }: { player: typeof players[0]; status: 'confirmed' | 'declined' | 'pending' }) => (
-    <div className="flex items-center gap-2">
-      <div className="flex-1">
-        <PlayerCard player={player} showTeams={false} clickable={false} />
-      </div>
-      <div className="flex gap-1">
-        <Button
-          variant={status === 'confirmed' ? 'default' : 'outline'}
-          size="icon"
-          className={`h-8 w-8 ${status === 'confirmed' ? 'bg-green-600 hover:bg-green-700' : ''}`}
-          onClick={() => toggleConfirm(player.id)}
-        >
-          <Check className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={status === 'declined' ? 'default' : 'outline'}
-          size="icon"
-          className={`h-8 w-8 ${status === 'declined' ? 'bg-red-600 hover:bg-red-700' : ''}`}
-          onClick={() => toggleDecline(player.id)}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
 
   // Check if coach has pending action on displacement
   const myTeamsNotSubmitted = myTeamsInEvent.filter(t => !coachSubmissions[t]?.submitted);
   const hasPendingAction = isDisplacement && !isDirector && myTeamsNotSubmitted.length > 0;
+
+  const handleDeleteEvent = async () => {
+    const success = await deleteEvent(event.id);
+    if (success) {
+      navigate('/events');
+    }
+  };
+
+  const handleUpdateEvent = async (updates: Partial<typeof event>) => {
+    return await updateEvent(event.id, updates);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header title={event.title} showBack />
       
       <div className="p-4 space-y-4">
+        {/* Edit and Delete buttons */}
+        <div className="flex gap-2 justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setEditDialogOpen(true)}
+            className="gap-1"
+          >
+            <Edit className="h-4 w-4" />
+            Editar
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="gap-1">
+                <Trash2 className="h-4 w-4" />
+                Eliminar
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Eliminar evento?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer. Se eliminará permanentemente este evento y toda su información.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteEvent} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
         {/* Banner for coaches with pending action */}
         {hasPendingAction && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
@@ -423,8 +424,8 @@ export default function EventDetail() {
                 </>
               ) : (
                 <>
-                  <span className="text-green-600 font-medium">{confirmedPlayersList.length}</span>
-                  <span className="text-muted-foreground">/ {invitedPlayersList.length} convocadas</span>
+                  <span className="text-green-600 font-medium">{invitedPlayersList.length}</span>
+                  <span className="text-muted-foreground">convocadas</span>
                 </>
               )}
             </div>
@@ -741,59 +742,37 @@ export default function EventDetail() {
           </div>
         )}
 
-        {/* Standard Event: Players Tabs */}
+        {/* Standard Event: Simple player list (no confirmation needed) */}
         {!isDisplacement && (
-          <Tabs defaultValue="confirmed" className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="confirmed" className="flex-1">
-                ✅ {confirmedPlayersList.length}
-              </TabsTrigger>
-              <TabsTrigger value="pending" className="flex-1">
-                ⏳ {pendingPlayersList.length}
-              </TabsTrigger>
-              <TabsTrigger value="declined" className="flex-1">
-                ❌ {declinedPlayersList.length}
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="confirmed" className="mt-3 space-y-2">
-              {confirmedPlayersList.length === 0 ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Jugadoras convocadas ({invitedPlayersList.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {invitedPlayersList.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4 text-sm">
-                  Ninguna jugadora confirmada
+                  No hay jugadoras convocadas
                 </p>
               ) : (
-                confirmedPlayersList.map(player => (
-                  <PlayerWithActions key={player.id} player={player} status="confirmed" />
+                invitedPlayersList.map(player => (
+                  <PlayerCard key={player.id} player={player} showTeams={true} clickable={false} />
                 ))
               )}
-            </TabsContent>
-            
-            <TabsContent value="pending" className="mt-3 space-y-2">
-              {pendingPlayersList.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4 text-sm">
-                  Ninguna jugadora pendiente
-                </p>
-              ) : (
-                pendingPlayersList.map(player => (
-                  <PlayerWithActions key={player.id} player={player} status="pending" />
-                ))
-              )}
-            </TabsContent>
-            
-            <TabsContent value="declined" className="mt-3 space-y-2">
-              {declinedPlayersList.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4 text-sm">
-                  Ninguna jugadora declinó
-                </p>
-              ) : (
-                declinedPlayersList.map(player => (
-                  <PlayerWithActions key={player.id} player={player} status="declined" />
-                ))
-              )}
-            </TabsContent>
-          </Tabs>
+            </CardContent>
+          </Card>
         )}
       </div>
+
+      {/* Edit Event Dialog */}
+      <EditEventDialog
+        event={event}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSave={handleUpdateEvent}
+      />
 
       <BottomNav />
     </div>
