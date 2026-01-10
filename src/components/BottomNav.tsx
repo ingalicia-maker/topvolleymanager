@@ -5,10 +5,10 @@ import { useNotifications } from '@/hooks/useNotifications';
 
 const navItems = [
   { to: '/', icon: Home, labelKey: 'nav.home', tourId: 'home' },
-  { to: '/teams', icon: Calendar, labelKey: 'nav.teams', tourId: 'teams' },
-  { to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' },
   { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true, tourId: 'events' },
+  { to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' },
   { to: '/ratings', icon: Star, labelKey: 'nav.ratings', tourId: 'ratings' },
+  { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences', tourId: 'absences' },
 ];
 
 export function BottomNav() {
