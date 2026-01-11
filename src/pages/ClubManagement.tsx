@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -91,6 +91,7 @@ export default function ClubManagement() {
   const [uploading, setUploading] = useState(false);
   const [inviteRole, setInviteRole] = useState<'coach' | 'director'>('coach');
   const [creatingInvite, setCreatingInvite] = useState(false);
+  const [lastInviteToken, setLastInviteToken] = useState<string | null>(null);
   const [membersWithProfiles, setMembersWithProfiles] = useState<MemberWithProfile[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
   
@@ -103,22 +104,28 @@ export default function ClubManagement() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch member profiles
-  useState(() => {
+  useEffect(() => {
     const fetchProfiles = async () => {
       if (members.length === 0) {
+        setMembersWithProfiles([]);
         setLoadingProfiles(false);
         return;
       }
 
-      const userIds = members.map(m => m.user_id);
-      const { data: profiles } = await supabase
+      setLoadingProfiles(true);
+      const userIds = members.map((m) => m.user_id);
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('id, name, email')
         .in('id', userIds);
 
-      const enriched = members.map(member => ({
+      if (error) {
+        console.error('Error fetching member profiles:', error);
+      }
+
+      const enriched = members.map((member) => ({
         ...member,
-        profile: profiles?.find(p => p.id === member.user_id),
+        profile: profiles?.find((p) => p.id === member.user_id),
       }));
 
       setMembersWithProfiles(enriched);
@@ -126,7 +133,17 @@ export default function ClubManagement() {
     };
 
     fetchProfiles();
-  });
+  }, [members]);
+
+  // Sync form fields when club loads/changes
+  useEffect(() => {
+    if (!club) return;
+    setClubName(club.name || '');
+    setPrimaryColor(club.primary_color || '221 83% 53%');
+    setAccentColor(club.accent_color || '25 95% 53%');
+    setFontFamily(club.font_family || 'Inter');
+    setLogoUrl(club.logo_url || null);
+  }, [club]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -217,13 +234,23 @@ export default function ClubManagement() {
 
   const handleCreateInvitation = async () => {
     setCreatingInvite(true);
-    const invitation = await createInvitation(inviteRole);
+    const { invitation, error } = await createInvitation(inviteRole);
     setCreatingInvite(false);
 
     if (invitation) {
-      toast.success('Enlace de invitación creado. ¡Cópialo y compártelo!');
+      setLastInviteToken(invitation.token);
+
+      // Best effort: auto-copy
+      try {
+        await navigator.clipboard.writeText(
+          `${window.location.origin}/club-onboarding?invite=${invitation.token}`
+        );
+        toast.success('Enlace de invitación creado y copiado');
+      } catch {
+        toast.success('Enlace de invitación creado. ¡Cópialo y compártelo!');
+      }
     } else {
-      toast.error('Error al crear la invitación');
+      toast.error(error || 'Error al crear la invitación');
     }
   };
 
@@ -597,6 +624,29 @@ export default function ClubManagement() {
                   )}
                   Generar enlace de invitación
                 </Button>
+
+                {lastInviteToken && (
+                  <div className="space-y-2">
+                    <Label>Último enlace generado</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={`${window.location.origin}/club-onboarding?invite=${lastInviteToken}`}
+                        readOnly
+                        className="flex-1 text-xs font-mono bg-background"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyInviteLink(lastInviteToken)}
+                        className="shrink-0 gap-2"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copiar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-xs text-muted-foreground text-center">
                   El enlace será válido por 7 días
                 </p>

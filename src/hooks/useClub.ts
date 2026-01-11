@@ -206,8 +206,12 @@ export function useClub() {
     }
   };
 
-  const createInvitation = async (role: 'coach' | 'director' = 'coach', email?: string) => {
-    if (!club) return null;
+  const createInvitation = async (
+    role: 'coach' | 'director' = 'coach',
+    email?: string
+  ): Promise<{ invitation: ClubInvitation | null; error: string | null }> => {
+    if (!user) return { invitation: null, error: 'Usuario no autenticado' };
+    if (!club) return { invitation: null, error: 'Club no cargado' };
 
     try {
       const { data, error } = await supabase
@@ -216,18 +220,18 @@ export function useClub() {
           club_id: club.id,
           role,
           email: email || null,
-          created_by: user?.id,
+          created_by: user.id,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setInvitations(prev => [...prev, data as ClubInvitation]);
-      return data as ClubInvitation;
-    } catch (error) {
+      setInvitations((prev) => [...prev, data as ClubInvitation]);
+      return { invitation: data as ClubInvitation, error: null };
+    } catch (error: any) {
       console.error('Error creating invitation:', error);
-      return null;
+      return { invitation: null, error: error?.message || 'Error al crear la invitación' };
     }
   };
 
