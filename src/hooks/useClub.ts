@@ -85,12 +85,12 @@ export function useClub() {
 
       setMembers((membersData || []) as ClubMember[]);
 
-      // Fetch invitations
+      // Fetch all invitations (including used/expired for history)
       const { data: invitationsData } = await supabase
         .from('club_invitations')
         .select('*')
         .eq('club_id', membershipData.club_id)
-        .is('used_at', null);
+        .order('created_at', { ascending: false });
 
       setInvitations((invitationsData || []) as ClubInvitation[]);
     } catch (error) {
