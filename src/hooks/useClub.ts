@@ -147,9 +147,20 @@ export function useClub() {
     }
   };
 
-  const joinClubWithToken = async (token: string) => {
+  const joinClubWithToken = async (rawTokenOrUrl: string) => {
     if (!user) return { success: false, error: 'No autenticado' };
 
+    // Extract token from URL if needed (e.g., https://...?invite=TOKEN)
+    let token = rawTokenOrUrl.trim();
+    try {
+      const url = new URL(token);
+      const inviteParam = url.searchParams.get('invite');
+      if (inviteParam) {
+        token = inviteParam;
+      }
+    } catch {
+      // Not a URL, use as-is
+    }
     try {
       // Find the invitation
       const { data: invitation, error: invError } = await supabase
