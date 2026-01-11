@@ -30,6 +30,10 @@ import {
   Bus,
   Plus,
   GripVertical,
+  RefreshCw,
+  CheckCircle2,
+  Clock,
+  XCircle,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -267,6 +271,40 @@ export default function ClubManagement() {
     } else {
       toast.error('Error al eliminar la invitación');
     }
+  };
+
+  const handleRegenerateInvitation = async (oldInvitation: typeof invitations[0]) => {
+    // Delete the old one and create a new one with same role
+    const deleted = await deleteInvitation(oldInvitation.id);
+    if (!deleted) {
+      toast.error('Error al regenerar la invitación');
+      return;
+    }
+    
+    const { invitation, error } = await createInvitation(oldInvitation.role as 'coach' | 'director');
+    if (invitation) {
+      setLastInviteToken(invitation.token);
+      try {
+        await navigator.clipboard.writeText(
+          `${window.location.origin}/club-onboarding?invite=${invitation.token}`
+        );
+        toast.success('Enlace regenerado y copiado');
+      } catch {
+        toast.success('Enlace regenerado. ¡Cópialo!');
+      }
+    } else {
+      toast.error(error || 'Error al regenerar la invitación');
+    }
+  };
+
+  const getInvitationStatus = (inv: typeof invitations[0]) => {
+    if (inv.used_at) {
+      return { status: 'used', label: 'Usada', color: 'text-green-600', icon: CheckCircle2 };
+    }
+    if (new Date(inv.expires_at) < new Date()) {
+      return { status: 'expired', label: 'Expirada', color: 'text-destructive', icon: XCircle };
+    }
+    return { status: 'active', label: 'Activa', color: 'text-primary', icon: Clock };
   };
 
   const handleRemoveMember = async (memberId: string) => {
@@ -658,63 +696,92 @@ export default function ClubManagement() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Link2 className="h-5 w-5" />
-                    Enlaces de invitación activos
+                    Historial de invitaciones
                   </CardTitle>
                   <CardDescription>
-                    Copia y comparte estos enlaces para invitar nuevos miembros
+                    Todas las invitaciones generadas (activas, usadas y expiradas)
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {invitations.map((inv) => {
                     const inviteLink = `${window.location.origin}/club-onboarding?invite=${inv.token}`;
+                    const { status, label, color, icon: StatusIcon } = getInvitationStatus(inv);
+                    const isActive = status === 'active';
+
                     return (
                       <div
                         key={inv.id}
-                        className="p-4 rounded-lg border bg-muted/50 space-y-3"
+                        className={`p-4 rounded-lg border space-y-3 ${
+                          isActive ? 'bg-muted/50' : 'bg-muted/20 opacity-75'
+                        }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <Badge variant={inv.role === 'director' ? 'default' : 'secondary'}>
-                            {inv.role === 'director' ? 'Director' : 'Entrenador'}
-                          </Badge>
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2">
+                            <Badge variant={inv.role === 'director' ? 'default' : 'secondary'}>
+                              {inv.role === 'director' ? 'Director' : 'Entrenador'}
+                            </Badge>
+                            <span className={`text-xs font-medium flex items-center gap-1 ${color}`}>
+                              <StatusIcon className="h-3 w-3" />
+                              {label}
+                            </span>
+                          </div>
                           <span className="text-xs text-muted-foreground">
-                            Expira: {new Date(inv.expires_at).toLocaleDateString()}
+                            {status === 'used'
+                              ? `Usada: ${new Date(inv.used_at!).toLocaleDateString()}`
+                              : `Expira: ${new Date(inv.expires_at).toLocaleDateString()}`}
                           </span>
                         </div>
-                        
-                        {/* Copyable Link */}
-                        <div className="flex items-center gap-2">
-                          <Input
-                            value={inviteLink}
-                            readOnly
-                            className="flex-1 text-xs font-mono bg-background"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => copyInviteLink(inv.token)}
-                            className="shrink-0 gap-2"
-                          >
-                            <Copy className="h-4 w-4" />
-                            Copiar
-                          </Button>
-                        </div>
 
-                        <div className="flex items-center justify-between">
+                        {/* Only show copyable link if active */}
+                        {isActive && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              value={inviteLink}
+                              readOnly
+                              className="flex-1 text-xs font-mono bg-background"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyInviteLink(inv.token)}
+                              className="shrink-0 gap-2"
+                            >
+                              <Copy className="h-4 w-4" />
+                              Copiar
+                            </Button>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between flex-wrap gap-2">
                           {inv.email && (
                             <span className="text-sm text-muted-foreground flex items-center gap-1">
                               <Mail className="h-3 w-3" />
                               {inv.email}
                             </span>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteInvitation(inv.id)}
-                            className="text-destructive hover:text-destructive ml-auto"
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Eliminar
-                          </Button>
+                          <div className="flex items-center gap-2 ml-auto">
+                            {/* Regenerate button for expired or used invitations */}
+                            {!isActive && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRegenerateInvitation(inv)}
+                                className="gap-1"
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                                Regenerar
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteInvitation(inv.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Eliminar
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     );
