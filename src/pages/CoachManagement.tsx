@@ -46,8 +46,8 @@ interface UserRole {
 
 export default function CoachManagement() {
   const navigate = useNavigate();
-  const { loading: roleLoading, profile: currentUserProfile } = useUserRole();
-  const { club, members: clubMembers, isDirector: isClubDirector, loading: clubLoading } = useClub();
+  const { loading: roleLoading, profile: currentUserProfile, isDirector } = useUserRole();
+  const { club, members: clubMembers, loading: clubLoading } = useClub();
   const { user } = useAuth();
   const { teams } = useTeams();
   const { getOrCreateDirectConversation } = useConversations();
@@ -251,7 +251,7 @@ export default function CoachManagement() {
     );
   }
 
-  if (!isClubDirector) {
+  if (!isDirector) {
     return <Navigate to="/" replace />;
   }
 
