@@ -16,15 +16,18 @@ import { Plus, Trash2, ChevronDown, ChevronUp, History } from 'lucide-react';
 
 type PhoneType = 'player' | 'parent' | 'tutor';
 
-// Phone validation: accepts formats like +34 600 000 000, 600000000, +34600000000
+// Phone validation: requires + prefix for international format
 const validatePhone = (phone: string): { isValid: boolean; error?: string } => {
   const cleaned = phone.replace(/[\s\-\(\)]/g, '');
   if (!cleaned) return { isValid: false, error: 'El teléfono es obligatorio' };
   
-  // Check if it starts with + followed by digits, or just digits
-  const phoneRegex = /^\+?\d{9,15}$/;
-  if (!phoneRegex.test(cleaned)) {
-    return { isValid: false, error: 'Formato inválido. Usa: +34 600 000 000 o 600000000' };
+  if (!cleaned.startsWith('+')) {
+    return { isValid: false, error: 'Añade el prefijo del país (ej: +34, +39, +1)' };
+  }
+  
+  // At least 8 digits after the +
+  if (cleaned.length < 9) {
+    return { isValid: false, error: 'El número es demasiado corto' };
   }
   
   return { isValid: true };
