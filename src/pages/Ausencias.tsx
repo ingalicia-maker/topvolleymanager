@@ -165,9 +165,20 @@ export default function Ausencias() {
             ))}
           </select>
           {!isDirector && assignedTeams.length === 0 && (
-            <p className="text-xs text-muted-foreground">
-              No tienes equipos asignados. Puedes asignarte equipos desde tu perfil.
-            </p>
+            <Card className="border-amber-500/50 bg-amber-500/5">
+              <CardContent className="p-4 text-center space-y-3">
+                <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto" />
+                <div>
+                  <p className="font-medium text-foreground">No tienes equipos asignados</p>
+                  <p className="text-sm text-muted-foreground">
+                    Configura tus equipos desde el panel principal para poder registrar ausencias.
+                  </p>
+                </div>
+                <Button asChild>
+                  <a href="/">Configurar mis equipos</a>
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </div>
 
