@@ -29,7 +29,6 @@ export default function Profile() {
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const { subscription, isPremium } = useSubscription();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
-  const [wantsDirector, setWantsDirector] = useState(isDirector);
   const [saving, setSaving] = useState(false);
 
   const handlePushToggle = async () => {
@@ -42,8 +41,7 @@ export default function Profile() {
 
   useEffect(() => {
     setSelectedTeams(assignedTeams);
-    setWantsDirector(isDirector);
-  }, [assignedTeams, isDirector]);
+  }, [assignedTeams]);
 
   const toggleTeam = (teamId: string) => {
     setSelectedTeams(prev =>
@@ -57,31 +55,18 @@ export default function Profile() {
     if (!user) return;
     setSaving(true);
     
-    // Update assigned teams
+    // Update assigned teams only - director role is managed via invitations
     const teamsSuccess = await updateAssignedTeams(selectedTeams);
-    
-    // Handle director role change
-    if (wantsDirector !== isDirector) {
-      if (wantsDirector) {
-        // Add director role
-        await supabase.from('user_roles').insert({ user_id: user.id, role: 'director' as const });
-      } else {
-        // Remove director role
-        await supabase.from('user_roles').delete().eq('user_id', user.id).eq('role', 'director');
-      }
-    }
     
     if (teamsSuccess) {
       toast.success('Perfil actualizado correctamente');
-      // Reload to get fresh role data
-      window.location.reload();
     } else {
       toast.error('Error al actualizar perfil');
     }
     setSaving(false);
   };
 
-  const hasChanges = JSON.stringify(selectedTeams.sort()) !== JSON.stringify(assignedTeams.sort()) || wantsDirector !== isDirector;
+  const hasChanges = JSON.stringify(selectedTeams.sort()) !== JSON.stringify(assignedTeams.sort());
 
   if (loading || teamsLoading) {
     return (
@@ -253,29 +238,24 @@ export default function Profile() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Director Option */}
-            <div
-              className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                wantsDirector 
-                  ? 'border-amber-500 bg-amber-500/10' 
-                  : 'border-border hover:bg-accent/50'
-              }`}
-              onClick={() => setWantsDirector(!wantsDirector)}
-            >
-              <Checkbox
-                checked={wantsDirector}
-                onCheckedChange={(checked) => setWantsDirector(checked === true)}
-              />
-              <div className="flex-1">
-                <p className="font-medium text-amber-600">Director Deportivo</p>
-                <p className="text-xs text-muted-foreground">Acceso total a todos los equipos y funcionalidades</p>
+            {/* Director role info - read only */}
+            {isDirector && (
+              <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-amber-500 bg-amber-500/10">
+                <Shield className="h-5 w-5 text-amber-600" />
+                <div className="flex-1">
+                  <p className="font-medium text-amber-600">Director Deportivo</p>
+                  <p className="text-xs text-muted-foreground">Acceso total a todos los equipos y funcionalidades</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="border-t pt-4">
+            <div className={isDirector ? "border-t pt-4" : ""}>
               <p className="text-sm font-medium mb-2">Equipos que entrenas</p>
               <p className="text-xs text-muted-foreground mb-3">
-                Puedes ser director y entrenador a la vez
+                {isDirector 
+                  ? "Como director tienes acceso a todos los equipos. Selecciona los que entrenas directamente."
+                  : "Selecciona los equipos que entrenas. Para ser director, necesitas una invitación del Director Deportivo actual."
+                }
               </p>
               <div className="space-y-2">
                 {teams.map(team => (
