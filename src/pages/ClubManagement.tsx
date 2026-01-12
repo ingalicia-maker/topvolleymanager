@@ -76,6 +76,7 @@ export default function ClubManagement() {
     members,
     invitations,
     isDirector,
+    isCoach,
     createInvitation,
     deleteInvitation,
     updateClub,
@@ -237,28 +238,6 @@ export default function ClubManagement() {
     await deleteStop(stopId);
   };
 
-  const handleCreateInvitation = async () => {
-    setCreatingInvite(true);
-    const { invitation, error } = await createInvitation(inviteRole);
-    setCreatingInvite(false);
-
-    if (invitation) {
-      setLastInviteToken(invitation.token);
-
-      // Best effort: auto-copy
-      try {
-        await navigator.clipboard.writeText(
-          `${window.location.origin}/club-onboarding?invite=${invitation.token}`
-        );
-        toast.success('Enlace de invitación creado y copiado');
-      } catch {
-        toast.success('Enlace de invitación creado. ¡Cópialo y compártelo!');
-      }
-    } else {
-      toast.error(error || 'Error al crear la invitación');
-    }
-  };
-
   const copyInviteLink = (token: string) => {
     const link = `${window.location.origin}/club-onboarding?invite=${token}`;
     navigator.clipboard.writeText(link);
@@ -325,6 +304,42 @@ export default function ClubManagement() {
       refetch();
     } else {
       toast.error('Error al actualizar el rol');
+    }
+  };
+
+  const handleDemoteToCoach = async (memberId: string, memberName: string) => {
+    const success = await updateMemberRole(memberId, 'coach');
+    if (success) {
+      toast.success(`${memberName} ahora es Entrenador`);
+      refetch();
+    } else {
+      toast.error('Error al actualizar el rol');
+    }
+  };
+
+  const handleCreateInvitation = async () => {
+    setCreatingInvite(true);
+    // If coach is creating, force role to 'coach' and notify directors
+    const roleToUse = isDirector ? inviteRole : 'coach';
+    const shouldNotifyDirectors = !isDirector; // Notify if coach creates invitation
+    
+    const { invitation, error } = await createInvitation(roleToUse, undefined, shouldNotifyDirectors);
+    setCreatingInvite(false);
+
+    if (invitation) {
+      setLastInviteToken(invitation.token);
+
+      // Best effort: auto-copy
+      try {
+        await navigator.clipboard.writeText(
+          `${window.location.origin}/club-onboarding?invite=${invitation.token}`
+        );
+        toast.success('Enlace de invitación creado y copiado');
+      } catch {
+        toast.success('Enlace de invitación creado. ¡Cópialo y compártelo!');
+      }
+    } else {
+      toast.error(error || 'Error al crear la invitación');
     }
   };
 
@@ -597,7 +612,7 @@ export default function ClubManagement() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Badge
                           variant={member.role === 'director' ? 'default' : 'secondary'}
                         >
@@ -658,6 +673,34 @@ export default function ClubManagement() {
                             </AlertDialog>
                           </>
                         )}
+                        {isDirector && member.role === 'director' && membersWithProfiles.filter(m => m.role === 'director').length > 1 && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="gap-1">
+                                <User className="h-3 w-3" />
+                                <span className="hidden sm:inline">Hacer Entrenador</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  ¿Revocar permisos de Director?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {member.profile?.name} pasará a ser Entrenador y perderá los permisos de gestión del club.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDemoteToCoach(member.id, member.profile?.name || 'Usuario')}
+                                >
+                                  Confirmar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </div>
                   ))
@@ -678,21 +721,27 @@ export default function ClubManagement() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Rol del invitado</Label>
-                  <Select
-                    value={inviteRole}
-                    onValueChange={(v) => setInviteRole(v as 'coach' | 'director')}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="coach">Entrenador</SelectItem>
-                      <SelectItem value="director">Director Deportivo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {isDirector ? (
+                  <div className="space-y-2">
+                    <Label>Rol del invitado</Label>
+                    <Select
+                      value={inviteRole}
+                      onValueChange={(v) => setInviteRole(v as 'coach' | 'director')}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="coach">Entrenador</SelectItem>
+                        <SelectItem value="director">Director Deportivo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Como entrenador, puedes invitar a otros entrenadores al club. El director deportivo será notificado de la invitación.
+                  </p>
+                )}
                 <Button onClick={handleCreateInvitation} disabled={creatingInvite} className="w-full">
                   {creatingInvite ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
