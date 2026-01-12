@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from 'sonner';
 import { Plus, Trash2, ChevronDown, ChevronUp, History } from 'lucide-react';
 
@@ -41,6 +42,14 @@ export default function NewPlayer() {
   
   const { addPlayer } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
+  const { assignedTeams, isDirector, loading: roleLoading } = useUserRole();
+
+  // Filter teams for coaches - they can only add players to their assigned teams
+  const visibleTeams = useMemo(() => {
+    if (isDirector) return teams;
+    if (assignedTeams.length === 0) return [];
+    return teams.filter(t => assignedTeams.includes(t.id));
+  }, [isDirector, assignedTeams, teams]);
   
   const [name, setName] = useState('');
   const [surname1, setSurname1] = useState('');
@@ -519,13 +528,21 @@ export default function NewPlayer() {
         {/* Teams */}
         <div className="space-y-3">
           <Label>Equipos *</Label>
-          {teamsLoading ? (
+          {teamsLoading || roleLoading ? (
             <div className="flex items-center justify-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
             </div>
+          ) : visibleTeams.length === 0 ? (
+            <Card className="border-amber-500/30 bg-amber-500/5">
+              <CardContent className="p-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No tienes equipos asignados. Contacta con el Director Deportivo para que te asigne equipos.
+                </p>
+              </CardContent>
+            </Card>
           ) : (
             <div className="space-y-2">
-              {teams.map(team => (
+              {visibleTeams.map(team => (
                 <label
                   key={team.id}
                   className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors"

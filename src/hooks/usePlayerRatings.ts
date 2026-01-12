@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useClub } from './useClub';
+import { useUserRole } from './useUserRole';
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 
@@ -48,7 +49,8 @@ export type RatingCategoryKey = typeof RATING_CATEGORIES[number]['key'];
 export function usePlayerRatings() {
   const { user } = useAuth();
   const { club } = useClub();
-  const [ratings, setRatings] = useState<PlayerRating[]>([]);
+  const { assignedTeams, isDirector, loading: roleLoading } = useUserRole();
+  const [allRatings, setAllRatings] = useState<PlayerRating[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchRatings = async () => {
@@ -61,7 +63,7 @@ export function usePlayerRatings() {
       console.error('Error fetching ratings:', error);
       toast.error('Error al cargar puntuaciones');
     } else {
-      setRatings(data || []);
+      setAllRatings(data || []);
     }
     setLoading(false);
   };
@@ -69,6 +71,15 @@ export function usePlayerRatings() {
   useEffect(() => {
     fetchRatings();
   }, []);
+
+  // Filter ratings by assigned teams for coaches
+  // Directors can see all ratings, coaches only see their assigned teams
+  const ratings = useMemo(() => {
+    if (roleLoading) return [];
+    if (isDirector) return allRatings;
+    if (assignedTeams.length === 0) return [];
+    return allRatings.filter(r => assignedTeams.includes(r.team_id));
+  }, [allRatings, isDirector, assignedTeams, roleLoading]);
 
   const addRating = async (rating: RatingInput & { rating_date?: string }, seasonId?: string) => {
     const ratingDate = rating.rating_date || format(new Date(), 'yyyy-MM-dd');
@@ -89,7 +100,7 @@ export function usePlayerRatings() {
       return null;
     }
 
-    setRatings(prev => [data, ...prev]);
+    setAllRatings(prev => [data, ...prev]);
     toast.success('Puntuación guardada');
     return data;
   };
@@ -107,7 +118,7 @@ export function usePlayerRatings() {
       return null;
     }
 
-    setRatings(prev => prev.map(r => r.id === id ? data : r));
+    setAllRatings(prev => prev.map(r => r.id === id ? data : r));
     toast.success('Puntuación actualizada');
     return data;
   };
@@ -123,7 +134,7 @@ export function usePlayerRatings() {
       return false;
     }
 
-    setRatings(prev => prev.filter(r => r.id !== id));
+    setAllRatings(prev => prev.filter(r => r.id !== id));
     toast.success('Puntuación eliminada');
     return true;
   };

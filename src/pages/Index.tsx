@@ -9,6 +9,7 @@ import { CreditsDisplay } from '@/components/CreditsDisplay';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { CoachWelcomeDialog } from '@/components/CoachWelcomeDialog';
 import { MonthlyAbsenceSummary } from '@/components/MonthlyAbsenceSummary';
+import { ResponsibilityCodeBanner } from '@/components/ResponsibilityCodeBanner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -143,7 +144,10 @@ export default function Index() {
       </div>
     </div>
 
-    <div className="px-4 -mt-6 space-y-6">
+    {/* Responsibility Code Banner - Very Prominent */}
+    <ResponsibilityCodeBanner />
+
+    <div className="px-4 -mt-2 space-y-6">
       {/* Premium Upgrade Banner for Free Users */}
       {!isPremium && (
         <Link to="/subscription">
