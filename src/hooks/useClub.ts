@@ -198,16 +198,32 @@ export function useClub() {
         return { success: false, error: 'Ya eres miembro de este club' };
       }
 
-      // Join the club
+      // Join the club with the role from the invitation
+      const memberRole = invitation.role as 'coach' | 'director';
       const { error: joinError } = await supabase
         .from('club_members')
         .insert({
           club_id: invitation.club_id,
           user_id: user.id,
-          role: invitation.role,
+          role: memberRole,
         });
 
       if (joinError) throw joinError;
+
+      // Also add to user_roles table for permission checks
+      // First check if role already exists
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('role', memberRole)
+        .maybeSingle();
+
+      if (!existingRole) {
+        await supabase
+          .from('user_roles')
+          .insert({ user_id: user.id, role: memberRole });
+      }
 
       // Mark invitation as used
       await supabase
