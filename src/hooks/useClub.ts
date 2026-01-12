@@ -145,6 +145,23 @@ export function useClub() {
         return { club: null, error: memberError.message };
       }
 
+      // Notify admin of new director registration (fire-and-forget)
+      if (role === 'director') {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name, email')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        supabase.functions.invoke('notify-new-director', {
+          body: {
+            directorName: profile?.name || user.email || 'Desconocido',
+            directorEmail: profile?.email || user.email || '',
+            clubName: name,
+          },
+        }).catch(err => console.error('Error notifying admin:', err));
+      }
+
       await fetchClub();
       return { club: newClub as Club, error: null };
     } catch (error: any) {
