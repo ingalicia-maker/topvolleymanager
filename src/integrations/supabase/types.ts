@@ -977,11 +977,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_club_invitation: { Args: { _token: string }; Returns: Json }
       cleanup_expired_verification_tokens: { Args: never; Returns: undefined }
       consume_credit: { Args: { _user_id: string }; Returns: boolean }
       get_grace_period_days_remaining: {
         Args: { _user_id: string }
         Returns: number
+      }
+      get_invitation_preview: {
+        Args: { _token: string }
+        Returns: {
+          club_id: string
+          club_name: string
+          expires_at: string
+          responsibility_code: string
+          responsible_person_name: string
+          role: string
+          used_at: string
+        }[]
       }
       get_user_club_id: { Args: { _user_id: string }; Returns: string }
       get_user_credits: { Args: { _user_id: string }; Returns: number }
