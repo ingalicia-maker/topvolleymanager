@@ -262,9 +262,11 @@ export default function ClubManagement() {
     return 'https://www.topvolleymanager.com';
   };
 
-  // Generate a short, clean invitation link: /inv/TOKEN (no query params)
+  // Generate a clean invitation link without query params.
+  // We use a hash fragment so it works even if the hosting doesn't rewrite SPA routes like /inv/TOKEN.
+  // Example: https://www.topvolleymanager.com/invitation#TOKEN
   const getInviteLink = (token: string) => {
-    return `${getInviteBaseUrl()}/inv/${token}`;
+    return `${getInviteBaseUrl()}/invitation#${token}`;
   };
 
   const copyInviteLink = (token: string) => {
