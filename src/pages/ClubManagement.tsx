@@ -253,10 +253,12 @@ export default function ClubManagement() {
   };
 
   const getInviteBaseUrl = () => {
-    // Use custom domain in production, fallback to origin for development
-    const isProd = window.location.hostname === 'topvolleymanager.com' || 
-                   window.location.hostname === 'www.topvolleymanager.com';
-    return isProd ? 'https://topvolleymanager.com' : window.location.origin;
+    // Always generate a professional public link (avoid preview domains like "lovableproject").
+    // In local development we keep localhost so testing remains easy.
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return window.location.origin;
+
+    return 'https://topvolleymanager.com';
   };
 
   const copyInviteLink = (token: string) => {
