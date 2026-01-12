@@ -5,15 +5,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useClub } from '@/hooks/useClub';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Users, Shield, Mail, CheckCircle, Clock, UserX } from 'lucide-react';
+import { Users, Shield, Mail, CheckCircle, Clock, UserX, MessageSquare, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Navigate } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CoachProfile {
   id: string;
@@ -21,6 +35,7 @@ interface CoachProfile {
   email: string;
   assigned_teams: string[] | null;
   created_at: string | null;
+  role: 'coach' | 'director';
 }
 
 interface UserRole {
@@ -30,24 +45,46 @@ interface UserRole {
 
 export default function CoachManagement() {
   const { isDirector, loading: roleLoading, profile: currentUserProfile } = useUserRole();
+  const { club, members: clubMembers } = useClub();
+  const { user } = useAuth();
   const { teams } = useTeams();
+  const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [messageTitle, setMessageTitle] = useState('');
+  const [messageContent, setMessageContent] = useState('');
+  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [sendingMessage, setSendingMessage] = useState(false);
 
-  // Fetch all profiles (coaches)
+  // Fetch profiles for club members only
   const { data: profiles, isLoading: profilesLoading, refetch } = useQuery({
-    queryKey: ['all-profiles'],
+    queryKey: ['club-member-profiles', club?.id],
     queryFn: async () => {
+      if (!club?.id || !clubMembers.length) return [];
+      
+      const memberUserIds = clubMembers.map(m => m.user_id);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
+        .in('id', memberUserIds)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as CoachProfile[];
+      
+      // Enrich profiles with role from club_members
+      return data.map(profile => {
+        const member = clubMembers.find(m => m.user_id === profile.id);
+        return {
+          ...profile,
+          role: member?.role || 'coach'
+        } as CoachProfile;
+      });
     },
+    enabled: !!club?.id && clubMembers.length > 0,
   });
 
-  // Fetch all user roles
+  // Fetch all user roles for approved status
   const { data: userRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ['all-user-roles'],
     queryFn: async () => {
@@ -70,13 +107,13 @@ export default function CoachManagement() {
   };
 
   const isUserDirector = (userId: string) => {
-    return getUserRoles(userId).includes('director');
+    const profile = profiles?.find(p => p.id === userId);
+    return profile?.role === 'director';
   };
 
   const handleAssignCoachRole = async (userId: string) => {
     setProcessingId(userId);
     try {
-      // Find the coach profile to get their details
       const coach = profiles?.find(p => p.id === userId);
       
       const { error } = await supabase
@@ -85,7 +122,6 @@ export default function CoachManagement() {
       
       if (error) throw error;
 
-      // Send notification email to the approved coach
       if (coach) {
         try {
           await supabase.functions.invoke('notify-coach-approved', {
@@ -101,6 +137,7 @@ export default function CoachManagement() {
       }
       
       toast.success('Entrenador aprobado correctamente');
+      queryClient.invalidateQueries({ queryKey: ['all-user-roles'] });
       refetch();
     } catch (error) {
       toast.error('Error al asignar rol');
@@ -119,11 +156,76 @@ export default function CoachManagement() {
       
       if (error) throw error;
       toast.success('Rol de entrenador eliminado');
+      queryClient.invalidateQueries({ queryKey: ['all-user-roles'] });
       refetch();
     } catch (error) {
       toast.error('Error al eliminar rol');
     }
     setProcessingId(null);
+  };
+
+  const openMessageDialog = () => {
+    setMessageTitle('');
+    setMessageContent('');
+    setSelectedRecipients(coaches.map(c => c.id)); // Select all coaches by default
+    setMessageDialogOpen(true);
+  };
+
+  const toggleRecipient = (userId: string) => {
+    setSelectedRecipients(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const selectAllCoaches = () => {
+    setSelectedRecipients(coaches.map(c => c.id));
+  };
+
+  const deselectAllCoaches = () => {
+    setSelectedRecipients([]);
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageTitle.trim() || !messageContent.trim()) {
+      toast.error('Por favor completa el título y el mensaje');
+      return;
+    }
+
+    if (selectedRecipients.length === 0) {
+      toast.error('Selecciona al menos un destinatario');
+      return;
+    }
+
+    setSendingMessage(true);
+    try {
+      // Create notifications for all selected recipients
+      const notifications = selectedRecipients.map(recipientId => ({
+        recipient_id: recipientId,
+        sender_id: user?.id || null,
+        type: 'director_message',
+        title: messageTitle.trim(),
+        message: messageContent.trim(),
+        is_read: false,
+      }));
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (error) throw error;
+
+      toast.success(`Mensaje enviado a ${selectedRecipients.length} entrenador(es)`);
+      setMessageDialogOpen(false);
+      setMessageTitle('');
+      setMessageContent('');
+      setSelectedRecipients([]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Error al enviar el mensaje');
+    }
+    setSendingMessage(false);
   };
 
   if (roleLoading) {
@@ -139,16 +241,15 @@ export default function CoachManagement() {
     );
   }
 
-  // Only directors can access this page
   if (!isDirector) {
     return <Navigate to="/" replace />;
   }
 
   const loading = profilesLoading || rolesLoading;
 
-  // Filter out directors from the list (they manage themselves)
-  const coaches = profiles?.filter(p => !isUserDirector(p.id)) || [];
-  const directors = profiles?.filter(p => isUserDirector(p.id)) || [];
+  // Filter by role from club_members
+  const coaches = profiles?.filter(p => p.role === 'coach') || [];
+  const directors = profiles?.filter(p => p.role === 'director') || [];
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -174,6 +275,18 @@ export default function CoachManagement() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Send Message Button */}
+        {coaches.length > 0 && (
+          <Button 
+            onClick={openMessageDialog}
+            className="w-full gap-2"
+            variant="outline"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Enviar comunicación a entrenadores
+          </Button>
+        )}
 
         {/* Directors Section */}
         <Card>
@@ -313,6 +426,112 @@ export default function CoachManagement() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Message Dialog */}
+      <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Enviar comunicación
+            </DialogTitle>
+            <DialogDescription>
+              Envía un mensaje a los entrenadores seleccionados. Aparecerá en sus notificaciones.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="message-title">Título</Label>
+              <Input
+                id="message-title"
+                placeholder="Ej: Reunión de coordinación"
+                value={messageTitle}
+                onChange={(e) => setMessageTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="message-content">Mensaje</Label>
+              <Textarea
+                id="message-content"
+                placeholder="Escribe tu mensaje aquí..."
+                value={messageContent}
+                onChange={(e) => setMessageContent(e.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Destinatarios</Label>
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={selectAllCoaches}
+                  >
+                    Todos
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={deselectAllCoaches}
+                  >
+                    Ninguno
+                  </Button>
+                </div>
+              </div>
+              <div className="border rounded-lg p-3 max-h-40 overflow-y-auto space-y-2">
+                {coaches.map(coach => (
+                  <div 
+                    key={coach.id} 
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => toggleRecipient(coach.id)}
+                  >
+                    <Checkbox
+                      checked={selectedRecipients.includes(coach.id)}
+                      onCheckedChange={() => toggleRecipient(coach.id)}
+                    />
+                    <span className="text-sm">{coach.name}</span>
+                    <span className="text-xs text-muted-foreground">({coach.email})</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {selectedRecipients.length} de {coaches.length} seleccionados
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setMessageDialogOpen(false)}
+              disabled={sendingMessage}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSendMessage}
+              disabled={sendingMessage || !messageTitle.trim() || !messageContent.trim() || selectedRecipients.length === 0}
+              className="gap-2"
+            >
+              {sendingMessage ? (
+                <>Enviando...</>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Enviar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <BottomNav />
     </div>
   );
