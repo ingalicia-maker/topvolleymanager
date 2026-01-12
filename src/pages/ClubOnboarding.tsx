@@ -50,6 +50,7 @@ export default function ClubOnboarding() {
   useEffect(() => {
     // Priority: path param (/inv/:token) > query param (?invite=token) > hash (#token)
     const token = pathToken || searchParams.get('invite') || getHashToken();
+    console.log('[ClubOnboarding] Checking for token, found:', token ? token.substring(0, 10) + '...' : 'none');
     if (token) {
       setInviteToken(token);
       setMode('join');
@@ -59,12 +60,16 @@ export default function ClubOnboarding() {
 
   const fetchClubInfoFromToken = async (token: string) => {
     setLoadingClubInfo(true);
+    console.log('[ClubOnboarding] Fetching invitation preview for token:', token.substring(0, 10) + '...');
+    
     try {
-      // Use RPC function to preview invitation (works even without club_invitations SELECT policy)
+      // Use RPC function to preview invitation (security definer - works for new users)
       const { data, error } = await supabase.rpc('get_invitation_preview', { _token: token });
       
+      console.log('[ClubOnboarding] Preview result:', { data, error });
+      
       if (error) {
-        console.error('Error fetching invitation preview:', error);
+        console.error('[ClubOnboarding] Error fetching invitation preview:', error);
         setJoinResult({ success: false, message: 'Invitación no válida o expirada' });
         setLoadingClubInfo(false);
         return;
@@ -74,6 +79,7 @@ export default function ClubOnboarding() {
       const preview = Array.isArray(data) ? data[0] : data;
       
       if (!preview) {
+        console.log('[ClubOnboarding] No preview data found');
         setJoinResult({ success: false, message: 'Invitación no válida o expirada' });
         setLoadingClubInfo(false);
         return;
@@ -81,24 +87,27 @@ export default function ClubOnboarding() {
 
       // Check if already used or expired
       if (preview.used_at) {
+        console.log('[ClubOnboarding] Invitation already used');
         setJoinResult({ success: false, message: 'Esta invitación ya ha sido utilizada' });
         setLoadingClubInfo(false);
         return;
       }
       
       if (new Date(preview.expires_at) < new Date()) {
+        console.log('[ClubOnboarding] Invitation expired');
         setJoinResult({ success: false, message: 'La invitación ha expirado' });
         setLoadingClubInfo(false);
         return;
       }
 
+      console.log('[ClubOnboarding] Valid invitation for club:', preview.club_name);
       setClubInfo({ 
         name: preview.club_name, 
         responsible_person_name: preview.responsible_person_name 
       });
       setClubResponsibilityCode(preview.responsibility_code);
     } catch (error) {
-      console.error('Error fetching club info:', error);
+      console.error('[ClubOnboarding] Error fetching club info:', error);
       setJoinResult({ success: false, message: 'Error al cargar la invitación' });
     }
     setLoadingClubInfo(false);
@@ -143,9 +152,13 @@ export default function ClubOnboarding() {
     setSubmitting(true);
     setJoinResult(null);
     
+    console.log('[ClubOnboarding] Accepting invitation...');
+    
     try {
-      // Use the RPC function to accept the invitation
+      // Use the RPC function to accept the invitation (security definer)
       const { data, error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken.trim() });
+      
+      console.log('[ClubOnboarding] Accept result:', { data, error });
       
       if (error) {
         // Parse Postgres error message
@@ -157,6 +170,7 @@ export default function ClubOnboarding() {
         } else if (errorMsg.includes('expirado')) {
           errorMsg = 'La invitación ha expirado';
         }
+        console.error('[ClubOnboarding] Accept error:', errorMsg);
         setJoinResult({ success: false, message: errorMsg });
         setSubmitting(false);
         return;
@@ -170,11 +184,12 @@ export default function ClubOnboarding() {
           .eq('id', user.id);
       }
       
+      console.log('[ClubOnboarding] Successfully joined club!');
       setJoinResult({ success: true, message: '¡Te has unido al club!' });
       toast.success('¡Te has unido al club!');
       setTimeout(() => navigate('/', { replace: true }), 1500);
     } catch (error: any) {
-      console.error('Error joining club:', error);
+      console.error('[ClubOnboarding] Error joining club:', error);
       setJoinResult({ success: false, message: error?.message || 'Error al unirse al club' });
     }
     

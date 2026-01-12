@@ -50,13 +50,17 @@ export default function Auth() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // For invitation flows, always go to the invitation URL
+        console.log('[Auth] User has session, redirecting to:', redirectTo);
         navigate(redirectTo, { replace: true });
       }
     };
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      console.log('[Auth] onAuthStateChange event:', event, 'hasSession:', !!session);
+      if (session && event === 'SIGNED_IN') {
+        console.log('[Auth] SIGNED_IN detected, redirecting to:', redirectTo);
         navigate(redirectTo, { replace: true });
       }
     });
@@ -177,28 +181,34 @@ export default function Auth() {
 
     setVerifying(true);
     try {
+      console.log('[Auth] Verifying code for:', email.trim());
       const { data, error } = await supabase.functions.invoke('verify-email-code', {
         body: { email: email.trim(), code: verificationCode }
       });
 
       if (error || !data?.success) {
+        console.error('[Auth] Verification failed:', error, data);
         toast.error(t('auth.codeExpiredOrInvalid', 'Código expirado o inválido'));
         setVerifying(false);
         return;
       }
 
+      console.log('[Auth] Code verified, signing in...');
+      
       // Sign in after verification to get fresh JWT with confirmed status
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
       if (signInError) {
+        console.error('[Auth] Sign in error:', signInError);
         toast.error(signInError.message);
         setVerifying(false);
         return;
       }
 
+      console.log('[Auth] Signed in successfully, session:', !!signInData.session);
       toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
       
       // Only mark as new director if coming from director signup, not invitation
@@ -209,7 +219,13 @@ export default function Auth() {
       localStorage.removeItem('pending_signup_role');
       
       setShowEmailConfirmation(false);
-      // onAuthStateChange will handle navigation
+      
+      // Manually navigate in case onAuthStateChange doesn't fire
+      // This ensures invitation flow works correctly
+      if (signInData.session) {
+        console.log('[Auth] Manual navigation to:', redirectTo);
+        navigate(redirectTo, { replace: true });
+      }
     } catch (error) {
       console.error('Error verifying code:', error);
       toast.error(t('auth.verificationError', 'Error al verificar el código'));
