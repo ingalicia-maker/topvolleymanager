@@ -200,115 +200,131 @@ export function useConversations() {
     };
   }, [user, fetchConversations]);
 
-  const createConversation = async (participantIds: string[], title?: string) => {
-    if (!user || !club) return null;
+  const createConversation = useCallback(
+    async (participantIds: string[], title?: string) => {
+      if (!user || !club) return null;
 
-    try {
-      // Check if 1-to-1 conversation already exists
-      if (participantIds.length === 1) {
-        const existingConv = conversations.find(c => 
-          !c.is_group && 
-          c.participants.length === 2 &&
-          c.participants.some(p => p.user_id === participantIds[0])
-        );
-        if (existingConv) return existingConv.id;
-      }
+      try {
+        // Check if 1-to-1 conversation already exists
+        if (participantIds.length === 1) {
+          const existingConv = conversations.find(
+            (c) =>
+              !c.is_group &&
+              c.participants.length === 2 &&
+              c.participants.some((p) => p.user_id === participantIds[0])
+          );
+          if (existingConv) return existingConv.id;
+        }
 
-      // Create conversation
-      const { data: newConv, error: convError } = await supabase
-        .from('conversations')
-        .insert({
-          club_id: club.id,
-          title: title || null,
-          is_group: participantIds.length > 1,
-          created_by: user.id,
-        })
-        .select()
-        .single();
+        // Create conversation
+        const { data: newConv, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            club_id: club.id,
+            title: title || null,
+            is_group: participantIds.length > 1,
+            created_by: user.id,
+          })
+          .select()
+          .single();
 
-      if (convError) throw convError;
+        if (convError) throw convError;
 
-      // Add creator as participant
-      await supabase
-        .from('conversation_participants')
-        .insert({
-          conversation_id: newConv.id,
-          user_id: user.id,
-        });
-
-      // Add other participants
-      for (const userId of participantIds) {
-        await supabase
+        // Add creator as participant
+        const { error: creatorParticipantError } = await supabase
           .from('conversation_participants')
           .insert({
             conversation_id: newConv.id,
-            user_id: userId,
+            user_id: user.id,
           });
+
+        if (creatorParticipantError) throw creatorParticipantError;
+
+        // Add other participants
+        for (const userId of participantIds) {
+          const { error: participantError } = await supabase
+            .from('conversation_participants')
+            .insert({
+              conversation_id: newConv.id,
+              user_id: userId,
+            });
+
+          if (participantError) throw participantError;
+        }
+
+        await fetchConversations();
+        return newConv.id;
+      } catch (error) {
+        console.error('Error creating conversation:', error);
+        return null;
       }
+    },
+    [user, club, conversations, fetchConversations]
+  );
 
-      await fetchConversations();
-      return newConv.id;
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      return null;
-    }
-  };
+  const sendMessage = useCallback(
+    async (conversationId: string, content: string) => {
+      if (!user) return false;
 
-  const sendMessage = async (conversationId: string, content: string) => {
-    if (!user) return false;
-
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
+      try {
+        const { error } = await supabase.from('messages').insert({
           conversation_id: conversationId,
           sender_id: user.id,
           content,
         });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Update conversation updated_at
-      await supabase
-        .from('conversations')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', conversationId);
+        // Update conversation updated_at
+        await supabase
+          .from('conversations')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', conversationId);
 
-      return true;
-    } catch (error) {
-      console.error('Error sending message:', error);
-      return false;
-    }
-  };
+        return true;
+      } catch (error) {
+        console.error('Error sending message:', error);
+        return false;
+      }
+    },
+    [user]
+  );
 
-  const markAsRead = async (conversationId: string) => {
-    if (!user) return;
+  const markAsRead = useCallback(
+    async (conversationId: string) => {
+      if (!user) return;
 
-    try {
-      await supabase
-        .from('conversation_participants')
-        .update({ last_read_at: new Date().toISOString() })
-        .eq('conversation_id', conversationId)
-        .eq('user_id', user.id);
+      try {
+        await supabase
+          .from('conversation_participants')
+          .update({ last_read_at: new Date().toISOString() })
+          .eq('conversation_id', conversationId)
+          .eq('user_id', user.id);
 
-      await fetchConversations();
-    } catch (error) {
-      console.error('Error marking as read:', error);
-    }
-  };
+        await fetchConversations();
+      } catch (error) {
+        console.error('Error marking as read:', error);
+      }
+    },
+    [user, fetchConversations]
+  );
 
-  const getOrCreateDirectConversation = async (otherUserId: string) => {
-    // Check if already exists
-    const existing = conversations.find(c =>
-      !c.is_group &&
-      c.participants.length === 2 &&
-      c.participants.some(p => p.user_id === otherUserId)
-    );
+  const getOrCreateDirectConversation = useCallback(
+    async (otherUserId: string) => {
+      // Check if already exists
+      const existing = conversations.find(
+        (c) =>
+          !c.is_group &&
+          c.participants.length === 2 &&
+          c.participants.some((p) => p.user_id === otherUserId)
+      );
 
-    if (existing) return existing.id;
+      if (existing) return existing.id;
 
-    return await createConversation([otherUserId]);
-  };
+      return await createConversation([otherUserId]);
+    },
+    [conversations, createConversation]
+  );
 
   return {
     conversations,

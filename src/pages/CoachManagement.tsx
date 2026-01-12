@@ -68,7 +68,7 @@ export default function CoachManagement() {
       setProcessingId(userId);
       const convId = await getOrCreateDirectConversation(userId);
       if (convId) {
-        navigate('/messages');
+        navigate('/messages', { state: { openConversationId: convId } });
       } else {
         toast.error('Error al crear la conversación');
       }
@@ -241,7 +241,7 @@ export default function CoachManagement() {
       if (convId) {
         toast.success('Conversación grupal creada');
         setGroupChatDialogOpen(false);
-        navigate('/messages');
+        navigate('/messages', { state: { openConversationId: convId } });
       } else {
         toast.error('Error al crear la conversación');
       }
