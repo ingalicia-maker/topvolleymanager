@@ -2,6 +2,7 @@ import { MessageCircle, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DbPlayer } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -19,6 +20,7 @@ interface PlayerCardProps {
 export function PlayerCard({ player, selectable, selected, onSelect, showTeams = true, clickable = true }: PlayerCardProps) {
   const { teams } = useTeams();
   const navigate = useNavigate();
+  const { signedUrl } = useSignedUrl(player.photo_url);
   
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -60,7 +62,7 @@ export function PlayerCard({ player, selectable, selected, onSelect, showTeams =
             />
           )}
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarImage src={player.photo_url || undefined} alt={fullName} />
+            <AvatarImage src={signedUrl || undefined} alt={fullName} />
             <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
               {player.number ? `#${player.number}` : initials}
             </AvatarFallback>
