@@ -80,6 +80,7 @@ export default function ClubManagement() {
     deleteInvitation,
     updateClub,
     removeMember,
+    updateMemberRole,
     refetch,
   } = useClub();
 
@@ -314,6 +315,16 @@ export default function ClubManagement() {
       refetch();
     } else {
       toast.error('Error al eliminar el miembro');
+    }
+  };
+
+  const handlePromoteToDirector = async (memberId: string, memberName: string) => {
+    const success = await updateMemberRole(memberId, 'director');
+    if (success) {
+      toast.success(`${memberName} ahora es Director Deportivo`);
+      refetch();
+    } else {
+      toast.error('Error al actualizar el rol');
     }
   };
 
@@ -593,31 +604,59 @@ export default function ClubManagement() {
                           {member.role === 'director' ? 'Director' : 'Entrenador'}
                         </Badge>
                         {isDirector && member.role !== 'director' && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  ¿Eliminar miembro?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {member.profile?.name} será eliminado del club.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleRemoveMember(member.id)}
-                                >
-                                  Eliminar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="gap-1">
+                                  <Crown className="h-3 w-3" />
+                                  <span className="hidden sm:inline">Hacer Director</span>
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    ¿Conceder permisos de Director?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    {member.profile?.name} tendrá permisos completos de Director Deportivo: gestionar equipos, jugadoras, invitaciones y configuración del club.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handlePromoteToDirector(member.id, member.profile?.name || 'Usuario')}
+                                  >
+                                    Confirmar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    ¿Eliminar miembro?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    {member.profile?.name} será eliminado del club.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleRemoveMember(member.id)}
+                                  >
+                                    Eliminar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </>
                         )}
                       </div>
                     </div>
