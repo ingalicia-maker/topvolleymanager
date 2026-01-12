@@ -40,6 +40,11 @@ export interface ConversationWithDetails extends Conversation {
   unreadCount: number;
 }
 
+export interface CreateConversationResult {
+  id: string | null;
+  error: string | null;
+}
+
 export function useConversations() {
   const { user } = useAuth();
   const { club } = useClub();
@@ -201,8 +206,16 @@ export function useConversations() {
   }, [user, fetchConversations]);
 
   const createConversation = useCallback(
-    async (participantIds: string[], title?: string) => {
-      if (!user || !club) return null;
+    async (participantIds: string[], title?: string): Promise<CreateConversationResult> => {
+      if (!user) return { id: null, error: 'Sesión no válida' };
+
+      // Fall-back: si el club aún no está cargado en el hook, lo pedimos al backend.
+      let clubId = club?.id ?? null;
+      if (!clubId) {
+        const { data, error } = await supabase.rpc('get_user_club_id', { _user_id: user.id });
+        if (error || !data) return { id: null, error: 'Club no cargado' };
+        clubId = data as string;
+      }
 
       try {
         // Check if 1-to-1 conversation already exists
@@ -213,14 +226,14 @@ export function useConversations() {
               c.participants.length === 2 &&
               c.participants.some((p) => p.user_id === participantIds[0])
           );
-          if (existingConv) return existingConv.id;
+          if (existingConv) return { id: existingConv.id, error: null };
         }
 
         // Create conversation
         const { data: newConv, error: convError } = await supabase
           .from('conversations')
           .insert({
-            club_id: club.id,
+            club_id: clubId,
             title: title || null,
             is_group: participantIds.length > 1,
             created_by: user.id,
@@ -228,7 +241,7 @@ export function useConversations() {
           .select()
           .single();
 
-        if (convError) throw convError;
+        if (convError) return { id: null, error: convError.message };
 
         // Add creator as participant
         const { error: creatorParticipantError } = await supabase
@@ -238,7 +251,7 @@ export function useConversations() {
             user_id: user.id,
           });
 
-        if (creatorParticipantError) throw creatorParticipantError;
+        if (creatorParticipantError) return { id: null, error: creatorParticipantError.message };
 
         // Add other participants
         for (const userId of participantIds) {
@@ -249,14 +262,14 @@ export function useConversations() {
               user_id: userId,
             });
 
-          if (participantError) throw participantError;
+          if (participantError) return { id: null, error: participantError.message };
         }
 
         await fetchConversations();
-        return newConv.id;
-      } catch (error) {
+        return { id: newConv.id, error: null };
+      } catch (error: any) {
         console.error('Error creating conversation:', error);
-        return null;
+        return { id: null, error: error?.message || 'Error al crear la conversación' };
       }
     },
     [user, club, conversations, fetchConversations]
@@ -310,7 +323,7 @@ export function useConversations() {
   );
 
   const getOrCreateDirectConversation = useCallback(
-    async (otherUserId: string) => {
+    async (otherUserId: string): Promise<CreateConversationResult> => {
       // Check if already exists
       const existing = conversations.find(
         (c) =>
@@ -319,7 +332,7 @@ export function useConversations() {
           c.participants.some((p) => p.user_id === otherUserId)
       );
 
-      if (existing) return existing.id;
+      if (existing) return { id: existing.id, error: null };
 
       return await createConversation([otherUserId]);
     },
