@@ -50,14 +50,18 @@ export default function CoachManagement() {
   const { club, members: clubMembers, loading: clubLoading } = useClub();
   const { user } = useAuth();
   const { teams } = useTeams();
-  const { getOrCreateDirectConversation } = useConversations();
+  const { getOrCreateDirectConversation, createConversation } = useConversations();
   const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [groupChatDialogOpen, setGroupChatDialogOpen] = useState(false);
   const [messageTitle, setMessageTitle] = useState('');
   const [messageContent, setMessageContent] = useState('');
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [selectedGroupMembers, setSelectedGroupMembers] = useState<string[]>([]);
+  const [groupChatTitle, setGroupChatTitle] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [creatingGroupChat, setCreatingGroupChat] = useState(false);
 
   const handleDirectMessage = async (userId: string) => {
     const convId = await getOrCreateDirectConversation(userId);
@@ -197,6 +201,47 @@ export default function CoachManagement() {
     setSelectedRecipients([]);
   };
 
+  const openGroupChatDialog = () => {
+    setGroupChatTitle('');
+    setSelectedGroupMembers([]);
+    setGroupChatDialogOpen(true);
+  };
+
+  const toggleGroupMember = (userId: string) => {
+    setSelectedGroupMembers(prev =>
+      prev.includes(userId)
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const handleCreateGroupChat = async () => {
+    if (selectedGroupMembers.length === 0) {
+      toast.error('Selecciona al menos un participante');
+      return;
+    }
+
+    setCreatingGroupChat(true);
+    try {
+      const convId = await createConversation(
+        selectedGroupMembers,
+        groupChatTitle.trim() || undefined
+      );
+
+      if (convId) {
+        toast.success('Conversación grupal creada');
+        setGroupChatDialogOpen(false);
+        navigate('/messages');
+      } else {
+        toast.error('Error al crear la conversación');
+      }
+    } catch (error) {
+      console.error('Error creating group chat:', error);
+      toast.error('Error al crear la conversación');
+    }
+    setCreatingGroupChat(false);
+  };
+
   const handleSendMessage = async () => {
     if (!messageTitle.trim() || !messageContent.trim()) {
       toast.error('Por favor completa el título y el mensaje');
@@ -299,17 +344,27 @@ export default function CoachManagement() {
           </CardContent>
         </Card>
 
-        {/* Send Message Button */}
-        {coaches.length > 0 && (
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          {coaches.length > 0 && (
+            <Button 
+              onClick={openMessageDialog}
+              className="gap-2"
+              variant="outline"
+            >
+              <Send className="h-4 w-4" />
+              Notificación
+            </Button>
+          )}
           <Button 
-            onClick={openMessageDialog}
-            className="w-full gap-2"
+            onClick={openGroupChatDialog}
+            className="gap-2"
             variant="outline"
           >
             <MessageSquare className="h-4 w-4" />
-            Enviar comunicación a entrenadores
+            Nueva conversación
           </Button>
-        )}
+        </div>
 
         {/* Directors Section */}
         <Card>
@@ -557,6 +612,85 @@ export default function CoachManagement() {
                 <>
                   <Send className="h-4 w-4" />
                   Enviar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Group Chat Dialog */}
+      <Dialog open={groupChatDialogOpen} onOpenChange={setGroupChatDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Nueva conversación
+            </DialogTitle>
+            <DialogDescription>
+              Crea una conversación 1:1 o grupal con los entrenadores seleccionados.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="group-title">Nombre del grupo (opcional)</Label>
+              <Input
+                id="group-title"
+                placeholder="Ej: Coordinación Cadetes"
+                value={groupChatTitle}
+                onChange={(e) => setGroupChatTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Participantes</Label>
+              <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-2">
+                {(profiles || []).filter(p => p.id !== user?.id).map(member => (
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 cursor-pointer"
+                    onClick={() => toggleGroupMember(member.id)}
+                  >
+                    <Checkbox
+                      checked={selectedGroupMembers.includes(member.id)}
+                      onCheckedChange={() => toggleGroupMember(member.id)}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{member.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                    </div>
+                    <Badge variant={member.role === 'director' ? 'default' : 'secondary'} className="text-xs shrink-0">
+                      {member.role === 'director' ? 'Director' : 'Entrenador'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {selectedGroupMembers.length} participante(s) seleccionado(s)
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setGroupChatDialogOpen(false)}
+              disabled={creatingGroupChat}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleCreateGroupChat}
+              disabled={creatingGroupChat || selectedGroupMembers.length === 0}
+              className="gap-2"
+            >
+              {creatingGroupChat ? (
+                <>Creando...</>
+              ) : (
+                <>
+                  <MessageSquare className="h-4 w-4" />
+                  Crear conversación
                 </>
               )}
             </Button>
