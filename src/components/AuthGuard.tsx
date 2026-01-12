@@ -21,7 +21,8 @@ export function AuthGuard({ children, requireClub = true, unauthenticatedRedirec
     if (authLoading) return;
 
     // Preserve the intended destination so invitation links (/inv/:token) work for logged-out users.
-    const redirectTarget = `${location.pathname}${location.search}`;
+    // IMPORTANT: include hash fragments so /invitation#TOKEN survives the redirect to /auth.
+    const redirectTarget = `${location.pathname}${location.search}${location.hash || ''}`;
 
     if (!user) {
       const params = new URLSearchParams();
