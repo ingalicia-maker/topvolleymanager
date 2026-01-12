@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 c
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { i18n, t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -36,24 +37,26 @@ export default function Auth() {
   const [verifying, setVerifying] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
 
+  const redirectTo = searchParams.get('redirect') || '/';
+
   useEffect(() => {
     // Check if user is already logged in
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/');
+        navigate(redirectTo, { replace: true });
       }
     };
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate('/');
+        navigate(redirectTo, { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, redirectTo]);
 
 
   const validateInputs = (isSignUp: boolean) => {

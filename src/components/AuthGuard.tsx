@@ -19,16 +19,21 @@ export function AuthGuard({ children, requireClub = true, unauthenticatedRedirec
 
   useEffect(() => {
     if (authLoading) return;
-    
+
+    // Preserve the intended destination so invitation links (/inv/:token) work for logged-out users.
+    const redirectTarget = `${location.pathname}${location.search}`;
+
     if (!user) {
-      navigate(unauthenticatedRedirect);
+      const params = new URLSearchParams();
+      params.set('redirect', redirectTarget);
+      navigate(`${unauthenticatedRedirect}?${params.toString()}`, { replace: true });
       return;
     }
 
     if (!clubLoading && requireClub && hasClub === false && location.pathname !== '/club-onboarding') {
-      navigate('/club-onboarding');
+      navigate('/club-onboarding', { replace: true });
     }
-  }, [user, authLoading, hasClub, clubLoading, navigate, requireClub, location.pathname, unauthenticatedRedirect]);
+  }, [user, authLoading, hasClub, clubLoading, navigate, requireClub, location.pathname, location.search, unauthenticatedRedirect]);
 
   if (loading) {
     return (
