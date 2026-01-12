@@ -302,6 +302,25 @@ export function useClub() {
     }
   };
 
+  const updateMemberRole = async (memberId: string, newRole: 'coach' | 'director') => {
+    try {
+      const { error } = await supabase
+        .from('club_members')
+        .update({ role: newRole })
+        .eq('id', memberId);
+
+      if (error) throw error;
+
+      setMembers(prev => prev.map(m => 
+        m.id === memberId ? { ...m, role: newRole } : m
+      ));
+      return true;
+    } catch (error) {
+      console.error('Error updating member role:', error);
+      return false;
+    }
+  };
+
   const isDirector = membership?.role === 'director';
   const isCoach = membership?.role === 'coach';
 
@@ -320,6 +339,7 @@ export function useClub() {
     deleteInvitation,
     updateClub,
     removeMember,
+    updateMemberRole,
     refetch: fetchClub,
   };
 }
