@@ -36,6 +36,7 @@ import {
   XCircle,
   Shield,
   FileText,
+  ExternalLink,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -273,6 +274,34 @@ export default function ClubManagement() {
     const link = getInviteLink(token);
     navigator.clipboard.writeText(link);
     toast.success('Enlace copiado al portapapeles');
+  };
+
+  const openAndValidateInviteLink = async (token: string) => {
+    const link = getInviteLink(token);
+    
+    // Open in new tab
+    const newWindow = window.open(link, '_blank');
+    
+    // Try to check if the link is accessible (may be blocked by CORS)
+    try {
+      const response = await fetch(link, { method: 'HEAD', mode: 'no-cors' });
+      // With no-cors we can't read the status, so we just inform the user
+      toast.info('Enlace abierto en nueva pestaña. Verifica que carga correctamente.', {
+        duration: 5000,
+      });
+    } catch (error) {
+      // If fetch fails, the window might still work (CORS restrictions)
+      if (!newWindow || newWindow.closed) {
+        toast.error('No se pudo abrir el enlace. Verifica que la app está publicada.', {
+          duration: 5000,
+          description: 'Si ves un error 404, necesitas publicar la aplicación.',
+        });
+      } else {
+        toast.info('Enlace abierto. Si ves un error 404, republica la app.', {
+          duration: 5000,
+        });
+      }
+    }
   };
 
   const handleDeleteInvitation = async (id: string) => {
@@ -913,6 +942,15 @@ export default function ClubManagement() {
                         <Copy className="h-4 w-4" />
                         Copiar
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openAndValidateInviteLink(lastInviteToken)}
+                        className="shrink-0 gap-2"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Abrir
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -966,21 +1004,32 @@ export default function ClubManagement() {
 
                         {/* Only show copyable link if active */}
                         {isActive && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <Input
                               value={inviteLink}
                               readOnly
-                              className="flex-1 text-xs font-mono bg-background"
+                              className="flex-1 min-w-0 text-xs font-mono bg-background"
                             />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyInviteLink(inv.token)}
-                              className="shrink-0 gap-2"
-                            >
-                              <Copy className="h-4 w-4" />
-                              Copiar
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => copyInviteLink(inv.token)}
+                                className="shrink-0 gap-2"
+                              >
+                                <Copy className="h-4 w-4" />
+                                Copiar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openAndValidateInviteLink(inv.token)}
+                                className="shrink-0 gap-2"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                Abrir
+                              </Button>
+                            </div>
                           </div>
                         )}
 
