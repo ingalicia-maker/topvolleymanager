@@ -60,29 +60,46 @@ export default function ClubOnboarding() {
   const fetchClubInfoFromToken = async (token: string) => {
     setLoadingClubInfo(true);
     try {
-      // Find the invitation to get club_id
-      const { data: invitation } = await supabase
-        .from('club_invitations')
-        .select('club_id')
-        .eq('token', token)
-        .is('used_at', null)
-        .maybeSingle();
-
-      if (invitation?.club_id) {
-        // Fetch club info
-        const { data: club } = await supabase
-          .from('clubs')
-          .select('name, responsibility_code, responsible_person_name')
-          .eq('id', invitation.club_id)
-          .single();
-
-        if (club) {
-          setClubInfo({ name: club.name, responsible_person_name: club.responsible_person_name });
-          setClubResponsibilityCode(club.responsibility_code);
-        }
+      // Use RPC function to preview invitation (works even without club_invitations SELECT policy)
+      const { data, error } = await supabase.rpc('get_invitation_preview', { _token: token });
+      
+      if (error) {
+        console.error('Error fetching invitation preview:', error);
+        setJoinResult({ success: false, message: 'Invitación no válida o expirada' });
+        setLoadingClubInfo(false);
+        return;
       }
+
+      // data is an array, get first row
+      const preview = Array.isArray(data) ? data[0] : data;
+      
+      if (!preview) {
+        setJoinResult({ success: false, message: 'Invitación no válida o expirada' });
+        setLoadingClubInfo(false);
+        return;
+      }
+
+      // Check if already used or expired
+      if (preview.used_at) {
+        setJoinResult({ success: false, message: 'Esta invitación ya ha sido utilizada' });
+        setLoadingClubInfo(false);
+        return;
+      }
+      
+      if (new Date(preview.expires_at) < new Date()) {
+        setJoinResult({ success: false, message: 'La invitación ha expirado' });
+        setLoadingClubInfo(false);
+        return;
+      }
+
+      setClubInfo({ 
+        name: preview.club_name, 
+        responsible_person_name: preview.responsible_person_name 
+      });
+      setClubResponsibilityCode(preview.responsibility_code);
     } catch (error) {
       console.error('Error fetching club info:', error);
+      setJoinResult({ success: false, message: 'Error al cargar la invitación' });
     }
     setLoadingClubInfo(false);
   };
@@ -126,20 +143,39 @@ export default function ClubOnboarding() {
     setSubmitting(true);
     setJoinResult(null);
     
-    const result = await joinClubWithToken(inviteToken.trim());
-    
-    if (result.success && user) {
+    try {
+      // Use the RPC function to accept the invitation
+      const { data, error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken.trim() });
+      
+      if (error) {
+        // Parse Postgres error message
+        let errorMsg = error.message;
+        if (errorMsg.includes('Invitación no válida')) {
+          errorMsg = 'Invitación no válida o expirada';
+        } else if (errorMsg.includes('Ya eres miembro')) {
+          errorMsg = 'Ya eres miembro de este club';
+        } else if (errorMsg.includes('expirado')) {
+          errorMsg = 'La invitación ha expirado';
+        }
+        setJoinResult({ success: false, message: errorMsg });
+        setSubmitting(false);
+        return;
+      }
+
       // Update profile with responsibility code acceptance
-      await supabase
-        .from('profiles')
-        .update({ responsibility_code_accepted_at: new Date().toISOString() })
-        .eq('id', user.id);
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ responsibility_code_accepted_at: new Date().toISOString() })
+          .eq('id', user.id);
+      }
       
       setJoinResult({ success: true, message: '¡Te has unido al club!' });
       toast.success('¡Te has unido al club!');
       setTimeout(() => navigate('/', { replace: true }), 1500);
-    } else {
-      setJoinResult({ success: false, message: result.error || 'Error al unirse' });
+    } catch (error: any) {
+      console.error('Error joining club:', error);
+      setJoinResult({ success: false, message: error?.message || 'Error al unirse al club' });
     }
     
     setSubmitting(false);
