@@ -16,6 +16,20 @@ import { Plus, Trash2, ChevronDown, ChevronUp, History } from 'lucide-react';
 
 type PhoneType = 'player' | 'parent' | 'tutor';
 
+// Phone validation: accepts formats like +34 600 000 000, 600000000, +34600000000
+const validatePhone = (phone: string): { isValid: boolean; error?: string } => {
+  const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+  if (!cleaned) return { isValid: false, error: 'El teléfono es obligatorio' };
+  
+  // Check if it starts with + followed by digits, or just digits
+  const phoneRegex = /^\+?\d{9,15}$/;
+  if (!phoneRegex.test(cleaned)) {
+    return { isValid: false, error: 'Formato inválido. Usa: +34 600 000 000 o 600000000' };
+  }
+  
+  return { isValid: true };
+};
+
 export default function NewPlayer() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -117,10 +131,21 @@ export default function NewPlayer() {
       toast.error('El nombre es obligatorio');
       return;
     }
-    if (!phone.trim()) {
-      toast.error('El teléfono es obligatorio');
+    
+    const phoneValidation = validatePhone(phone);
+    if (!phoneValidation.isValid) {
+      toast.error(phoneValidation.error);
       return;
     }
+    
+    if (phone2.trim()) {
+      const phone2Validation = validatePhone(phone2);
+      if (!phone2Validation.isValid) {
+        toast.error(`Segundo teléfono: ${phone2Validation.error}`);
+        return;
+      }
+    }
+    
     if (selectedTeams.length === 0) {
       toast.error('Selecciona al menos un equipo');
       return;
