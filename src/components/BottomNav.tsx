@@ -2,18 +2,21 @@ import { Home, Calendar, UserCircle, AlertTriangle, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from './NavLink';
 import { useNotifications } from '@/hooks/useNotifications';
-
-const navItems = [
-  { to: '/', icon: Home, labelKey: 'nav.home', tourId: 'home' },
-  { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true, tourId: 'events' },
-  { to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' },
-  { to: '/ratings', icon: Star, labelKey: 'nav.ratings', tourId: 'ratings' },
-  { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences', tourId: 'absences' },
-];
+import { useUserRole } from '@/hooks/useUserRole';
 
 export function BottomNav() {
   const { t } = useTranslation();
   const { unreadCount } = useNotifications();
+  const { isDirector } = useUserRole();
+
+  // Base nav items - Players only shown for directors
+  const navItems = [
+    { to: '/', icon: Home, labelKey: 'nav.home', tourId: 'home' },
+    { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true, tourId: 'events' },
+    ...(isDirector ? [{ to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' }] : []),
+    { to: '/ratings', icon: Star, labelKey: 'nav.ratings', tourId: 'ratings' },
+    { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences', tourId: 'absences' },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">

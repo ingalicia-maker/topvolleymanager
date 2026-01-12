@@ -76,7 +76,7 @@ export default {
     weakPassword: 'La password deve avere almeno 6 caratteri',
     manageTeams: 'Gestisci le tue squadre e convocazioni',
     confirmEmail: 'Conferma la tua email',
-    verificationCodeSent: 'Ti abbiamo inviato un codice di verifica a',
+    verificationEmailSent: "Ti abbiamo inviato un'email di verifica a",
     enterCode: 'Inserisci il codice a 6 cifre',
     verifyCode: 'Verifica codice',
     verifying: 'Verificando...',
@@ -90,7 +90,11 @@ export default {
     emailResent: 'Email reinviata',
     emailResendError: 'Errore nel reinvio dell\'email',
     emailSendError: 'Errore nell\'invio dell\'email di verifica',
-    backToLogin: 'Torna all\'accesso',
+    backToLogin: "Torna all'accesso",
+    emailConfirmationNote: "Verrà inviata un'email per verificare la tua identità",
+    clickEmailLink: "Clicca sul link nell'email per verificare il tuo account. Se non lo vedi, controlla la cartella spam.",
+    noEmailReceived: "Non hai ricevuto l'email?",
+    resendEmail: "Reinvia email",
   },
 
   // Players
