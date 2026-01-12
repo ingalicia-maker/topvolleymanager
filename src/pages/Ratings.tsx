@@ -33,7 +33,7 @@ const RATING_EMOJIS: Record<string, string> = {
 export default function Ratings() {
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
-  const { addRating, ratings, getMonthlyEvolution, getPlayerTrends, getPositiveAlerts } = usePlayerRatings();
+  const { addRating, updateRating, ratings, getMonthlyEvolution, getPlayerTrends, getPositiveAlerts } = usePlayerRatings();
   const { assignedTeams, isDirector } = useUserRole();
   const { activeSeason } = useSeasons();
 
@@ -52,6 +52,7 @@ export default function Ratings() {
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [ratedPlayers, setRatedPlayers] = useState<string[]>([]);
+  const [editingRatingId, setEditingRatingId] = useState<string | null>(null);
 
   // Filter teams by assigned (unless director)
   const visibleTeams = useMemo(() => {
@@ -70,13 +71,18 @@ export default function Ratings() {
 
   const player = players.find(p => p.id === selectedPlayer);
 
-  // Check if player already rated this month
-  const isPlayerRatedThisMonth = (playerId: string, teamId: string) => {
-    return ratings.some(r => 
+  // Get existing rating for player this month
+  const getExistingRating = (playerId: string, teamId: string) => {
+    return ratings.find(r => 
       r.player_id === playerId && 
       r.team_id === teamId &&
       r.rating_date.startsWith(selectedMonth)
     );
+  };
+
+  // Check if player already rated this month
+  const isPlayerRatedThisMonth = (playerId: string, teamId: string) => {
+    return !!getExistingRating(playerId, teamId);
   };
 
   const handleSelectTeam = (teamId: string) => {
@@ -87,14 +93,33 @@ export default function Ratings() {
 
   const handleSelectPlayer = (playerId: string) => {
     setSelectedPlayer(playerId);
-    setRatingsValues({
-      effort_attitude: 5,
-      communication_cooperation: 5,
-      technical_execution: 5,
-      decision_making: 5,
-      leadership_initiative: 5,
-    });
-    setNotes('');
+    
+    // Check if there's an existing rating to edit
+    const existingRating = selectedTeam ? getExistingRating(playerId, selectedTeam) : null;
+    
+    if (existingRating) {
+      // Load existing values for editing
+      setEditingRatingId(existingRating.id);
+      setRatingsValues({
+        effort_attitude: existingRating.effort_attitude,
+        communication_cooperation: existingRating.communication_cooperation,
+        technical_execution: existingRating.technical_execution,
+        decision_making: existingRating.decision_making,
+        leadership_initiative: existingRating.leadership_initiative,
+      });
+      setNotes(existingRating.notes || '');
+    } else {
+      // Reset to defaults for new rating
+      setEditingRatingId(null);
+      setRatingsValues({
+        effort_attitude: 5,
+        communication_cooperation: 5,
+        technical_execution: 5,
+        decision_making: 5,
+        leadership_initiative: 5,
+      });
+      setNotes('');
+    }
     setStep('rate');
   };
 
@@ -102,20 +127,32 @@ export default function Ratings() {
     if (!selectedPlayer || !selectedTeam) return;
 
     setSaving(true);
-    // Use the first day of the selected month for the rating date
-    const ratingDate = `${selectedMonth}-15`;
     
-    const success = await addRating({
-      player_id: selectedPlayer,
-      team_id: selectedTeam,
-      ...ratingsValues,
-      notes: notes.trim() || null,
-      rating_date: ratingDate,
-    }, activeSeason?.id);
+    if (editingRatingId) {
+      // Update existing rating
+      const success = await updateRating(editingRatingId, {
+        ...ratingsValues,
+        notes: notes.trim() || null,
+      });
+      if (success) {
+        setEditingRatingId(null);
+        setStep('select-player');
+      }
+    } else {
+      // Create new rating
+      const ratingDate = `${selectedMonth}-15`;
+      const success = await addRating({
+        player_id: selectedPlayer,
+        team_id: selectedTeam,
+        ...ratingsValues,
+        notes: notes.trim() || null,
+        rating_date: ratingDate,
+      }, activeSeason?.id);
 
-    if (success) {
-      setRatedPlayers(prev => [...prev, selectedPlayer]);
-      setStep('select-player');
+      if (success) {
+        setRatedPlayers(prev => [...prev, selectedPlayer]);
+        setStep('select-player');
+      }
     }
     setSaving(false);
   };
@@ -268,8 +305,8 @@ export default function Ratings() {
                       return (
                         <Card
                           key={p.id}
-                          className={`cursor-pointer transition-colors ${isRated ? 'bg-green-500/10 border-green-500/30' : 'hover:bg-accent/50'}`}
-                          onClick={() => !isRated && handleSelectPlayer(p.id)}
+                          className={`cursor-pointer transition-colors ${isRated ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20' : 'hover:bg-accent/50'}`}
+                          onClick={() => handleSelectPlayer(p.id)}
                         >
                           <CardContent className="p-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -296,7 +333,7 @@ export default function Ratings() {
                             {isRated ? (
                               <Badge variant="outline" className="text-green-600 border-green-600">
                                 <Check className="h-3 w-3 mr-1" />
-                                Puntuada
+                                Editar
                               </Badge>
                             ) : (
                               <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -366,7 +403,7 @@ export default function Ratings() {
                 </div>
 
                 <Button onClick={handleSaveRating} disabled={saving} className="w-full">
-                  {saving ? 'Guardando...' : 'Guardar Puntuación'}
+                  {saving ? 'Guardando...' : editingRatingId ? 'Actualizar Puntuación' : 'Guardar Puntuación'}
                 </Button>
               </div>
             )}
