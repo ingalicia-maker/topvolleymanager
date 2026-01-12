@@ -208,6 +208,15 @@ const App = () => (
               </AuthGuard>
             }
           />
+          {/* Short invitation URLs: /inv/TOKEN */}
+          <Route
+            path="/inv/:token"
+            element={
+              <AuthGuard requireClub={false}>
+                <ClubOnboarding />
+              </AuthGuard>
+            }
+          />
           <Route
             path="/club-management"
             element={

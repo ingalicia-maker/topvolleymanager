@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ import { Building2, Users, Link2, Loader2, CheckCircle, XCircle, Shield } from '
 export default function ClubOnboarding() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { token: pathToken } = useParams<{ token?: string }>(); // For /inv/:token routes
   const { user } = useAuth();
   const { hasClub, loading, createClub, joinClubWithToken } = useClub();
   
@@ -28,15 +29,16 @@ export default function ClubOnboarding() {
   const [clubInfo, setClubInfo] = useState<{ name: string; responsible_person_name?: string } | null>(null);
   const [loadingClubInfo, setLoadingClubInfo] = useState(false);
 
-  // Check for invitation token in URL and fetch club info
+  // Check for invitation token in URL (supports both /inv/:token and ?invite=token)
   useEffect(() => {
-    const token = searchParams.get('invite');
+    // Priority: path param (/inv/:token) > query param (?invite=token)
+    const token = pathToken || searchParams.get('invite');
     if (token) {
       setInviteToken(token);
       setMode('join');
       fetchClubInfoFromToken(token);
     }
-  }, [searchParams]);
+  }, [pathToken, searchParams]);
 
   const fetchClubInfoFromToken = async (token: string) => {
     setLoadingClubInfo(true);
@@ -229,7 +231,7 @@ export default function ClubOnboarding() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!searchParams.get('invite') && (
+              {!pathToken && !searchParams.get('invite') && (
                 <div className="space-y-2">
                   <Label htmlFor="inviteToken">Código de invitación</Label>
                   <Input

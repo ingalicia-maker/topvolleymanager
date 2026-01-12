@@ -173,16 +173,27 @@ export function useClub() {
   const joinClubWithToken = async (rawTokenOrUrl: string) => {
     if (!user) return { success: false, error: 'No autenticado' };
 
-    // Extract token from URL if needed (e.g., https://...?invite=TOKEN)
+    // Extract token from URL if needed
+    // Supports: 
+    //   - Raw token: "abc123"
+    //   - Old format: "https://...?invite=TOKEN"
+    //   - New short format: "https://topvolleymanager.com/inv/TOKEN"
     let token = rawTokenOrUrl.trim();
     try {
       const url = new URL(token);
       const inviteParam = url.searchParams.get('invite');
       if (inviteParam) {
+        // Old format with query param
         token = inviteParam;
+      } else {
+        // Check for /inv/:token pattern
+        const pathMatch = url.pathname.match(/\/inv\/([^/]+)$/);
+        if (pathMatch && pathMatch[1]) {
+          token = pathMatch[1];
+        }
       }
     } catch {
-      // Not a URL, use as-is
+      // Not a URL, use as-is (raw token)
     }
     try {
       // Find the invitation
