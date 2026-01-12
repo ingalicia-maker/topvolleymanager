@@ -38,12 +38,64 @@ export default function Auth() {
   const [resendingEmail, setResendingEmail] = useState(false);
 
   const redirectTo = searchParams.get('redirect') || '/';
-  
+
+  const extractInviteTokenFromRedirect = (value: string): string | null => {
+    try {
+      // Absolute URL
+      const url = new URL(value);
+      const qp = url.searchParams.get('invite');
+      if (qp) return qp;
+
+      if (url.hash) {
+        const rawHash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash;
+        if (rawHash.includes('invite=')) {
+          const params = new URLSearchParams(rawHash);
+          const h = params.get('invite');
+          if (h) return h;
+        }
+        if (rawHash) return rawHash;
+      }
+
+      const m = url.pathname.match(/\/inv\/([^/?#]+)/);
+      return m?.[1] || null;
+    } catch {
+      // Relative path
+      const qpMatch = value.match(/[?&]invite=([^&#]+)/);
+      if (qpMatch?.[1]) return decodeURIComponent(qpMatch[1]);
+
+      const hash = value.split('#')[1];
+      if (hash) {
+        if (hash.includes('invite=')) {
+          const params = new URLSearchParams(hash);
+          const h = params.get('invite');
+          if (h) return h;
+        }
+        return hash;
+      }
+
+      const m = value.match(/\/inv\/([^/?#]+)/);
+      return m?.[1] || null;
+    }
+  };
+
+  const inviteTokenFromRedirect = extractInviteTokenFromRedirect(redirectTo);
+
   // Invitation flow when coming from invitation routes (hash/query supported)
   const isInvitationFlow =
     redirectTo.includes('/invitation') ||
     redirectTo.includes('/inv/') ||
     redirectTo.includes('invite=');
+
+  const acceptInvitationIfNeeded = async (token: string) => {
+    const { error } = await supabase.rpc('accept_club_invitation', { _token: token });
+    if (error) {
+      // If already a member, treat as success
+      if (error.message?.toLowerCase().includes('ya eres miembro')) return;
+      throw error;
+    }
+    // Notify the app to refresh club membership state
+    window.dispatchEvent(new Event('club-membership-changed'));
+  };
 
   useEffect(() => {
     // Check if user is already logged in
@@ -59,6 +111,10 @@ export default function Auth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[Auth] onAuthStateChange event:', event, 'hasSession:', !!session);
+
+      // Avoid racing navigation during invitation flows; we handle it explicitly after accepting.
+      if (isInvitationFlow && inviteTokenFromRedirect) return;
+
       if (session && event === 'SIGNED_IN') {
         console.log('[Auth] SIGNED_IN detected, redirecting to:', redirectTo);
         navigate(redirectTo, { replace: true });
@@ -66,7 +122,7 @@ export default function Auth() {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, redirectTo]);
+  }, [navigate, redirectTo, isInvitationFlow, inviteTokenFromRedirect]);
 
 
   const validateInputs = (isSignUp: boolean) => {
@@ -115,9 +171,25 @@ export default function Auth() {
       } else {
         toast.error(error.message);
       }
-    } else {
-      toast.success('¡Bienvenido!');
+      setLoading(false);
+      return;
     }
+
+    // If coming from an invitation link, auto-join the club and go straight to dashboard.
+    try {
+      if (isInvitationFlow && inviteTokenFromRedirect) {
+        await acceptInvitationIfNeeded(inviteTokenFromRedirect);
+        navigate('/', { replace: true });
+        toast.success('¡Bienvenido!');
+        setLoading(false);
+        return;
+      }
+    } catch (joinError: any) {
+      console.error('[Auth] Error accepting invitation after sign-in:', joinError);
+      toast.error('No se ha podido completar la invitación. Inténtalo de nuevo.');
+    }
+
+    toast.success('¡Bienvenido!');
     setLoading(false);
   };
 
@@ -210,19 +282,33 @@ export default function Auth() {
 
       console.log('[Auth] Signed in successfully, session:', !!signInData.session);
       toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
-      
+
       // Only mark as new director if coming from director signup, not invitation
       const pendingRole = localStorage.getItem('pending_signup_role');
       if (pendingRole === 'director') {
         localStorage.setItem('is_new_director', 'true');
       }
       localStorage.removeItem('pending_signup_role');
-      
+
       setShowEmailConfirmation(false);
-      
-      // Manually navigate in case onAuthStateChange doesn't fire
-      // This ensures invitation flow works correctly
+
       if (signInData.session) {
+        // If invitation flow, auto-join then go to dashboard (avoid showing “crear club / código”).
+        if (isInvitationFlow && inviteTokenFromRedirect) {
+          try {
+            await acceptInvitationIfNeeded(inviteTokenFromRedirect);
+          } catch (joinError: any) {
+            console.error('[Auth] Error accepting invitation after verification:', joinError);
+            toast.error('No se ha podido completar la invitación. Inténtalo de nuevo.');
+            // Fall back to the invitation URL so user can retry manually.
+            navigate(redirectTo, { replace: true });
+            setVerifying(false);
+            return;
+          }
+          navigate('/', { replace: true });
+          return;
+        }
+
         console.log('[Auth] Manual navigation to:', redirectTo);
         navigate(redirectTo, { replace: true });
       }
