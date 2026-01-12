@@ -32,6 +32,7 @@ import ResetPassword from "./pages/ResetPassword";
 import SeasonManagement from "./pages/SeasonManagement";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Invitation from "./pages/Invitation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -200,23 +201,9 @@ const App = () => (
               </AuthGuard>
             }
           />
-          <Route
-            path="/invitation"
-            element={
-              <AuthGuard requireClub={false}>
-                <ClubOnboarding />
-              </AuthGuard>
-            }
-          />
-          {/* Short invitation URLs: /inv/TOKEN */}
-          <Route
-            path="/inv/:token"
-            element={
-              <AuthGuard requireClub={false}>
-                <ClubOnboarding />
-              </AuthGuard>
-            }
-          />
+          {/* Invitation routes - NO AuthGuard, handles both logged-in and logged-out users */}
+          <Route path="/invitation" element={<Invitation />} />
+          <Route path="/inv/:token" element={<Invitation />} />
           <Route
             path="/club-management"
             element={
