@@ -15,7 +15,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { MessageSquare, Send, ArrowLeft, Users, Plus, Check } from 'lucide-react';
+import { MessageSquare, Send, ArrowLeft, Users, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -126,11 +127,13 @@ export default function Messages() {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedConversationId) return;
-    
+
     setSending(true);
     const success = await sendMessage(selectedConversationId, newMessage.trim());
     if (success) {
       setNewMessage('');
+    } else {
+      toast.error('No se pudo enviar el mensaje');
     }
     setSending(false);
   };
@@ -297,6 +300,7 @@ export default function Messages() {
                       <Checkbox
                         checked={selectedParticipants.includes(member.id)}
                         onCheckedChange={() => toggleParticipant(member.id)}
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <div>
                         <p className="text-sm font-medium">{member.name}</p>

@@ -619,10 +619,11 @@ export default function CoachManagement() {
                     className="flex items-center gap-2 cursor-pointer"
                     onClick={() => toggleRecipient(coach.id)}
                   >
-                    <Checkbox
-                      checked={selectedRecipients.includes(coach.id)}
-                      onCheckedChange={() => toggleRecipient(coach.id)}
-                    />
+                     <Checkbox
+                       checked={selectedRecipients.includes(coach.id)}
+                       onCheckedChange={() => toggleRecipient(coach.id)}
+                       onClick={(e) => e.stopPropagation()}
+                     />
                     <span className="text-sm">{coach.name}</span>
                     <span className="text-xs text-muted-foreground">({coach.email})</span>
                   </div>
@@ -693,10 +694,11 @@ export default function CoachManagement() {
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 cursor-pointer"
                     onClick={() => toggleGroupMember(member.id)}
                   >
-                    <Checkbox
-                      checked={selectedGroupMembers.includes(member.id)}
-                      onCheckedChange={() => toggleGroupMember(member.id)}
-                    />
+                     <Checkbox
+                       checked={selectedGroupMembers.includes(member.id)}
+                       onCheckedChange={() => toggleGroupMember(member.id)}
+                       onClick={(e) => e.stopPropagation()}
+                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{member.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{member.email}</p>
