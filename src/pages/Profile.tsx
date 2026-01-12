@@ -17,7 +17,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap } from 'lucide-react';
+import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX } from 'lucide-react';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -122,6 +122,29 @@ export default function Profile() {
                 )}
               </div>
             </div>
+            
+            {/* Responsibility code acceptance status */}
+            {profile?.responsibility_code_accepted_at ? (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                <FileCheck className="h-5 w-5 text-green-600 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-green-700 dark:text-green-400">Código de responsabilidad aceptado</p>
+                  <p className="text-xs text-muted-foreground">
+                    Aceptado el {new Date(profile.responsibility_code_accepted_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                <FileX className="h-5 w-5 text-amber-600 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Código de responsabilidad pendiente</p>
+                  <p className="text-xs text-muted-foreground">
+                    Aún no has aceptado el código de responsabilidad del club
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

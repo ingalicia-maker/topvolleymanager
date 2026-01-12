@@ -9,6 +9,8 @@ export interface UserProfile {
   name: string;
   email: string;
   assigned_teams: string[];
+  responsibility_code_accepted_at: string | null;
+  terms_accepted_at: string | null;
 }
 
 export function useUserRole() {
