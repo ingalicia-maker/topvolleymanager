@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { Users, Shield, Mail, CheckCircle, Clock, UserX, MessageSquare, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -252,7 +252,20 @@ export default function CoachManagement() {
   }
 
   if (!isDirector) {
-    return <Navigate to="/" replace />;
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <Header title="Gestión de Entrenadores" showBack />
+        <div className="p-4">
+          <Card>
+            <CardContent className="p-4">
+              <p className="font-medium">No tienes permisos para ver esta sección.</p>
+              <p className="text-sm text-muted-foreground mt-1">Necesitas rol de Director Deportivo.</p>
+            </CardContent>
+          </Card>
+        </div>
+        <BottomNav />
+      </div>
+    );
   }
 
   const loading = profilesLoading || rolesLoading;
