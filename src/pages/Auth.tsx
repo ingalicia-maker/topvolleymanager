@@ -39,8 +39,11 @@ export default function Auth() {
 
   const redirectTo = searchParams.get('redirect') || '/';
   
-  // Check if this is an invitation flow (redirect contains invitation token)
-  const isInvitationFlow = redirectTo.includes('/invitation') || redirectTo.includes('/inv/');
+  // Invitation flow when coming from invitation routes (hash/query supported)
+  const isInvitationFlow =
+    redirectTo.includes('/invitation') ||
+    redirectTo.includes('/inv/') ||
+    redirectTo.includes('invite=');
 
   useEffect(() => {
     // Check if user is already logged in
@@ -228,9 +231,12 @@ export default function Auth() {
       return;
     }
 
+    // Used by handleVerifyCode to avoid triggering "nuevo director" onboarding for invited coaches
+    localStorage.setItem('pending_signup_role', 'coach');
+
     setLoading(true);
     const redirectUrl = `${window.location.origin}${redirectTo}`;
-    
+
     const { error, data } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -288,9 +294,11 @@ export default function Auth() {
       return;
     }
 
+    localStorage.setItem('pending_signup_role', 'director');
+
     setLoading(true);
     const redirectUrl = `${window.location.origin}/`;
-    
+
     const { error, data } = await supabase.auth.signUp({
       email: email.trim(),
       password,
