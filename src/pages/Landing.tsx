@@ -16,10 +16,12 @@ import {
   ChevronRight,
   Volleyball
 } from 'lucide-react';
-import demoDashboard from '@/assets/demo-dashboard.png';
-import demoPlayers from '@/assets/demo-players.png';
-import demoEvents from '@/assets/demo-events.png';
-import demoRatings from '@/assets/demo-ratings.png';
+import demoDashboard from '@/assets/demo-dashboard-real.png';
+import demoEvents from '@/assets/demo-events-real.png';
+import demoRatings from '@/assets/demo-ratings-real.png';
+import demoAusencias from '@/assets/demo-ausencias-real.png';
+import demoDesplazamiento from '@/assets/demo-desplazamiento-real.png';
+import demoEquipos from '@/assets/demo-equipos-real.png';
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -55,11 +57,6 @@ export default function Landing() {
       descKey: 'landing.demo.dashboardDesc',
     },
     {
-      image: demoPlayers,
-      titleKey: 'landing.demo.playersTitle',
-      descKey: 'landing.demo.playersDesc',
-    },
-    {
       image: demoEvents,
       titleKey: 'landing.demo.eventsTitle',
       descKey: 'landing.demo.eventsDesc',
@@ -68,6 +65,21 @@ export default function Landing() {
       image: demoRatings,
       titleKey: 'landing.demo.ratingsTitle',
       descKey: 'landing.demo.ratingsDesc',
+    },
+    {
+      image: demoAusencias,
+      titleKey: 'landing.demo.ausenciasTitle',
+      descKey: 'landing.demo.ausenciasDesc',
+    },
+    {
+      image: demoDesplazamiento,
+      titleKey: 'landing.demo.transportTitle',
+      descKey: 'landing.demo.transportDesc',
+    },
+    {
+      image: demoEquipos,
+      titleKey: 'landing.demo.teamsTitle',
+      descKey: 'landing.demo.teamsDesc',
     },
   ];
 
@@ -99,10 +111,6 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
         <div className="container mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Smartphone className="h-4 w-4" />
-            {t('landing.hero.badge')}
-          </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             {t('landing.hero.title')}
           </h1>

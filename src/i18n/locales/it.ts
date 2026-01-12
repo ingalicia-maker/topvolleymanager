@@ -375,6 +375,12 @@ export default {
       eventsDesc: 'Organizza allenamenti, partite e trasferte. Gestisci convocazioni e monitora le presenze.',
       ratingsTitle: 'Sistema di Valutazioni',
       ratingsDesc: 'Valuta le prestazioni con 5 criteri personalizzati. Visualizza l\'evoluzione con grafici interattivi.',
+      ausenciasTitle: 'Controllo Assenze',
+      ausenciasDesc: 'Registra presenze giornaliere, segna assenze giustificate o ingiustificate, e consulta lo storico.',
+      transportTitle: 'Gestione Trasferte',
+      transportDesc: 'Crea eventi di trasferta con destinazione, data, ora e fermate bus configurabili.',
+      teamsTitle: 'Squadre e Giocatrici',
+      teamsDesc: 'Seleziona più squadre, visualizza quante giocatrici ha ciascuna e gestisci le convocazioni.',
     },
     features: {
       title: 'Tutto ciò di cui hai bisogno',

@@ -375,6 +375,12 @@ export default {
       eventsDesc: 'Organiza entrenamientos, partidos y desplazamientos. Gestiona convocatorias y controla la asistencia.',
       ratingsTitle: 'Sistema de Valoraciones',
       ratingsDesc: 'Evalúa el rendimiento con 5 criterios personalizados. Visualiza la evolución con gráficos interactivos.',
+      ausenciasTitle: 'Control de Ausencias',
+      ausenciasDesc: 'Registra asistencia diaria, marca ausencias justificadas o no justificadas, y consulta el historial.',
+      transportTitle: 'Gestión de Desplazamientos',
+      transportDesc: 'Crea eventos de desplazamiento con destino, fecha, hora y paradas de bus configurables.',
+      teamsTitle: 'Equipos y Jugadoras',
+      teamsDesc: 'Selecciona múltiples equipos, visualiza cuántas jugadoras tiene cada uno y gestiona las convocatorias.',
     },
     features: {
       title: 'Todo lo que necesitas',

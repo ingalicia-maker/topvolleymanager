@@ -375,6 +375,12 @@ export default {
       eventsDesc: 'Organize trainings, matches and trips. Manage callups and track attendance.',
       ratingsTitle: 'Rating System',
       ratingsDesc: 'Evaluate performance with 5 custom criteria. Visualize progress with interactive charts.',
+      ausenciasTitle: 'Absence Control',
+      ausenciasDesc: 'Record daily attendance, mark justified or unjustified absences, and view history.',
+      transportTitle: 'Travel Management',
+      transportDesc: 'Create travel events with destination, date, time and configurable bus stops.',
+      teamsTitle: 'Teams & Players',
+      teamsDesc: 'Select multiple teams, see how many players each has, and manage callups.',
     },
     features: {
       title: 'Everything you need',
