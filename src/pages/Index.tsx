@@ -7,6 +7,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { PlayerOfTheWeek } from '@/components/PlayerOfTheWeek';
 import { CreditsDisplay } from '@/components/CreditsDisplay';
 import { OnboardingTour } from '@/components/OnboardingTour';
+import { CoachWelcomeDialog } from '@/components/CoachWelcomeDialog';
 import { MonthlyAbsenceSummary } from '@/components/MonthlyAbsenceSummary';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -366,6 +367,7 @@ export default function Index() {
       </div>
       <BottomNav />
       <OnboardingTour />
+      <CoachWelcomeDialog />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useTranslation } from 'react-i18next';
+import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres');
@@ -179,6 +180,7 @@ export default function Auth() {
     try {
       if (isInvitationFlow && inviteTokenFromRedirect) {
         await acceptInvitationIfNeeded(inviteTokenFromRedirect);
+        triggerCoachWelcome();
         navigate('/', { replace: true });
         toast.success('¡Bienvenido!');
         setLoading(false);
@@ -297,6 +299,7 @@ export default function Auth() {
         if (isInvitationFlow && inviteTokenFromRedirect) {
           try {
             await acceptInvitationIfNeeded(inviteTokenFromRedirect);
+            triggerCoachWelcome();
           } catch (joinError: any) {
             console.error('[Auth] Error accepting invitation after verification:', joinError);
             toast.error('No se ha podido completar la invitación. Inténtalo de nuevo.');
