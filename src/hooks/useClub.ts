@@ -11,6 +11,12 @@ export interface Club {
   font_family: string;
   created_at: string;
   updated_at: string;
+  responsible_person_name: string | null;
+  responsible_person_email: string | null;
+  terms_and_conditions: string | null;
+  responsibility_code: string | null;
+  terms_updated_at: string | null;
+  responsibility_code_updated_at: string | null;
 }
 
 export interface ClubMember {

@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useClub } from '@/hooks/useClub';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Building2, Users, Link2, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Building2, Users, Link2, Loader2, CheckCircle, XCircle, Shield } from 'lucide-react';
 
 export default function ClubOnboarding() {
   const navigate = useNavigate();
@@ -20,15 +23,50 @@ export default function ClubOnboarding() {
   const [inviteToken, setInviteToken] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [joinResult, setJoinResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [responsibilityCodeAccepted, setResponsibilityCodeAccepted] = useState(false);
+  const [clubResponsibilityCode, setClubResponsibilityCode] = useState<string | null>(null);
+  const [clubInfo, setClubInfo] = useState<{ name: string; responsible_person_name?: string } | null>(null);
+  const [loadingClubInfo, setLoadingClubInfo] = useState(false);
 
-  // Check for invitation token in URL
+  // Check for invitation token in URL and fetch club info
   useEffect(() => {
     const token = searchParams.get('invite');
     if (token) {
       setInviteToken(token);
       setMode('join');
+      fetchClubInfoFromToken(token);
     }
   }, [searchParams]);
+
+  const fetchClubInfoFromToken = async (token: string) => {
+    setLoadingClubInfo(true);
+    try {
+      // Find the invitation to get club_id
+      const { data: invitation } = await supabase
+        .from('club_invitations')
+        .select('club_id')
+        .eq('token', token)
+        .is('used_at', null)
+        .maybeSingle();
+
+      if (invitation?.club_id) {
+        // Fetch club info
+        const { data: club } = await supabase
+          .from('clubs')
+          .select('name, responsibility_code, responsible_person_name')
+          .eq('id', invitation.club_id)
+          .single();
+
+        if (club) {
+          setClubInfo({ name: club.name, responsible_person_name: club.responsible_person_name });
+          setClubResponsibilityCode(club.responsibility_code);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching club info:', error);
+    }
+    setLoadingClubInfo(false);
+  };
 
   // Redirect if already has a club
   useEffect(() => {
@@ -61,19 +99,31 @@ export default function ClubOnboarding() {
       return;
     }
 
+    if (clubResponsibilityCode && !responsibilityCodeAccepted) {
+      toast.error('Debes aceptar el código de responsabilidad del club para continuar');
+      return;
+    }
+
     setSubmitting(true);
     setJoinResult(null);
     
     const result = await joinClubWithToken(inviteToken.trim());
-    setSubmitting(false);
-
-    if (result.success) {
+    
+    if (result.success && user) {
+      // Update profile with responsibility code acceptance
+      await supabase
+        .from('profiles')
+        .update({ responsibility_code_accepted_at: new Date().toISOString() })
+        .eq('id', user.id);
+      
       setJoinResult({ success: true, message: '¡Te has unido al club!' });
       toast.success('¡Te has unido al club!');
       setTimeout(() => navigate('/', { replace: true }), 1500);
     } else {
       setJoinResult({ success: false, message: result.error || 'Error al unirse' });
     }
+    
+    setSubmitting(false);
   };
 
   if (loading) {
@@ -171,20 +221,62 @@ export default function ClubOnboarding() {
                 Unirse a un club
               </CardTitle>
               <CardDescription>
-                Introduce el código de invitación que te han compartido.
+                {clubInfo ? (
+                  <>Estás a punto de unirte a <strong>{clubInfo.name}</strong></>
+                ) : (
+                  'Introduce el código de invitación que te han compartido.'
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="inviteToken">Código de invitación</Label>
-                <Input
-                  id="inviteToken"
-                  value={inviteToken}
-                  onChange={(e) => setInviteToken(e.target.value)}
-                  placeholder="Pega aquí el código"
-                  autoFocus
-                />
-              </div>
+              {!searchParams.get('invite') && (
+                <div className="space-y-2">
+                  <Label htmlFor="inviteToken">Código de invitación</Label>
+                  <Input
+                    id="inviteToken"
+                    value={inviteToken}
+                    onChange={(e) => setInviteToken(e.target.value)}
+                    placeholder="Pega aquí el código"
+                    autoFocus
+                  />
+                </div>
+              )}
+
+              {loadingClubInfo ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : clubResponsibilityCode && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Shield className="h-4 w-4 text-primary" />
+                    Código de Responsabilidad del Club
+                  </div>
+                  <ScrollArea className="h-48 rounded-lg border bg-muted/30 p-3">
+                    <div className="text-xs text-muted-foreground whitespace-pre-wrap">
+                      {clubResponsibilityCode}
+                    </div>
+                  </ScrollArea>
+                  <div className="flex items-start gap-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
+                    <Checkbox
+                      id="responsibility-acceptance"
+                      checked={responsibilityCodeAccepted}
+                      onCheckedChange={(checked) => setResponsibilityCodeAccepted(checked === true)}
+                    />
+                    <label
+                      htmlFor="responsibility-acceptance"
+                      className="text-sm cursor-pointer leading-relaxed"
+                    >
+                      He leído y acepto el código de responsabilidad del club{' '}
+                      {clubInfo?.responsible_person_name && (
+                        <span className="text-muted-foreground">
+                          (Responsable: {clubInfo.responsible_person_name})
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                </div>
+              )}
 
               {joinResult && (
                 <div
@@ -209,6 +301,7 @@ export default function ClubOnboarding() {
                   onClick={() => {
                     setMode('select');
                     setJoinResult(null);
+                    setResponsibilityCodeAccepted(false);
                   }}
                   className="flex-1"
                 >
@@ -216,7 +309,7 @@ export default function ClubOnboarding() {
                 </Button>
                 <Button
                   onClick={handleJoinClub}
-                  disabled={submitting || !inviteToken.trim()}
+                  disabled={submitting || !inviteToken.trim() || (clubResponsibilityCode && !responsibilityCodeAccepted)}
                   className="flex-1"
                 >
                   {submitting ? (
