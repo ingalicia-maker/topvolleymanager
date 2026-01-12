@@ -252,8 +252,15 @@ export default function ClubManagement() {
     await deleteStop(stopId);
   };
 
+  const getInviteBaseUrl = () => {
+    // Use custom domain in production, fallback to origin for development
+    const isProd = window.location.hostname === 'topvolleymanager.com' || 
+                   window.location.hostname === 'www.topvolleymanager.com';
+    return isProd ? 'https://topvolleymanager.com' : window.location.origin;
+  };
+
   const copyInviteLink = (token: string) => {
-    const link = `${window.location.origin}/club-onboarding?invite=${token}`;
+    const link = `${getInviteBaseUrl()}/invitation?invite=${token}`;
     navigator.clipboard.writeText(link);
     toast.success('Enlace copiado al portapapeles');
   };
@@ -280,7 +287,7 @@ export default function ClubManagement() {
       setLastInviteToken(invitation.token);
       try {
         await navigator.clipboard.writeText(
-          `${window.location.origin}/club-onboarding?invite=${invitation.token}`
+          `${getInviteBaseUrl()}/invitation?invite=${invitation.token}`
         );
         toast.success('Enlace regenerado y copiado');
       } catch {
@@ -346,7 +353,7 @@ export default function ClubManagement() {
       // Best effort: auto-copy
       try {
         await navigator.clipboard.writeText(
-          `${window.location.origin}/club-onboarding?invite=${invitation.token}`
+          `${getInviteBaseUrl()}/invitation?invite=${invitation.token}`
         );
         toast.success('Enlace de invitación creado y copiado');
       } catch {
@@ -887,7 +894,7 @@ export default function ClubManagement() {
                     <Label>Último enlace generado</Label>
                     <div className="flex items-center gap-2">
                       <Input
-                        value={`${window.location.origin}/club-onboarding?invite=${lastInviteToken}`}
+                        value={`${getInviteBaseUrl()}/invitation?invite=${lastInviteToken}`}
                         readOnly
                         className="flex-1 text-xs font-mono bg-background"
                       />
@@ -922,8 +929,8 @@ export default function ClubManagement() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {invitations.map((inv) => {
-                    const inviteLink = `${window.location.origin}/club-onboarding?invite=${inv.token}`;
+                {invitations.map((inv) => {
+                    const inviteLink = `${getInviteBaseUrl()}/invitation?invite=${inv.token}`;
                     const { status, label, color, icon: StatusIcon } = getInvitationStatus(inv);
                     const isActive = status === 'active';
 

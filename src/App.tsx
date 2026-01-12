@@ -192,6 +192,14 @@ const App = () => (
             }
           />
           <Route
+            path="/invitation"
+            element={
+              <AuthGuard requireClub={false}>
+                <ClubOnboarding />
+              </AuthGuard>
+            }
+          />
+          <Route
             path="/club-management"
             element={
               <AuthGuard>
