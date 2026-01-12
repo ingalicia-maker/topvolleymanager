@@ -406,6 +406,19 @@ export default function CoachManagement() {
                       Director
                     </Badge>
                   </div>
+                  {director.id !== user?.id && (
+                    <div className="mt-3 pt-3 border-t">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDirectMessage(director.id)}
+                        className="gap-1"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        Mensaje
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))
             )}
