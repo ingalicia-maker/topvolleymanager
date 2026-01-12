@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -17,6 +17,7 @@ export function MonthlyAbsenceSummary() {
   const { teams } = useTeams();
   const { players } = usePlayers();
   const { isDirector, assignedTeams } = useUserRole();
+  const [expandedType, setExpandedType] = useState<'justified' | 'unjustified' | null>(null);
 
   // Get current month key (YYYY-MM)
   const currentMonthKey = format(new Date(), 'yyyy-MM');
@@ -37,8 +38,8 @@ export function MonthlyAbsenceSummary() {
       visibleTeamIds.includes(a.team_id)
     );
 
-    const justified = monthAbsences.filter(a => a.absence_type === 'justified').length;
-    const unjustified = monthAbsences.filter(a => a.absence_type === 'unjustified').length;
+    const justifiedAbsences = monthAbsences.filter(a => a.absence_type === 'justified');
+    const unjustifiedAbsences = monthAbsences.filter(a => a.absence_type === 'unjustified');
     const total = monthAbsences.length;
 
     // Get unique players with absences
@@ -57,41 +58,41 @@ export function MonthlyAbsenceSummary() {
       ? Math.round(((expectedAttendances - total) / expectedAttendances) * 100) 
       : 100;
 
-    // Group absences by player for detail view
-    const absencesByPlayer: Record<string, { player: typeof players[0] | undefined, justified: number, unjustified: number, dates: string[] }> = {};
-    monthAbsences.forEach(a => {
-      if (!absencesByPlayer[a.player_id]) {
-        absencesByPlayer[a.player_id] = {
-          player: players.find(p => p.id === a.player_id),
-          justified: 0,
-          unjustified: 0,
-          dates: []
-        };
+    // Group justified absences by player
+    const justifiedByPlayer: Record<string, { player: typeof players[0] | undefined, count: number }> = {};
+    justifiedAbsences.forEach(a => {
+      if (!justifiedByPlayer[a.player_id]) {
+        justifiedByPlayer[a.player_id] = { player: players.find(p => p.id === a.player_id), count: 0 };
       }
-      if (a.absence_type === 'justified') {
-        absencesByPlayer[a.player_id].justified++;
-      } else {
-        absencesByPlayer[a.player_id].unjustified++;
-      }
-      absencesByPlayer[a.player_id].dates.push(a.date);
+      justifiedByPlayer[a.player_id].count++;
     });
 
-    // Sort by total absences desc
-    const playerList = Object.values(absencesByPlayer)
-      .sort((a, b) => (b.justified + b.unjustified) - (a.justified + a.unjustified));
+    // Group unjustified absences by player
+    const unjustifiedByPlayer: Record<string, { player: typeof players[0] | undefined, count: number }> = {};
+    unjustifiedAbsences.forEach(a => {
+      if (!unjustifiedByPlayer[a.player_id]) {
+        unjustifiedByPlayer[a.player_id] = { player: players.find(p => p.id === a.player_id), count: 0 };
+      }
+      unjustifiedByPlayer[a.player_id].count++;
+    });
 
     return {
       total,
-      justified,
-      unjustified,
+      justified: justifiedAbsences.length,
+      unjustified: unjustifiedAbsences.length,
       playersWithAbsences,
       totalPlayers,
       attendanceRate,
-      playerList,
+      justifiedList: Object.values(justifiedByPlayer).sort((a, b) => b.count - a.count),
+      unjustifiedList: Object.values(unjustifiedByPlayer).sort((a, b) => b.count - a.count),
     };
   }, [ausencias, visibleTeams, currentMonthKey, players]);
 
   if (visibleTeams.length === 0) return null;
+
+  const handleToggle = (type: 'justified' | 'unjustified') => {
+    setExpandedType(prev => prev === type ? null : type);
+  };
 
   return (
     <Card className="shadow-lg">
@@ -120,27 +121,37 @@ export function MonthlyAbsenceSummary() {
             <p className="text-lg font-bold text-foreground">{monthlyStats.total}</p>
             <p className="text-[10px] text-muted-foreground">Total</p>
           </div>
-          <div className="bg-amber-500/10 rounded-lg p-2">
+          <button
+            type="button"
+            onClick={() => handleToggle('justified')}
+            className={`bg-amber-500/10 rounded-lg p-2 transition-all ${expandedType === 'justified' ? 'ring-2 ring-amber-500' : ''}`}
+          >
             <div className="flex items-center justify-center gap-1">
               <CheckCircle className="h-3 w-3 text-amber-600" />
               <p className="text-lg font-bold text-amber-600">{monthlyStats.justified}</p>
             </div>
             <p className="text-[10px] text-muted-foreground">Justificadas</p>
-          </div>
-          <div className="bg-destructive/10 rounded-lg p-2">
+          </button>
+          <button
+            type="button"
+            onClick={() => handleToggle('unjustified')}
+            className={`bg-destructive/10 rounded-lg p-2 transition-all ${expandedType === 'unjustified' ? 'ring-2 ring-destructive' : ''}`}
+          >
             <div className="flex items-center justify-center gap-1">
               <X className="h-3 w-3 text-destructive" />
               <p className="text-lg font-bold text-destructive">{monthlyStats.unjustified}</p>
             </div>
             <p className="text-[10px] text-muted-foreground">Sin justificar</p>
-          </div>
+          </button>
         </div>
 
-        {/* Player details - who has absences */}
-        {monthlyStats.playerList.length > 0 && (
+        {/* Expanded player list */}
+        {expandedType && (
           <div className="mt-3 pt-3 border-t space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Jugadoras con ausencias:</p>
-            {monthlyStats.playerList.slice(0, 5).map(({ player, justified, unjustified }) => (
+            <p className="text-xs font-medium text-muted-foreground mb-2">
+              {expandedType === 'justified' ? 'Ausencias justificadas:' : 'Ausencias sin justificar:'}
+            </p>
+            {(expandedType === 'justified' ? monthlyStats.justifiedList : monthlyStats.unjustifiedList).map(({ player, count }) => (
               <div 
                 key={player?.id || Math.random()} 
                 className="flex items-center justify-between p-1.5 rounded bg-muted/30"
@@ -151,19 +162,17 @@ export function MonthlyAbsenceSummary() {
                   </div>
                   <span className="text-sm font-medium">{player?.name || 'Desconocida'}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  {justified > 0 && (
-                    <Badge className="text-[10px] h-5 bg-amber-500">{justified} J</Badge>
-                  )}
-                  {unjustified > 0 && (
-                    <Badge variant="destructive" className="text-[10px] h-5">{unjustified} NJ</Badge>
-                  )}
-                </div>
+                <Badge 
+                  className={`text-[10px] h-5 ${expandedType === 'justified' ? 'bg-amber-500' : ''}`}
+                  variant={expandedType === 'unjustified' ? 'destructive' : 'default'}
+                >
+                  {count}
+                </Badge>
               </div>
             ))}
-            {monthlyStats.playerList.length > 5 && (
-              <p className="text-xs text-muted-foreground text-center pt-1">
-                +{monthlyStats.playerList.length - 5} más...
+            {(expandedType === 'justified' ? monthlyStats.justifiedList : monthlyStats.unjustifiedList).length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-2">
+                No hay ausencias de este tipo
               </p>
             )}
           </div>
