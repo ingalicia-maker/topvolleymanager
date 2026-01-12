@@ -44,8 +44,8 @@ interface UserRole {
 }
 
 export default function CoachManagement() {
-  const { isDirector, loading: roleLoading, profile: currentUserProfile } = useUserRole();
-  const { club, members: clubMembers } = useClub();
+  const { loading: roleLoading, profile: currentUserProfile } = useUserRole();
+  const { club, members: clubMembers, isDirector: isClubDirector, loading: clubLoading } = useClub();
   const { user } = useAuth();
   const { teams } = useTeams();
   const queryClient = useQueryClient();
@@ -228,7 +228,7 @@ export default function CoachManagement() {
     setSendingMessage(false);
   };
 
-  if (roleLoading) {
+  if (roleLoading || clubLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <Header title="Gestión de Entrenadores" showBack />
@@ -241,7 +241,7 @@ export default function CoachManagement() {
     );
   }
 
-  if (!isDirector) {
+  if (!isClubDirector) {
     return <Navigate to="/" replace />;
   }
 
