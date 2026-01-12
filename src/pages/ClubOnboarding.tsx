@@ -48,9 +48,10 @@ export default function ClubOnboarding() {
 
   // Check for invitation token in URL (supports /inv/:token, ?invite=token, and #token)
   useEffect(() => {
-    // Priority: path param (/inv/:token) > query param (?invite=token) > hash (#token)
-    const token = pathToken || searchParams.get('invite') || getHashToken();
-    console.log('[ClubOnboarding] Checking for token, found:', token ? token.substring(0, 10) + '...' : 'none');
+    // Priority: path param (/inv/:token) > query param (?invite=token) > hash (#token) > stored token (post-registro)
+    const storedToken = localStorage.getItem('pending_invite_token');
+    const token = pathToken || searchParams.get('invite') || getHashToken() || storedToken;
+
     if (token) {
       setInviteToken(token);
       setMode('join');
@@ -60,16 +61,12 @@ export default function ClubOnboarding() {
 
   const fetchClubInfoFromToken = async (token: string) => {
     setLoadingClubInfo(true);
-    console.log('[ClubOnboarding] Fetching invitation preview for token:', token.substring(0, 10) + '...');
-    
+
     try {
       // Use RPC function to preview invitation (security definer - works for new users)
       const { data, error } = await supabase.rpc('get_invitation_preview', { _token: token });
-      
-      console.log('[ClubOnboarding] Preview result:', { data, error });
-      
+
       if (error) {
-        console.error('[ClubOnboarding] Error fetching invitation preview:', error);
         setJoinResult({ success: false, message: 'Invitación no válida o expirada' });
         setLoadingClubInfo(false);
         return;
@@ -77,9 +74,8 @@ export default function ClubOnboarding() {
 
       // data is an array, get first row
       const preview = Array.isArray(data) ? data[0] : data;
-      
+
       if (!preview) {
-        console.log('[ClubOnboarding] No preview data found');
         setJoinResult({ success: false, message: 'Invitación no válida o expirada' });
         setLoadingClubInfo(false);
         return;
@@ -87,29 +83,27 @@ export default function ClubOnboarding() {
 
       // Check if already used or expired
       if (preview.used_at) {
-        console.log('[ClubOnboarding] Invitation already used');
         setJoinResult({ success: false, message: 'Esta invitación ya ha sido utilizada' });
         setLoadingClubInfo(false);
         return;
       }
-      
+
       if (new Date(preview.expires_at) < new Date()) {
-        console.log('[ClubOnboarding] Invitation expired');
         setJoinResult({ success: false, message: 'La invitación ha expirado' });
         setLoadingClubInfo(false);
         return;
       }
 
-      console.log('[ClubOnboarding] Valid invitation for club:', preview.club_name);
-      setClubInfo({ 
-        name: preview.club_name, 
-        responsible_person_name: preview.responsible_person_name 
+      setClubInfo({
+        name: preview.club_name,
+        responsible_person_name: preview.responsible_person_name,
       });
       setClubResponsibilityCode(preview.responsibility_code);
     } catch (error) {
       console.error('[ClubOnboarding] Error fetching club info:', error);
       setJoinResult({ success: false, message: 'Error al cargar la invitación' });
     }
+
     setLoadingClubInfo(false);
   };
 
@@ -140,26 +134,22 @@ export default function ClubOnboarding() {
 
   const handleJoinClub = async () => {
     if (!inviteToken.trim()) {
-      toast.error('Introduce el código de invitación');
+      toast.error('Abre el enlace de invitación para unirte al club');
       return;
     }
 
     if (clubResponsibilityCode && !responsibilityCodeAccepted) {
-      toast.error('Debes aceptar el código de responsabilidad del club para continuar');
+      toast.error('Debes aceptar el compromiso de responsabilidad del club para continuar');
       return;
     }
 
     setSubmitting(true);
     setJoinResult(null);
-    
-    console.log('[ClubOnboarding] Accepting invitation...');
-    
+
     try {
       // Use the RPC function to accept the invitation (security definer)
       const { data, error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken.trim() });
-      
-      console.log('[ClubOnboarding] Accept result:', { data, error });
-      
+
       if (error) {
         // Parse Postgres error message
         let errorMsg = error.message;
@@ -170,29 +160,32 @@ export default function ClubOnboarding() {
         } else if (errorMsg.includes('expirado')) {
           errorMsg = 'La invitación ha expirado';
         }
-        console.error('[ClubOnboarding] Accept error:', errorMsg);
         setJoinResult({ success: false, message: errorMsg });
         setSubmitting(false);
         return;
       }
 
       // Update profile with responsibility code acceptance
-      if (user) {
+      if (user && clubResponsibilityCode) {
         await supabase
           .from('profiles')
           .update({ responsibility_code_accepted_at: new Date().toISOString() })
           .eq('id', user.id);
       }
-      
-      console.log('[ClubOnboarding] Successfully joined club!');
+
       setJoinResult({ success: true, message: '¡Te has unido al club!' });
       toast.success('¡Te has unido al club!');
+
+      // Clear stored token once membership is accepted
+      localStorage.removeItem('pending_invite_token');
+      localStorage.removeItem('pending_signup_role');
+
       setTimeout(() => navigate('/', { replace: true }), 1500);
     } catch (error: any) {
       console.error('[ClubOnboarding] Error joining club:', error);
       setJoinResult({ success: false, message: error?.message || 'Error al unirse al club' });
     }
-    
+
     setSubmitting(false);
   };
 
@@ -296,28 +289,14 @@ export default function ClubOnboarding() {
                 ) : loadingClubInfo ? (
                   'Cargando información de la invitación...'
                 ) : (
-                  'Introduce el enlace o código de invitación que te han compartido.'
+                  'Abre el enlace de invitación que te han compartido para continuar.'
                 )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Only show input if no token was provided via URL */}
-              {!pathToken && !searchParams.get('invite') && !getHashToken() && (
-                <div className="space-y-2">
-                  <Label htmlFor="inviteToken">Enlace o código de invitación</Label>
-                  <Input
-                    id="inviteToken"
-                    value={inviteToken}
-                    onChange={(e) => {
-                      setInviteToken(e.target.value);
-                      // If user pastes a full URL, try to load club info
-                      if (e.target.value.length > 20) {
-                        fetchClubInfoFromToken(e.target.value);
-                      }
-                    }}
-                    placeholder="Pega aquí el enlace de invitación"
-                    autoFocus
-                  />
+              {!inviteToken.trim() && !loadingClubInfo && !clubInfo && (
+                <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+                  No hay ningún enlace de invitación activo. Abre el enlace completo desde el mensaje que te enviaron.
                 </div>
               )}
 
@@ -325,11 +304,11 @@ export default function ClubOnboarding() {
                 <div className="flex justify-center py-4">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
-              ) : clubResponsibilityCode && (
+              ) : clubResponsibilityCode ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <Shield className="h-4 w-4 text-primary" />
-                    Código de Responsabilidad del Club
+                    Compromiso de responsabilidad del club
                   </div>
                   <ScrollArea className="h-48 rounded-lg border bg-muted/30 p-3">
                     <div className="text-xs text-muted-foreground whitespace-pre-wrap">
@@ -346,7 +325,7 @@ export default function ClubOnboarding() {
                       htmlFor="responsibility-acceptance"
                       className="text-sm cursor-pointer leading-relaxed"
                     >
-                      He leído y acepto el código de responsabilidad del club{' '}
+                      He leído y acepto el compromiso de responsabilidad del club{' '}
                       {clubInfo?.responsible_person_name && (
                         <span className="text-muted-foreground">
                           (Responsable: {clubInfo.responsible_person_name})
@@ -355,7 +334,7 @@ export default function ClubOnboarding() {
                     </label>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {joinResult && (
                 <div
@@ -384,22 +363,30 @@ export default function ClubOnboarding() {
                     setInviteToken('');
                     setClubInfo(null);
                     setClubResponsibilityCode(null);
+                    localStorage.removeItem('pending_invite_token');
+                    localStorage.removeItem('pending_signup_role');
                   }}
                   className="flex-1"
                 >
                   Atrás
                 </Button>
-                <Button
-                  onClick={handleJoinClub}
-                  disabled={submitting || !inviteToken.trim() || loadingClubInfo || (clubResponsibilityCode && !responsibilityCodeAccepted)}
-                  className="flex-1"
-                >
-                  {submitting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    'Unirme al club'
-                  )}
-                </Button>
+                {inviteToken.trim() && (
+                  <Button
+                    onClick={handleJoinClub}
+                    disabled={
+                      submitting ||
+                      loadingClubInfo ||
+                      (clubResponsibilityCode && !responsibilityCodeAccepted)
+                    }
+                    className="flex-1"
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      'Unirme al club'
+                    )}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
