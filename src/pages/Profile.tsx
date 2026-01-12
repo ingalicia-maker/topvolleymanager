@@ -134,8 +134,13 @@ export default function Profile() {
                 <span className="font-medium">{club.name}</span>
               </div>
               <Button
+                type="button"
                 variant="outline"
-                onClick={() => navigate('/club-management')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate('/club-management');
+                }}
                 className="w-full gap-2"
               >
                 <Building2 className="h-4 w-4" />
@@ -144,16 +149,26 @@ export default function Profile() {
               {isClubDirector && (
                 <>
                   <Button
+                    type="button"
                     variant="outline"
-                    onClick={() => navigate('/coach-management')}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate('/coach-management');
+                    }}
                     className="w-full gap-2"
                   >
                     <Users className="h-4 w-4" />
                     Gestión de Entrenadores
                   </Button>
                   <Button
+                    type="button"
                     variant="outline"
-                    onClick={() => navigate('/club-settings')}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate('/club-settings');
+                    }}
                     className="w-full gap-2"
                   >
                     <Settings className="h-4 w-4" />
