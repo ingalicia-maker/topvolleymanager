@@ -209,6 +209,40 @@ export function useClub() {
         .update({ used_at: new Date().toISOString() })
         .eq('id', invitation.id);
 
+      // Notify all directors that a new member joined
+      const { data: directors } = await supabase
+        .from('club_members')
+        .select('user_id')
+        .eq('club_id', invitation.club_id)
+        .eq('role', 'director');
+
+      // Get the new user's profile name
+      const { data: newUserProfile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const newMemberName = newUserProfile?.name || user.email || 'Nuevo miembro';
+
+      // Create notifications for all directors
+      if (directors && directors.length > 0) {
+        const notifications = directors
+          .filter(d => d.user_id !== user.id) // Don't notify themselves
+          .map(director => ({
+            recipient_id: director.user_id,
+            sender_id: user.id,
+            type: 'new_member_joined',
+            title: 'Nuevo miembro en el club',
+            message: `${newMemberName} se ha unido al club como ${invitation.role === 'director' ? 'Director Deportivo' : 'Entrenador'}`,
+            is_read: false,
+          }));
+
+        if (notifications.length > 0) {
+          await supabase.from('notifications').insert(notifications);
+        }
+      }
+
       await fetchClub();
       return { success: true };
     } catch (error: any) {
@@ -219,7 +253,8 @@ export function useClub() {
 
   const createInvitation = async (
     role: 'coach' | 'director' = 'coach',
-    email?: string
+    email?: string,
+    notifyDirectors: boolean = false
   ): Promise<{ invitation: ClubInvitation | null; error: string | null }> => {
     if (!user) return { invitation: null, error: 'Usuario no autenticado' };
     if (!club) return { invitation: null, error: 'Club no cargado' };
@@ -237,6 +272,37 @@ export function useClub() {
         .single();
 
       if (error) throw error;
+
+      // If a coach created the invitation, notify all directors
+      if (notifyDirectors) {
+        const { data: directors } = await supabase
+          .from('club_members')
+          .select('user_id')
+          .eq('club_id', club.id)
+          .eq('role', 'director');
+
+        // Get creator's profile name
+        const { data: creatorProfile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        const creatorName = creatorProfile?.name || 'Un entrenador';
+
+        if (directors && directors.length > 0) {
+          const notifications = directors.map(director => ({
+            recipient_id: director.user_id,
+            sender_id: user.id,
+            type: 'coach_created_invitation',
+            title: 'Invitación creada',
+            message: `${creatorName} ha creado una invitación para un nuevo entrenador`,
+            is_read: false,
+          }));
+
+          await supabase.from('notifications').insert(notifications);
+        }
+      }
 
       setInvitations((prev) => [...prev, data as ClubInvitation]);
       return { invitation: data as ClubInvitation, error: null };
