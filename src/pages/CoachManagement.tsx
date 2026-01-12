@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { Users, Shield, Mail, CheckCircle, Clock, UserX, MessageSquare, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useConversations } from '@/hooks/useConversations';
 
 interface CoachProfile {
   id: string;
@@ -44,10 +45,12 @@ interface UserRole {
 }
 
 export default function CoachManagement() {
+  const navigate = useNavigate();
   const { loading: roleLoading, profile: currentUserProfile } = useUserRole();
   const { club, members: clubMembers, isDirector: isClubDirector, loading: clubLoading } = useClub();
   const { user } = useAuth();
   const { teams } = useTeams();
+  const { getOrCreateDirectConversation } = useConversations();
   const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
@@ -55,6 +58,13 @@ export default function CoachManagement() {
   const [messageContent, setMessageContent] = useState('');
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [sendingMessage, setSendingMessage] = useState(false);
+
+  const handleDirectMessage = async (userId: string) => {
+    const convId = await getOrCreateDirectConversation(userId);
+    if (convId) {
+      navigate('/messages');
+    }
+  };
 
   // Fetch profiles for club members only
   const { data: profiles, isLoading: profilesLoading, refetch } = useQuery({
@@ -396,6 +406,15 @@ export default function CoachManagement() {
                     </div>
 
                     <div className="mt-3 pt-3 border-t flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDirectMessage(coach.id)}
+                        className="gap-1"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        Mensaje
+                      </Button>
                       {!hasCoachRole ? (
                         <Button
                           size="sm"
@@ -415,7 +434,7 @@ export default function CoachManagement() {
                           className="flex-1 gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                         >
                           <UserX className="h-4 w-4" />
-                          Revocar Acceso
+                          Revocar
                         </Button>
                       )}
                     </div>
