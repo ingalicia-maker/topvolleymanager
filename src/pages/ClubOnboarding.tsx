@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { Building2, Users, Link2, Loader2, CheckCircle, XCircle, Shield } from '
 
 export default function ClubOnboarding() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { token: pathToken } = useParams<{ token?: string }>(); // For /inv/:token routes
   const { user } = useAuth();
@@ -29,16 +30,32 @@ export default function ClubOnboarding() {
   const [clubInfo, setClubInfo] = useState<{ name: string; responsible_person_name?: string } | null>(null);
   const [loadingClubInfo, setLoadingClubInfo] = useState(false);
 
-  // Check for invitation token in URL (supports both /inv/:token and ?invite=token)
+  const getHashToken = () => {
+    const hash = location.hash || '';
+    if (!hash) return null;
+
+    const raw = hash.startsWith('#') ? hash.slice(1) : hash;
+    if (!raw) return null;
+
+    // Support both "#TOKEN" and "#invite=TOKEN"
+    if (raw.includes('invite=')) {
+      const params = new URLSearchParams(raw);
+      return params.get('invite');
+    }
+
+    return raw;
+  };
+
+  // Check for invitation token in URL (supports /inv/:token, ?invite=token, and #token)
   useEffect(() => {
-    // Priority: path param (/inv/:token) > query param (?invite=token)
-    const token = pathToken || searchParams.get('invite');
+    // Priority: path param (/inv/:token) > query param (?invite=token) > hash (#token)
+    const token = pathToken || searchParams.get('invite') || getHashToken();
     if (token) {
       setInviteToken(token);
       setMode('join');
       fetchClubInfoFromToken(token);
     }
-  }, [pathToken, searchParams]);
+  }, [pathToken, searchParams, location.hash]);
 
   const fetchClubInfoFromToken = async (token: string) => {
     setLoadingClubInfo(true);
@@ -231,7 +248,7 @@ export default function ClubOnboarding() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!pathToken && !searchParams.get('invite') && (
+              {!pathToken && !searchParams.get('invite') && !location.hash && (
                 <div className="space-y-2">
                   <Label htmlFor="inviteToken">Código de invitación</Label>
                   <Input

@@ -174,19 +174,28 @@ export function useClub() {
     if (!user) return { success: false, error: 'No autenticado' };
 
     // Extract token from URL if needed
-    // Supports: 
+    // Supports:
     //   - Raw token: "abc123"
     //   - Old format: "https://...?invite=TOKEN"
-    //   - New short format: "https://topvolleymanager.com/inv/TOKEN"
+    //   - Short format (may 404 depending on hosting rewrites): "https://.../inv/TOKEN"
+    //   - Hash format (always works without rewrites): "https://.../invitation#TOKEN" or ".../invitation#invite=TOKEN"
     let token = rawTokenOrUrl.trim();
     try {
       const url = new URL(token);
+
       const inviteParam = url.searchParams.get('invite');
       if (inviteParam) {
-        // Old format with query param
         token = inviteParam;
+      } else if (url.hash) {
+        const rawHash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash;
+        if (rawHash.includes('invite=')) {
+          const params = new URLSearchParams(rawHash);
+          const hashInvite = params.get('invite');
+          if (hashInvite) token = hashInvite;
+        } else if (rawHash) {
+          token = rawHash;
+        }
       } else {
-        // Check for /inv/:token pattern
         const pathMatch = url.pathname.match(/\/inv\/([^/]+)$/);
         if (pathMatch && pathMatch[1]) {
           token = pathMatch[1];
