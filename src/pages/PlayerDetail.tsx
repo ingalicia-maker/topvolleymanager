@@ -29,6 +29,7 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
 import { usePlayerRatings, RATING_CATEGORIES, RatingCategoryKey } from '@/hooks/usePlayerRatings';
 import { useSeasons } from '@/hooks/useSeasons';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { RatingInput } from '@/components/RatingInput';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -64,6 +65,9 @@ export default function PlayerDetail() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const player = players.find(p => p.id === playerId);
+  
+  // Use signed URL for player photo
+  const { signedUrl: displayPhotoUrl } = useSignedUrl(player?.photo_url);
 
   const [name, setName] = useState('');
   const [surname1, setSurname1] = useState('');
@@ -366,12 +370,8 @@ export default function PlayerDetail() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('player-photos')
-        .getPublicUrl(fileName);
-
-      setPhotoUrl(publicUrl);
+      // Store only the file path (not full URL) for signed URL generation
+      setPhotoUrl(fileName);
       toast.success('Foto subida correctamente');
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -385,7 +385,11 @@ export default function PlayerDetail() {
     if (!photoUrl) return;
 
     try {
-      const fileName = photoUrl.split('/').pop();
+      // Handle both full URLs (legacy) and file paths (new)
+      let fileName = photoUrl;
+      if (photoUrl.includes('/')) {
+        fileName = photoUrl.split('/').pop() || photoUrl;
+      }
       if (fileName) {
         await supabase.storage.from('player-photos').remove([fileName]);
       }
@@ -513,7 +517,7 @@ export default function PlayerDetail() {
           <CardContent className="p-4 flex items-center gap-4">
             <div className="relative">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={photoUrl || undefined} alt={fullName} />
+                <AvatarImage src={displayPhotoUrl || undefined} alt={fullName} />
                 <AvatarFallback className="bg-primary/20 text-primary text-xl font-bold">
                   {player.number ? `#${player.number}` : initials}
                 </AvatarFallback>
