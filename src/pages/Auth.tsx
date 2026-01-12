@@ -363,49 +363,20 @@ export default function Auth() {
             </div>
             <CardTitle className="text-2xl">{t('auth.confirmEmail', 'Confirma tu email')}</CardTitle>
             <CardDescription className="text-base">
-              {t('auth.verificationCodeSent', 'Te hemos enviado un código de verificación a')} <strong>{email}</strong>
+              {t('auth.verificationEmailSent', 'Te hemos enviado un email de verificación a')} <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex flex-col items-center gap-4">
-              <Label className="text-sm text-muted-foreground">
-                {t('auth.enterCode', 'Introduce el código de 6 dígitos')}
-              </Label>
-              <InputOTP
-                maxLength={6}
-                value={verificationCode}
-                onChange={setVerificationCode}
-                disabled={verifying}
-              >
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-
-            <Button 
-              className="w-full" 
-              onClick={handleVerifyCode}
-              disabled={verifying || verificationCode.length !== 6}
-            >
-              {verifying ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t('auth.verifying', 'Verificando...')}
-                </>
-              ) : (
-                t('auth.verifyCode', 'Verificar código')
-              )}
-            </Button>
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {t('auth.clickEmailLink', 'Haz clic en el enlace del email para verificar tu cuenta. Si no lo ves, revisa tu carpeta de spam.')}
+              </AlertDescription>
+            </Alert>
 
             <div className="text-center space-y-2">
               <p className="text-sm text-muted-foreground">
-                {t('auth.noCodeReceived', '¿No recibiste el código?')}
+                {t('auth.noEmailReceived', '¿No recibiste el email?')}
               </p>
               <Button 
                 variant="ghost" 
@@ -419,7 +390,7 @@ export default function Auth() {
                     {t('auth.resending', 'Reenviando...')}
                   </>
                 ) : (
-                  t('auth.resendCode', 'Reenviar código')
+                  t('auth.resendEmail', 'Reenviar email')
                 )}
               </Button>
             </div>
@@ -607,7 +578,7 @@ export default function Auth() {
                     <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
                       <Mail className="w-4 h-4 shrink-0 mt-0.5" />
                       <span>
-                        Se te enviará un email de confirmación para verificar tu identidad
+                        {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
                       </span>
                     </p>
                   </div>

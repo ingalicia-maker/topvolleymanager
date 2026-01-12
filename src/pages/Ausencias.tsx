@@ -246,7 +246,7 @@ export default function Ausencias() {
                 </Badge>
               </div>
 
-              {/* Player List */}
+              {/* Player List - Simple toggle between present/absent */}
               {teamPlayers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   No hay jugadoras en este equipo
@@ -262,106 +262,57 @@ export default function Ausencias() {
                       <Card
                         key={player.id}
                         className={cn(
-                          "transition-all",
-                          isAbsent && ausencia?.absence_type === 'justified' && "border-primary/50 bg-primary/5",
-                          isAbsent && ausencia?.absence_type === 'unjustified' && "border-amber-500/50 bg-amber-500/5"
+                          "transition-all cursor-pointer",
+                          isAbsent ? "border-destructive/50 bg-destructive/5" : "border-green-500/30 bg-green-500/5"
                         )}
+                        onClick={() => toggleAusencia(player.id)}
                       >
                         <CardContent className="p-3">
-                          <div className="flex items-start gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                              isAbsent ? "bg-destructive/20" : "bg-green-500/20"
+                            )}>
+                              {isAbsent ? (
+                                <X className="h-5 w-5 text-destructive" />
+                              ) : (
+                                <CheckCircle className="h-5 w-5 text-green-600" />
+                              )}
+                            </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{player.name}</span>
                                 {player.number && (
                                   <span className="text-xs text-primary">#{player.number}</span>
                                 )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={cn(
+                                  "text-xs font-medium",
+                                  isAbsent ? "text-destructive" : "text-green-600"
+                                )}>
+                                  {isAbsent ? 'Ausente' : 'Presente'}
+                                </span>
                                 {totalAbsences > 0 && (
                                   <Badge variant="secondary" className="text-[10px]">
-                                    {totalAbsences} total
+                                    {totalAbsences} ausencias
                                   </Badge>
                                 )}
                               </div>
-
-                              {isAbsent ? (
-                                <div className="mt-2 space-y-2">
-                                  {/* Absence Type Selector */}
-                                  <div className="flex gap-2">
-                                    <Button
-                                      type="button"
-                                      variant={ausencia.absence_type === 'justified' ? 'default' : 'outline'}
-                                      size="sm"
-                                      className="h-7 text-xs flex-1"
-                                      onClick={() => handleUpdateAbsenceType(ausencia.id, 'justified')}
-                                    >
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      Justificada
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      variant={ausencia.absence_type === 'unjustified' ? 'destructive' : 'outline'}
-                                      size="sm"
-                                      className="h-7 text-xs flex-1"
-                                      onClick={() => handleUpdateAbsenceType(ausencia.id, 'unjustified')}
-                                    >
-                                      <AlertTriangle className="h-3 w-3 mr-1" />
-                                      No justificada
-                                    </Button>
-                                  </div>
-                                  <Input
-                                    placeholder="Motivo (opcional)..."
-                                    value={ausencia.reason || ''}
-                                    onChange={(e) => handleUpdateReason(ausencia.id, e.target.value)}
-                                    className="h-8 text-sm"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="mt-2 space-y-2">
-                                  {/* Absence Type Selector for new absence */}
-                                  <div className="flex gap-2">
-                                    <Button
-                                      type="button"
-                                      variant={(absenceTypeInputs[player.id] || 'unjustified') === 'justified' ? 'default' : 'outline'}
-                                      size="sm"
-                                      className="h-7 text-xs flex-1"
-                                      onClick={() => setAbsenceTypeInputs(prev => ({ ...prev, [player.id]: 'justified' }))}
-                                    >
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      Justificada
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      variant={(absenceTypeInputs[player.id] || 'unjustified') === 'unjustified' ? 'secondary' : 'outline'}
-                                      size="sm"
-                                      className="h-7 text-xs flex-1"
-                                      onClick={() => setAbsenceTypeInputs(prev => ({ ...prev, [player.id]: 'unjustified' }))}
-                                    >
-                                      <AlertTriangle className="h-3 w-3 mr-1" />
-                                      No justificada
-                                    </Button>
-                                  </div>
-                                  <Input
-                                    placeholder="Motivo (opcional)..."
-                                    value={reasonInputs[player.id] || ''}
-                                    onChange={(e) => setReasonInputs(prev => ({
-                                      ...prev,
-                                      [player.id]: e.target.value
-                                    }))}
-                                    className="h-8 text-sm"
-                                  />
-                                </div>
-                              )}
                             </div>
-
                             <Button
-                              variant={isAbsent ? "destructive" : "outline"}
+                              variant={isAbsent ? "outline" : "destructive"}
                               size="sm"
-                              onClick={() => toggleAusencia(player.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleAusencia(player.id);
+                              }}
                               className="shrink-0"
                             >
                               {isAbsent ? (
                                 <>
-                                  <X className="h-3 w-3 mr-1" />
-                                  Quitar
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Presente
                                 </>
                               ) : (
                                 <>
@@ -371,6 +322,39 @@ export default function Ausencias() {
                               )}
                             </Button>
                           </div>
+                          {/* Show absence details if marked as absent */}
+                          {isAbsent && (
+                            <div className="mt-3 pt-3 border-t border-destructive/20 space-y-2" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant={ausencia.absence_type === 'justified' ? 'default' : 'outline'}
+                                  size="sm"
+                                  className="h-7 text-xs flex-1"
+                                  onClick={() => handleUpdateAbsenceType(ausencia.id, 'justified')}
+                                >
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Justificada
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant={ausencia.absence_type === 'unjustified' ? 'destructive' : 'outline'}
+                                  size="sm"
+                                  className="h-7 text-xs flex-1"
+                                  onClick={() => handleUpdateAbsenceType(ausencia.id, 'unjustified')}
+                                >
+                                  <AlertTriangle className="h-3 w-3 mr-1" />
+                                  No justificada
+                                </Button>
+                              </div>
+                              <Input
+                                placeholder="Motivo (opcional)..."
+                                value={ausencia.reason || ''}
+                                onChange={(e) => handleUpdateReason(ausencia.id, e.target.value)}
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     );

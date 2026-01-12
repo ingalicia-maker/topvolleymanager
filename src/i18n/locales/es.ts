@@ -76,7 +76,7 @@ export default {
     weakPassword: 'La contraseña debe tener al menos 6 caracteres',
     manageTeams: 'Gestiona tus equipos y convocatorias',
     confirmEmail: 'Confirma tu email',
-    verificationCodeSent: 'Te hemos enviado un código de verificación a',
+    verificationEmailSent: 'Te hemos enviado un email de verificación a',
     enterCode: 'Introduce el código de 6 dígitos',
     verifyCode: 'Verificar código',
     verifying: 'Verificando...',
@@ -91,6 +91,10 @@ export default {
     emailResendError: 'Error al reenviar el email',
     emailSendError: 'Error al enviar el email de verificación',
     backToLogin: 'Volver al inicio',
+    emailConfirmationNote: 'Se te enviará un email para verificar tu identidad',
+    clickEmailLink: 'Haz clic en el enlace del email para verificar tu cuenta. Si no lo ves, revisa tu carpeta de spam.',
+    noEmailReceived: '¿No recibiste el email?',
+    resendEmail: 'Reenviar email',
   },
 
   // Players
