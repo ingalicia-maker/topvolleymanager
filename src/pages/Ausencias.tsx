@@ -246,7 +246,7 @@ export default function Ausencias() {
                 </Badge>
               </div>
 
-              {/* Player List - Simple toggle between present/absent */}
+              {/* Player List */}
               {teamPlayers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   No hay jugadoras en este equipo
@@ -262,19 +262,30 @@ export default function Ausencias() {
                       <Card
                         key={player.id}
                         className={cn(
-                          "transition-all cursor-pointer",
-                          isAbsent ? "border-destructive/50 bg-destructive/5" : "border-green-500/30 bg-green-500/5"
+                          "transition-all",
+                          isAbsent 
+                            ? ausencia.absence_type === 'justified' 
+                              ? "border-amber-500/50 bg-amber-500/5" 
+                              : "border-destructive/50 bg-destructive/5" 
+                            : "border-green-500/30 bg-green-500/5"
                         )}
-                        onClick={() => toggleAusencia(player.id)}
                       >
                         <CardContent className="p-3">
                           <div className="flex items-center gap-3">
                             <div className={cn(
                               "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                              isAbsent ? "bg-destructive/20" : "bg-green-500/20"
+                              isAbsent 
+                                ? ausencia.absence_type === 'justified'
+                                  ? "bg-amber-500/20"
+                                  : "bg-destructive/20" 
+                                : "bg-green-500/20"
                             )}>
                               {isAbsent ? (
-                                <X className="h-5 w-5 text-destructive" />
+                                ausencia.absence_type === 'justified' ? (
+                                  <CheckCircle className="h-5 w-5 text-amber-600" />
+                                ) : (
+                                  <X className="h-5 w-5 text-destructive" />
+                                )
                               ) : (
                                 <CheckCircle className="h-5 w-5 text-green-600" />
                               )}
@@ -289,48 +300,89 @@ export default function Ausencias() {
                               <div className="flex items-center gap-2 mt-1">
                                 <span className={cn(
                                   "text-xs font-medium",
-                                  isAbsent ? "text-destructive" : "text-green-600"
+                                  isAbsent 
+                                    ? ausencia.absence_type === 'justified'
+                                      ? "text-amber-600"
+                                      : "text-destructive" 
+                                    : "text-green-600"
                                 )}>
-                                  {isAbsent ? 'Ausente' : 'Presente'}
+                                  {isAbsent 
+                                    ? ausencia.absence_type === 'justified' 
+                                      ? 'Ausente (Justificada)' 
+                                      : 'Ausente (No justificada)' 
+                                    : 'Presente'}
                                 </span>
-                                {totalAbsences > 0 && (
+                                {totalAbsences > 0 && !isAbsent && (
                                   <Badge variant="secondary" className="text-[10px]">
                                     {totalAbsences} ausencias
                                   </Badge>
                                 )}
                               </div>
                             </div>
-                            <Button
-                              variant={isAbsent ? "outline" : "destructive"}
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleAusencia(player.id);
-                              }}
-                              className="shrink-0"
-                            >
+                            {/* Absence type buttons or Present status */}
+                            <div className="flex gap-1 shrink-0">
                               {isAbsent ? (
-                                <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => deleteAusencia(ausencia.id)}
+                                  className="text-green-600 border-green-600/50 hover:bg-green-500/10"
+                                >
                                   <CheckCircle className="h-3 w-3 mr-1" />
                                   Presente
-                                </>
+                                </Button>
                               ) : (
                                 <>
-                                  <AlertTriangle className="h-3 w-3 mr-1" />
-                                  Ausente
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      addAusencia({
+                                        player_id: player.id,
+                                        team_id: selectedTeamId,
+                                        date: dateStr,
+                                        reason: null,
+                                        absence_type: 'justified',
+                                        created_by: user?.id || null,
+                                      });
+                                    }}
+                                    className="text-amber-600 border-amber-600/50 hover:bg-amber-500/10 text-xs px-2"
+                                  >
+                                    Justificada
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                      addAusencia({
+                                        player_id: player.id,
+                                        team_id: selectedTeamId,
+                                        date: dateStr,
+                                        reason: null,
+                                        absence_type: 'unjustified',
+                                        created_by: user?.id || null,
+                                      });
+                                    }}
+                                    className="text-xs px-2"
+                                  >
+                                    No justificada
+                                  </Button>
                                 </>
                               )}
-                            </Button>
+                            </div>
                           </div>
-                          {/* Show absence details if marked as absent */}
+                          {/* Show reason input if marked as absent */}
                           {isAbsent && (
-                            <div className="mt-3 pt-3 border-t border-destructive/20 space-y-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="mt-3 pt-3 border-t border-muted space-y-2">
                               <div className="flex gap-2">
                                 <Button
                                   type="button"
                                   variant={ausencia.absence_type === 'justified' ? 'default' : 'outline'}
                                   size="sm"
-                                  className="h-7 text-xs flex-1"
+                                  className={cn(
+                                    "h-7 text-xs flex-1",
+                                    ausencia.absence_type === 'justified' && "bg-amber-500 hover:bg-amber-600"
+                                  )}
                                   onClick={() => handleUpdateAbsenceType(ausencia.id, 'justified')}
                                 >
                                   <CheckCircle className="h-3 w-3 mr-1" />
