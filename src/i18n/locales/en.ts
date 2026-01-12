@@ -28,6 +28,8 @@ export default {
     notifications: '{{count}} notification(s)',
     weeklySummary: 'Weekly Summary',
     teamStats: 'Your team stats',
+    configure: 'Configure',
+    saving: 'Saving...',
   },
 
   // Navigation
@@ -170,6 +172,13 @@ export default {
     noTeams: 'No teams registered',
     deleteConfirm: 'Delete this team?',
     create: 'Create Team',
+    myTeams: 'My Teams',
+    noTeamsAssigned: 'You have no assigned teams. Configure your teams to get started.',
+    selectYourTeams: 'Select your teams',
+    selectTeamsDescription: 'Choose the teams you will manage as a coach.',
+    noTeamsAvailable: 'No teams available in the club.',
+    selectAtLeastOne: 'You must select at least one team',
+    teamsUpdated: 'Teams updated successfully',
   },
 
   // Events

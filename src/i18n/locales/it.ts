@@ -28,6 +28,8 @@ export default {
     notifications: '{{count}} notifica(e)',
     weeklySummary: 'Riepilogo Settimanale',
     teamStats: 'Statistiche delle tue squadre',
+    configure: 'Configura',
+    saving: 'Salvataggio...',
   },
 
   // Navigation
@@ -170,6 +172,13 @@ export default {
     noTeams: 'Nessuna squadra registrata',
     deleteConfirm: 'Eliminare questa squadra?',
     create: 'Crea Squadra',
+    myTeams: 'Le Mie Squadre',
+    noTeamsAssigned: 'Non hai squadre assegnate. Configura le tue squadre per iniziare.',
+    selectYourTeams: 'Seleziona le tue squadre',
+    selectTeamsDescription: 'Scegli le squadre che gestirai come allenatore.',
+    noTeamsAvailable: 'Nessuna squadra disponibile nel club.',
+    selectAtLeastOne: 'Devi selezionare almeno una squadra',
+    teamsUpdated: 'Squadre aggiornate con successo',
   },
 
   // Events
