@@ -181,19 +181,21 @@ export default function Messages() {
 
   const handleCreateConversation = async () => {
     if (selectedParticipants.length === 0) return;
-    
+
     setCreatingConv(true);
-    const convId = await createConversation(
+    const res = await createConversation(
       selectedParticipants,
       selectedParticipants.length > 1 ? convTitle || undefined : undefined
     );
-    
-    if (convId) {
-      setSelectedConversationId(convId);
+
+    if (res.id) {
+      setSelectedConversationId(res.id);
       setNewConvDialogOpen(false);
       setSelectedParticipants([]);
       setConvTitle('');
       await refetch();
+    } else {
+      toast.error(res.error || 'Error al crear la conversación');
     }
     setCreatingConv(false);
   };

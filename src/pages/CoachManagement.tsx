@@ -68,11 +68,11 @@ export default function CoachManagement() {
   const handleDirectMessage = async (userId: string) => {
     try {
       setProcessingId(userId);
-      const convId = await getOrCreateDirectConversation(userId);
-      if (convId) {
-        navigate('/messages', { state: { openConversationId: convId } });
+      const res = await getOrCreateDirectConversation(userId);
+      if (res.id) {
+        navigate('/messages', { state: { openConversationId: res.id } });
       } else {
-        toast.error('Error al crear la conversación');
+        toast.error(res.error || 'Error al crear la conversación');
       }
     } catch (error) {
       console.error('Error creating direct message:', error);
@@ -235,17 +235,17 @@ export default function CoachManagement() {
 
     setCreatingGroupChat(true);
     try {
-      const convId = await createConversation(
+      const res = await createConversation(
         selectedGroupMembers,
         groupChatTitle.trim() || undefined
       );
 
-      if (convId) {
+      if (res.id) {
         toast.success('Conversación grupal creada');
         setGroupChatDialogOpen(false);
-        navigate('/messages', { state: { openConversationId: convId } });
+        navigate('/messages', { state: { openConversationId: res.id } });
       } else {
-        toast.error('Error al crear la conversación');
+        toast.error(res.error || 'Error al crear la conversación');
       }
     } catch (error) {
       console.error('Error creating group chat:', error);
