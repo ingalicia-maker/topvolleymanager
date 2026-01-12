@@ -7,6 +7,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { PlayerOfTheWeek } from '@/components/PlayerOfTheWeek';
 import { CreditsDisplay } from '@/components/CreditsDisplay';
 import { OnboardingTour } from '@/components/OnboardingTour';
+import { MonthlyAbsenceSummary } from '@/components/MonthlyAbsenceSummary';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -200,6 +201,9 @@ export default function Index() {
         </Link>
       )}
       
+      {/* Monthly Absence Summary */}
+      <MonthlyAbsenceSummary />
+
       {/* Player of the Week */}
       <PlayerOfTheWeek />
       
