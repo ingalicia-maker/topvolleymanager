@@ -12,7 +12,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useClub } from '@/hooks/useClub';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Users, Shield, Mail, CheckCircle, Clock, UserX, MessageSquare, Send } from 'lucide-react';
+import { Users, Shield, Mail, CheckCircle, Clock, UserX, MessageSquare, Send, FileCheck, FileX } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -37,6 +37,8 @@ interface CoachProfile {
   assigned_teams: string[] | null;
   created_at: string | null;
   role: 'coach' | 'director';
+  responsibility_code_accepted_at: string | null;
+  terms_accepted_at: string | null;
 }
 
 interface UserRole {
@@ -458,6 +460,7 @@ export default function CoachManagement() {
               coaches.map(coach => {
                 const hasCoachRole = getUserRoles(coach.id).includes('coach');
                 const hasTeams = coach.assigned_teams && coach.assigned_teams.length > 0;
+                const hasAcceptedCode = !!coach.responsibility_code_accepted_at;
 
                 return (
                   <div
@@ -494,6 +497,20 @@ export default function CoachManagement() {
                             ))}
                           </div>
                         )}
+                        {/* Responsibility code acceptance status */}
+                        <div className="flex items-center gap-1 text-xs mt-2">
+                          {hasAcceptedCode ? (
+                            <span className="flex items-center gap-1 text-green-600">
+                              <FileCheck className="h-3 w-3" />
+                              Código de responsabilidad aceptado ({format(new Date(coach.responsibility_code_accepted_at!), "d MMM yyyy", { locale: es })})
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-amber-600">
+                              <FileX className="h-3 w-3" />
+                              Código de responsabilidad pendiente
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
