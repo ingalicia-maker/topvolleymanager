@@ -25,44 +25,51 @@ export function useUserRole() {
       return;
     }
 
+    // Important: when auth session is restoring, `user` can go from null -> user.
+    // We must set loading back to true, otherwise pages that redirect based on roles
+    // (e.g. CoachManagement) can redirect prematurely.
+    setLoading(true);
+
     const fetchRoleAndProfile = async () => {
-      // Fetch roles from user_roles table
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
+      try {
+        // Fetch roles from user_roles table
+        const { data: rolesData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
 
-      // Also check club_members for role (primary source of truth)
-      const { data: memberData } = await supabase
-        .from('club_members')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        // Also check club_members for role (primary source of truth)
+        const { data: memberData } = await supabase
+          .from('club_members')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      // Combine roles from both sources
-      const rolesFromUserRoles = rolesData?.map(r => r.role as AppRole) || [];
-      const roleFromClubMember = memberData?.role as AppRole | undefined;
-      
-      // Use club_members role as priority, then merge with user_roles
-      const combinedRoles = new Set<AppRole>(rolesFromUserRoles);
-      if (roleFromClubMember) {
-        combinedRoles.add(roleFromClubMember);
+        // Combine roles from both sources
+        const rolesFromUserRoles = rolesData?.map(r => r.role as AppRole) || [];
+        const roleFromClubMember = memberData?.role as AppRole | undefined;
+
+        // Use club_members role as priority, then merge with user_roles
+        const combinedRoles = new Set<AppRole>(rolesFromUserRoles);
+        if (roleFromClubMember) {
+          combinedRoles.add(roleFromClubMember);
+        }
+
+        setRoles(Array.from(combinedRoles));
+
+        // Fetch profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profileData) {
+          setProfile(profileData as UserProfile);
+        }
+      } finally {
+        setLoading(false);
       }
-      
-      setRoles(Array.from(combinedRoles));
-
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profileData) {
-        setProfile(profileData as UserProfile);
-      }
-
-      setLoading(false);
     };
 
     fetchRoleAndProfile();
