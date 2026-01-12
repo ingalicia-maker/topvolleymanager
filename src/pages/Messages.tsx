@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -11,11 +11,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useConversations, Message } from '@/hooks/useConversations';
 import { useAuth } from '@/hooks/useAuth';
 import { useClub } from '@/hooks/useClub';
+import { usePresence, useConversationPresence } from '@/hooks/usePresence';
+import { OnlineIndicator } from '@/components/OnlineIndicator';
+import { MessageReadStatus } from '@/components/MessageReadStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { MessageSquare, Send, ArrowLeft, Users, Plus } from 'lucide-react';
+import { MessageSquare, Send, ArrowLeft, Users, Plus, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -31,6 +34,7 @@ export default function Messages() {
   const { user } = useAuth();
   const { club, members: clubMembers } = useClub();
   const { conversations, loading, sendMessage, markAsRead, createConversation, refetch } = useConversations();
+  const { isOnline, getOnlineUsersList } = usePresence();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -40,6 +44,9 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Presence for current conversation
+  const { viewingUsers, viewingCount } = useConversationPresence(selectedConversationId);
   
   // New conversation dialog
   const [newConvDialogOpen, setNewConvDialogOpen] = useState(false);
@@ -231,40 +238,65 @@ export default function Messages() {
               </CardContent>
             </Card>
           ) : (
-            conversations.map(conv => (
-              <Card
-                key={conv.id}
-                className={`cursor-pointer transition-colors hover:bg-accent/50 ${conv.unreadCount > 0 ? 'border-primary' : ''}`}
-                onClick={() => setSelectedConversationId(conv.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        {conv.is_group && <Users className="h-4 w-4 text-muted-foreground" />}
-                        <p className="font-medium truncate">{getConversationTitle(conv)}</p>
-                        {conv.unreadCount > 0 && (
-                          <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
-                            {conv.unreadCount}
-                          </Badge>
+            conversations.map(conv => {
+              // For 1:1, check if the other user is online
+              const otherParticipantId = !conv.is_group 
+                ? conv.participants.find(p => p.user_id !== user?.id)?.user_id 
+                : null;
+              const isOtherOnline = otherParticipantId ? isOnline(otherParticipantId) : false;
+              
+              // Check read status for last message
+              const lastMsgIsRead = conv.lastMessage && conv.lastMessage.sender_id === user?.id
+                ? conv.participants.some(p => 
+                    p.user_id !== user?.id && 
+                    p.last_read_at && 
+                    new Date(p.last_read_at) >= new Date(conv.lastMessage!.created_at)
+                  )
+                : false;
+
+              return (
+                <Card
+                  key={conv.id}
+                  className={`cursor-pointer transition-colors hover:bg-accent/50 ${conv.unreadCount > 0 ? 'border-primary' : ''}`}
+                  onClick={() => setSelectedConversationId(conv.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          {!conv.is_group && (
+                            <OnlineIndicator isOnline={isOtherOnline} size="sm" />
+                          )}
+                          {conv.is_group && <Users className="h-4 w-4 text-muted-foreground" />}
+                          <p className="font-medium truncate">{getConversationTitle(conv)}</p>
+                          {conv.unreadCount > 0 && (
+                            <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
+                              {conv.unreadCount}
+                            </Badge>
+                          )}
+                        </div>
+                        {conv.lastMessage && (
+                          <div className="flex items-center gap-1 mt-1">
+                            {conv.lastMessage.sender_id === user?.id && (
+                              <MessageReadStatus isRead={lastMsgIsRead} />
+                            )}
+                            <p className="text-sm text-muted-foreground truncate">
+                              {conv.lastMessage.sender_id === user?.id ? 'Tú: ' : ''}
+                              {conv.lastMessage.content}
+                            </p>
+                          </div>
                         )}
                       </div>
                       {conv.lastMessage && (
-                        <p className="text-sm text-muted-foreground truncate mt-1">
-                          {conv.lastMessage.sender_id === user?.id ? 'Tú: ' : ''}
-                          {conv.lastMessage.content}
-                        </p>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatMessageTime(conv.lastMessage.created_at)}
+                        </span>
                       )}
                     </div>
-                    {conv.lastMessage && (
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatMessageTime(conv.lastMessage.created_at)}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
 
@@ -291,7 +323,13 @@ export default function Messages() {
               )}
 
               <div className="space-y-2">
-                <Label>Participantes</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Participantes</Label>
+                  <span className="text-xs text-green-600 flex items-center gap-1">
+                    <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+                    {getOnlineUsersList().filter(u => u.id !== user?.id).length} en línea
+                  </span>
+                </div>
                 <div className="border rounded-lg p-3 max-h-60 overflow-y-auto space-y-2">
                   {otherMembers.map(member => (
                     <div
@@ -304,7 +342,8 @@ export default function Messages() {
                         onCheckedChange={() => toggleParticipant(member.id)}
                         onClick={(e) => e.stopPropagation()}
                       />
-                      <div>
+                      <OnlineIndicator isOnline={isOnline(member.id)} size="sm" />
+                      <div className="flex-1">
                         <p className="text-sm font-medium">{member.name}</p>
                         <p className="text-xs text-muted-foreground">{member.email}</p>
                       </div>
@@ -350,12 +389,27 @@ export default function Messages() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <p className="font-medium truncate">
-              {selectedConversation && getConversationTitle(selectedConversation)}
-            </p>
-            {selectedConversation?.is_group && (
+            <div className="flex items-center gap-2">
+              {selectedConversation && !selectedConversation.is_group && (
+                <OnlineIndicator 
+                  isOnline={isOnline(selectedConversation.participants.find(p => p.user_id !== user?.id)?.user_id || '')} 
+                  size="md" 
+                />
+              )}
+              <p className="font-medium truncate">
+                {selectedConversation && getConversationTitle(selectedConversation)}
+              </p>
+            </div>
+            {selectedConversation?.is_group ? (
               <p className="text-xs text-muted-foreground">
                 {selectedConversation.participants.length} participantes
+                {viewingCount > 0 && ` · ${viewingCount} viendo ahora`}
+              </p>
+            ) : selectedConversation && (
+              <p className="text-xs text-muted-foreground">
+                {isOnline(selectedConversation.participants.find(p => p.user_id !== user?.id)?.user_id || '') 
+                  ? 'En línea' 
+                  : 'Desconectado'}
               </p>
             )}
           </div>
@@ -376,8 +430,19 @@ export default function Messages() {
             <p className="text-sm text-muted-foreground">Envía el primer mensaje</p>
           </div>
         ) : (
-          messages.map(msg => {
+          messages.map((msg, index) => {
             const isMe = msg.sender_id === user?.id;
+            
+            // For my messages, check if read by any other participant
+            const isReadByOthers = isMe && selectedConversation?.participants.some(p => 
+              p.user_id !== user?.id && 
+              p.last_read_at && 
+              new Date(p.last_read_at) >= new Date(msg.created_at)
+            );
+            
+            // Is this the last message from me?
+            const isLastFromMe = isMe && messages.slice(index + 1).every(m => m.sender_id !== user?.id);
+            
             return (
               <div
                 key={msg.id}
@@ -396,9 +461,17 @@ export default function Messages() {
                     </p>
                   )}
                   <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                  <p className={`text-xs mt-1 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                    {format(new Date(msg.created_at), 'HH:mm')}
-                  </p>
+                  <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : ''}`}>
+                    <span className={`text-xs ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                      {format(new Date(msg.created_at), 'HH:mm')}
+                    </span>
+                    {isMe && isLastFromMe && (
+                      <MessageReadStatus 
+                        isRead={isReadByOthers || false} 
+                        className={isMe ? 'text-primary-foreground/70' : ''} 
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             );
