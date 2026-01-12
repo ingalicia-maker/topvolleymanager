@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,6 +30,9 @@ export default function Messages() {
   const { user } = useAuth();
   const { club, members: clubMembers } = useClub();
   const { conversations, loading, sendMessage, markAsRead, createConversation, refetch } = useConversations();
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -41,6 +45,15 @@ export default function Messages() {
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [convTitle, setConvTitle] = useState('');
   const [creatingConv, setCreatingConv] = useState(false);
+
+  const openConversationId = (location.state as { openConversationId?: string } | null)?.openConversationId;
+
+  useEffect(() => {
+    if (!openConversationId) return;
+    setSelectedConversationId(openConversationId);
+    // Limpia el state para que no se reabra si vuelves atrás
+    navigate('/messages', { replace: true, state: {} });
+  }, [openConversationId, navigate]);
 
   // Fetch profiles for club members
   const { data: profiles } = useQuery({
