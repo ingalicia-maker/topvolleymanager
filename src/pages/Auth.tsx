@@ -14,6 +14,7 @@ import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2 } from 'lucide-r
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
+import { InvitationRegistrationForm } from '@/components/InvitationRegistrationForm';
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres');
@@ -40,10 +41,11 @@ export default function Auth() {
 
   const redirectTo = searchParams.get('redirect') || '/';
 
-  const extractInviteTokenFromRedirect = (value: string): string | null => {
+  // Extract invitation token from various URL formats
+  const extractInviteToken = (value: string): string | null => {
     try {
       // Absolute URL
-      const url = new URL(value);
+      const url = new URL(value, window.location.origin);
       const qp = url.searchParams.get('invite');
       if (qp) return qp;
 
@@ -54,7 +56,7 @@ export default function Auth() {
           const h = params.get('invite');
           if (h) return h;
         }
-        if (rawHash) return rawHash;
+        if (rawHash && rawHash.length > 10) return rawHash;
       }
 
       const m = url.pathname.match(/\/inv\/([^/?#]+)/);
@@ -71,7 +73,7 @@ export default function Auth() {
           const h = params.get('invite');
           if (h) return h;
         }
-        return hash;
+        if (hash.length > 10) return hash;
       }
 
       const m = value.match(/\/inv\/([^/?#]+)/);
@@ -79,51 +81,47 @@ export default function Auth() {
     }
   };
 
-  const inviteTokenFromRedirect = extractInviteTokenFromRedirect(redirectTo);
+  const inviteToken = extractInviteToken(redirectTo);
+  const isInvitationFlow = !!inviteToken;
 
-  // Invitation flow when coming from invitation routes (hash/query supported)
-  const isInvitationFlow =
-    redirectTo.includes('/invitation') ||
-    redirectTo.includes('/inv/') ||
-    redirectTo.includes('invite=');
-
-  const acceptInvitationIfNeeded = async (token: string) => {
-    const { error } = await supabase.rpc('accept_club_invitation', { _token: token });
-    if (error) {
-      // If already a member, treat as success
-      if (error.message?.toLowerCase().includes('ya eres miembro')) return;
-      throw error;
-    }
-    // Notify the app to refresh club membership state
-    window.dispatchEvent(new Event('club-membership-changed'));
-  };
-
+  // Check for existing session on mount
   useEffect(() => {
-    // Check if user is already logged in
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // For invitation flows, always go to the invitation URL
-        console.log('[Auth] User has session, redirecting to:', redirectTo);
+        // If user is already logged in and comes from invitation, try to accept it
+        if (isInvitationFlow && inviteToken) {
+          try {
+            const { error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken });
+            if (!error || error.message?.toLowerCase().includes('ya eres miembro')) {
+              window.dispatchEvent(new Event('club-membership-changed'));
+              triggerCoachWelcome();
+              toast.success('¡Te has unido al club!');
+              navigate('/', { replace: true });
+              return;
+            }
+          } catch (err) {
+            console.error('[Auth] Error accepting invitation for logged-in user:', err);
+          }
+        }
         navigate(redirectTo, { replace: true });
       }
     };
     checkSession();
+  }, [navigate, redirectTo, isInvitationFlow, inviteToken]);
+
+  // Listen for auth state changes (non-invitation flows only)
+  useEffect(() => {
+    if (isInvitationFlow) return; // Invitation flow handles its own navigation
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Auth] onAuthStateChange event:', event, 'hasSession:', !!session);
-
-      // Avoid racing navigation during invitation flows; we handle it explicitly after accepting.
-      if (isInvitationFlow && inviteTokenFromRedirect) return;
-
       if (session && event === 'SIGNED_IN') {
-        console.log('[Auth] SIGNED_IN detected, redirecting to:', redirectTo);
         navigate(redirectTo, { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, redirectTo, isInvitationFlow, inviteTokenFromRedirect]);
+  }, [navigate, redirectTo, isInvitationFlow]);
 
 
   const validateInputs = (isSignUp: boolean) => {
@@ -176,19 +174,22 @@ export default function Auth() {
       return;
     }
 
-    // If coming from an invitation link, auto-join the club and go straight to dashboard.
-    try {
-      if (isInvitationFlow && inviteTokenFromRedirect) {
-        await acceptInvitationIfNeeded(inviteTokenFromRedirect);
-        triggerCoachWelcome();
-        navigate('/', { replace: true });
-        toast.success('¡Bienvenido!');
-        setLoading(false);
-        return;
+    // If coming from an invitation link, auto-join the club
+    if (isInvitationFlow && inviteToken) {
+      try {
+        const { error: joinError } = await supabase.rpc('accept_club_invitation', { _token: inviteToken });
+        if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
+          window.dispatchEvent(new Event('club-membership-changed'));
+          triggerCoachWelcome();
+          toast.success('¡Te has unido al club!');
+          navigate('/', { replace: true });
+          setLoading(false);
+          return;
+        }
+      } catch (joinError) {
+        console.error('[Auth] Error accepting invitation after sign-in:', joinError);
+        toast.error('No se ha podido completar la invitación');
       }
-    } catch (joinError: any) {
-      console.error('[Auth] Error accepting invitation after sign-in:', joinError);
-      toast.error('No se ha podido completar la invitación. Inténtalo de nuevo.');
     }
 
     toast.success('¡Bienvenido!');
@@ -219,16 +220,6 @@ export default function Auth() {
     setLoading(false);
   };
 
-  const notifyDirectorsAboutNewCoach = async (coachName: string, coachEmail: string) => {
-    try {
-      await supabase.functions.invoke('notify-new-coach', {
-        body: { coachName, coachEmail }
-      });
-    } catch (error) {
-      console.error('Error notifying directors:', error);
-    }
-  };
-
   const sendVerificationEmail = async (userEmail: string, userName: string) => {
     try {
       const { error } = await supabase.functions.invoke('send-verification-email', {
@@ -255,37 +246,31 @@ export default function Auth() {
 
     setVerifying(true);
     try {
-      console.log('[Auth] Verifying code for:', email.trim());
       const { data, error } = await supabase.functions.invoke('verify-email-code', {
         body: { email: email.trim(), code: verificationCode }
       });
 
       if (error || !data?.success) {
-        console.error('[Auth] Verification failed:', error, data);
         toast.error(t('auth.codeExpiredOrInvalid', 'Código expirado o inválido'));
         setVerifying(false);
         return;
       }
 
-      console.log('[Auth] Code verified, signing in...');
-      
-      // Sign in after verification to get fresh JWT with confirmed status
+      // Sign in after verification
       const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
       if (signInError) {
-        console.error('[Auth] Sign in error:', signInError);
         toast.error(signInError.message);
         setVerifying(false);
         return;
       }
 
-      console.log('[Auth] Signed in successfully, session:', !!signInData.session);
       toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
 
-      // Only mark as new director if coming from director signup, not invitation
+      // Mark as new director for onboarding
       const pendingRole = localStorage.getItem('pending_signup_role');
       if (pendingRole === 'director') {
         localStorage.setItem('is_new_director', 'true');
@@ -295,24 +280,6 @@ export default function Auth() {
       setShowEmailConfirmation(false);
 
       if (signInData.session) {
-        // If invitation flow, auto-join then go to dashboard (avoid showing “crear club / código”).
-        if (isInvitationFlow && inviteTokenFromRedirect) {
-          try {
-            await acceptInvitationIfNeeded(inviteTokenFromRedirect);
-            triggerCoachWelcome();
-          } catch (joinError: any) {
-            console.error('[Auth] Error accepting invitation after verification:', joinError);
-            toast.error('No se ha podido completar la invitación. Inténtalo de nuevo.');
-            // Fall back to the invitation URL so user can retry manually.
-            navigate(redirectTo, { replace: true });
-            setVerifying(false);
-            return;
-          }
-          navigate('/', { replace: true });
-          return;
-        }
-
-        console.log('[Auth] Manual navigation to:', redirectTo);
         navigate(redirectTo, { replace: true });
       }
     } catch (error) {
@@ -333,69 +300,11 @@ export default function Auth() {
     setResendingEmail(false);
   };
 
-  // Sign up for invited users (coaches) - simpler flow
-  const handleInvitationSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateInputs(true)) return;
-    
-    if (!termsAccepted) {
-      toast.error('Debes aceptar los términos y condiciones para continuar');
-      return;
-    }
-
-    // Used by handleVerifyCode to avoid triggering "nuevo director" onboarding for invited coaches
-    localStorage.setItem('pending_signup_role', 'coach');
-
-    setLoading(true);
-    const redirectUrl = `${window.location.origin}${redirectTo}`;
-
-    const { error, data } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          name: name.trim(),
-          is_director: false,
-          is_also_coach: true,
-          assigned_teams: [],
-          terms_accepted_at: new Date().toISOString(),
-        },
-      },
-    });
-
-    if (error) {
-      if (error.message.includes('already registered')) {
-        toast.error('Este email ya está registrado. Inicia sesión con tu cuenta.');
-      } else {
-        toast.error(error.message);
-      }
-      setLoading(false);
-      return;
-    }
-
-    // Send custom verification email
-    if (data.user && !data.session) {
-      const emailSent = await sendVerificationEmail(email.trim(), name.trim());
-      if (emailSent) {
-        setShowEmailConfirmation(true);
-      } else {
-        toast.error(t('auth.emailSendError', 'Error al enviar el email de verificación'));
-      }
-    } else if (data.session) {
-      // Auto-confirmed, redirect will happen via onAuthStateChange
-      toast.success('¡Cuenta creada correctamente!');
-    }
-
-    setLoading(false);
-  };
-
-  // Sign up for directors (original flow)
+  // Sign up for directors
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateInputs(true)) return;
 
-    // Director must accept declaration and terms
     if (!directorDeclarationAccepted) {
       toast.error('Debes aceptar la declaración de autenticidad para registrarte como Director Deportivo');
       return;
@@ -447,7 +356,6 @@ export default function Auth() {
         toast.error(t('auth.emailSendError', 'Error al enviar el email de verificación'));
       }
     } else if (data.session) {
-      // Auto-confirmed, redirect will happen via onAuthStateChange
       localStorage.setItem('is_new_director', 'true');
       toast.success('¡Cuenta creada correctamente!');
     }
@@ -455,8 +363,21 @@ export default function Auth() {
     setLoading(false);
   };
 
+  // ============= RENDER =============
 
-  // Show password reset form
+  // INVITATION FLOW: Show dedicated invitation registration form
+  if (isInvitationFlow && inviteToken) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <InvitationRegistrationForm 
+          inviteToken={inviteToken}
+          onBackToLogin={() => navigate('/auth', { replace: true })}
+        />
+      </div>
+    );
+  }
+
+  // Password reset form
   if (showPasswordReset) {
     if (resetEmailSent) {
       return (
@@ -540,7 +461,7 @@ export default function Auth() {
     );
   }
 
-  // Show email confirmation screen with OTP input
+  // Email confirmation screen (OTP)
   if (showEmailConfirmation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -562,7 +483,6 @@ export default function Auth() {
               </AlertDescription>
             </Alert>
 
-            {/* OTP Input */}
             <div className="flex flex-col items-center space-y-4">
               <p className="text-sm font-medium">{t('auth.verificationCode', 'Código de verificación')}</p>
               <InputOTP
@@ -639,6 +559,7 @@ export default function Auth() {
     );
   }
 
+  // STANDARD LOGIN / DIRECTOR REGISTRATION
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -695,15 +616,15 @@ export default function Auth() {
             </TabsContent>
 
             <TabsContent value="register" className="mt-4">
-              <form onSubmit={isInvitationFlow ? handleInvitationSignUp : handleSignUp} className="space-y-4">
+              <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="register-name">Nombre *</Label>
+                  <Label htmlFor="register-name">Nombre completo *</Label>
                   <Input
                     id="register-name"
                     type="text"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    placeholder="Tu nombre"
+                    placeholder="Tu nombre y apellidos"
                     disabled={loading}
                   />
                   {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
@@ -745,185 +666,100 @@ export default function Auth() {
                   {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
                 </div>
 
-                {/* Invitation flow - simplified registration for coaches */}
-                {isInvitationFlow ? (
-                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
-                    <div className="flex items-start space-x-3">
-                      <User className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <div className="space-y-1 flex-1">
-                        <p className="text-sm font-medium text-primary">
-                          Registro por invitación
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Has recibido una invitación para unirte a un club. Crea tu cuenta para continuar.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-2 border-t border-primary/20 space-y-3">
-                      <div className="flex items-start space-x-3">
-                        <Checkbox
-                          id="terms-acceptance-invite"
-                          checked={termsAccepted}
-                          onCheckedChange={(checked) => setTermsAccepted(checked === true)}
-                        />
-                        <label
-                          htmlFor="terms-acceptance-invite"
-                          className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
-                        >
-                          He leído y acepto los{' '}
-                          <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
-                            Términos y Condiciones
-                          </a>{' '}
-                          y la{' '}
-                          <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
-                            Política de Privacidad
-                          </a>{' '}
-                          de la aplicación *
-                        </label>
-                      </div>
-                      
-                      {termsAccepted && (
-                        <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Términos aceptados</span>
-                        </div>
-                      )}
-                      
-                      <p className="text-xs text-primary/80 flex items-start gap-2">
-                        <Mail className="w-4 h-4 shrink-0 mt-0.5" />
-                        <span>
-                          {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
-                        </span>
+                {/* Director registration info */}
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1 flex-1">
+                      <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                        Registro como Director Deportivo
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Acceso total a todos los equipos, configuración del club y gestión de entrenadores
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2 italic">
+                        Debes registrarte como Director Deportivo para crear tu club por primera vez. Luego, podrás añadir equipos y entrenadores de tu club o simplemente gestionar tu propio equipo.
                       </p>
                     </div>
                   </div>
-                ) : (
-                  /* Director registration info */
-                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+                  
+                  {/* Also coach option */}
+                  <div className="flex items-start space-x-3 pt-2 border-t border-amber-500/20">
+                    <Checkbox
+                      id="also-coach"
+                      checked={alsoCoach}
+                      onCheckedChange={(checked) => setAlsoCoach(checked === true)}
+                    />
+                    <label
+                      htmlFor="also-coach"
+                      className="text-xs text-muted-foreground cursor-pointer leading-relaxed flex items-center gap-2"
+                    >
+                      <User className="w-3 h-3" />
+                      También seré entrenador de algún equipo
+                    </label>
+                  </div>
+                  
+                  {/* Director declaration */}
+                  <div className="pt-2 border-t border-amber-500/20 space-y-3">
                     <div className="flex items-start space-x-3">
-                      <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                      <div className="space-y-1 flex-1">
-                        <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                          Registro como Director Deportivo
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Acceso total a todos los equipos, configuración del club y gestión de entrenadores
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2 italic">
-                          Debes registrarte como Director Deportivo para crear tu club por primera vez. Luego, podrás añadir equipos y entrenadores de tu club o simplemente gestionar tu propio equipo.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Also coach option */}
-                    <div className="flex items-start space-x-3 pt-2 border-t border-amber-500/20">
                       <Checkbox
-                        id="also-coach"
-                        checked={alsoCoach}
-                        onCheckedChange={(checked) => setAlsoCoach(checked === true)}
+                        id="director-declaration"
+                        checked={directorDeclarationAccepted}
+                        onCheckedChange={(checked) => setDirectorDeclarationAccepted(checked === true)}
                       />
                       <label
-                        htmlFor="also-coach"
-                        className="text-xs text-muted-foreground cursor-pointer leading-relaxed flex items-center gap-2"
+                        htmlFor="director-declaration"
+                        className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
                       >
-                        <User className="w-3 h-3" />
-                        También seré entrenador de algún equipo
+                        Declaro la autenticidad de mis datos y confirmo que actúo como Director Deportivo del club que voy a representar en esta aplicación *
                       </label>
                     </div>
                     
-                    {/* Director declaration */}
-                    <div className="pt-2 border-t border-amber-500/20 space-y-3">
-                      <div className="flex items-start space-x-3">
-                        <Checkbox
-                          id="director-declaration"
-                          checked={directorDeclarationAccepted}
-                          onCheckedChange={(checked) => setDirectorDeclarationAccepted(checked === true)}
-                        />
-                        <label
-                          htmlFor="director-declaration"
-                          className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
-                        >
-                          Declaro la autenticidad de mis datos y confirmo que actúo como Director Deportivo del club que voy a representar en esta aplicación *
-                        </label>
-                      </div>
-                      
-                      <div className="flex items-start space-x-3">
-                        <Checkbox
-                          id="terms-acceptance"
-                          checked={termsAccepted}
-                          onCheckedChange={(checked) => setTermsAccepted(checked === true)}
-                        />
-                        <label
-                          htmlFor="terms-acceptance"
-                          className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
-                        >
-                          He leído y acepto los{' '}
-                          <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
-                            Términos y Condiciones
-                          </a>{' '}
-                          y la{' '}
-                          <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
-                            Política de Privacidad
-                          </a>{' '}
-                          de la aplicación *
-                        </label>
-                      </div>
-                      
-                      {directorDeclarationAccepted && termsAccepted && (
-                        <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Declaraciones aceptadas</span>
-                        </div>
-                      )}
-                      
-                      <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
-                        <Mail className="w-4 h-4 shrink-0 mt-0.5" />
-                        <span>
-                          {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
-                        </span>
-                      </p>
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="terms-acceptance"
+                        checked={termsAccepted}
+                        onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                      />
+                      <label
+                        htmlFor="terms-acceptance"
+                        className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
+                      >
+                        He leído y acepto los{' '}
+                        <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
+                          Términos y Condiciones
+                        </a>{' '}
+                        y la{' '}
+                        <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
+                          Política de Privacidad
+                        </a>{' '}
+                        de la aplicación *
+                      </label>
                     </div>
-                  </div>
-                )}
-
-                {isInvitationFlow ? (
-                  <>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading || !termsAccepted}
-                    >
-                      {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-                    </Button>
                     
-                    {!termsAccepted && (
-                      <p className="text-xs text-center text-muted-foreground">
-                        Acepta los términos para continuar
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading || !directorDeclarationAccepted || !termsAccepted}
-                    >
-                      {loading ? 'Creando cuenta...' : 'Crear cuenta como Director'}
-                    </Button>
-                    
-                    {(!directorDeclarationAccepted || !termsAccepted) && (
-                      <p className="text-xs text-center text-muted-foreground">
-                        Acepta todas las declaraciones para continuar
-                      </p>
+                    {directorDeclarationAccepted && termsAccepted && (
+                      <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Declaraciones aceptadas</span>
+                      </div>
                     )}
                     
-                    <p className="text-xs text-center text-muted-foreground border-t pt-4 mt-2">
-                      ¿Eres entrenador y tu club ya está registrado? Solicita un enlace de invitación a tu Director Deportivo.
+                    <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
+                      <Mail className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>
+                        {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
+                      </span>
                     </p>
-                  </>
-                )}
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading || !directorDeclarationAccepted || !termsAccepted}
+                >
+                  {loading ? 'Creando cuenta...' : 'Crear cuenta de Director'}
+                </Button>
               </form>
             </TabsContent>
           </Tabs>
