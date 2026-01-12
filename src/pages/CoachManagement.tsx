@@ -64,9 +64,19 @@ export default function CoachManagement() {
   const [creatingGroupChat, setCreatingGroupChat] = useState(false);
 
   const handleDirectMessage = async (userId: string) => {
-    const convId = await getOrCreateDirectConversation(userId);
-    if (convId) {
-      navigate('/messages');
+    try {
+      setProcessingId(userId);
+      const convId = await getOrCreateDirectConversation(userId);
+      if (convId) {
+        navigate('/messages');
+      } else {
+        toast.error('Error al crear la conversación');
+      }
+    } catch (error) {
+      console.error('Error creating direct message:', error);
+      toast.error('Error al crear la conversación');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -412,10 +422,11 @@ export default function CoachManagement() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleDirectMessage(director.id)}
+                        disabled={processingId === director.id}
                         className="gap-1"
                       >
                         <MessageSquare className="h-4 w-4" />
-                        Mensaje
+                        {processingId === director.id ? 'Creando...' : 'Mensaje'}
                       </Button>
                     </div>
                   )}
