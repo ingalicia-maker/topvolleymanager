@@ -147,6 +147,9 @@ export default {
     measurementEntries: 'registros',
     measurementHistory: 'Historial de mediciones',
     addNewEntry: 'Añadir nueva medición',
+    phoneTypePlayer: 'Jugadora',
+    phoneTypeParent: 'Padre/Madre',
+    phoneTypeTutor: 'Tutor/a',
   },
 
   // Teams

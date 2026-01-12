@@ -147,6 +147,9 @@ export default {
     measurementEntries: 'entries',
     measurementHistory: 'Measurement history',
     addNewEntry: 'Add new measurement',
+    phoneTypePlayer: 'Player',
+    phoneTypeParent: 'Parent',
+    phoneTypeTutor: 'Tutor',
   },
 
   // Teams
