@@ -21,6 +21,7 @@ import ClubSettings from "./pages/ClubSettings";
 import DisplacementCalendar from "./pages/DisplacementCalendar";
 import PendingTasks from "./pages/PendingTasks";
 import WeeklySummary from "./pages/WeeklySummary";
+import Messages from "./pages/Messages";
 import CoachManagement from "./pages/CoachManagement";
 import ClubOnboarding from "./pages/ClubOnboarding";
 import ClubManagement from "./pages/ClubManagement";
@@ -172,6 +173,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <WeeklySummary />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <AuthGuard>
+                <Messages />
               </AuthGuard>
             }
           />

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Bus, Users, Trophy } from 'lucide-react';
+import { Bell, Bus, Users, Trophy, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -10,14 +10,18 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useConversations } from '@/hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { totalUnread: messageUnread } = useConversations();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  
+  const totalBadge = unreadCount + messageUnread;
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
@@ -49,12 +53,12 @@ export function NotificationBell() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {totalBadge > 0 && (
             <Badge 
               variant="destructive" 
               className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px]"
             >
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {totalBadge > 9 ? '9+' : totalBadge}
             </Badge>
           )}
         </Button>

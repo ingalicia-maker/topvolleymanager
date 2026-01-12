@@ -41,6 +41,7 @@ export default {
     settings: 'Configuración',
     absences: 'Ausencias',
     ratings: 'Valoraciones',
+    messages: 'Mensajes',
   },
 
   // Auth

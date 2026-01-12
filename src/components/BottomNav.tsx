@@ -1,18 +1,21 @@
-import { Home, Calendar, UserCircle, AlertTriangle, Star } from 'lucide-react';
+import { Home, Calendar, UserCircle, AlertTriangle, Star, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from './NavLink';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useConversations } from '@/hooks/useConversations';
 
 export function BottomNav() {
   const { t } = useTranslation();
   const { unreadCount } = useNotifications();
   const { isDirector } = useUserRole();
+  const { totalUnread: messageUnread } = useConversations();
 
   // Base nav items - Players only shown for directors
   const navItems = [
     { to: '/', icon: Home, labelKey: 'nav.home', tourId: 'home' },
-    { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true, tourId: 'events' },
+    { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true, badgeCount: unreadCount, tourId: 'events' },
+    { to: '/messages', icon: MessageSquare, labelKey: 'nav.messages', showBadge: true, badgeCount: messageUnread, tourId: 'messages' },
     ...(isDirector ? [{ to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' }] : []),
     { to: '/ratings', icon: Star, labelKey: 'nav.ratings', tourId: 'ratings' },
     { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences', tourId: 'absences' },
@@ -32,9 +35,9 @@ export function BottomNav() {
           >
             <div className="relative">
               <item.icon className="h-5 w-5 shrink-0" />
-              {item.showBadge && unreadCount > 0 && (
+              {item.showBadge && item.badgeCount && item.badgeCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center font-bold">
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                  {item.badgeCount > 9 ? '9+' : item.badgeCount}
                 </span>
               )}
             </div>
