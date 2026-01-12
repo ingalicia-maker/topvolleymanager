@@ -45,20 +45,23 @@ export default function Ausencias() {
   const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
   const [absenceTypeInputs, setAbsenceTypeInputs] = useState<Record<string, AbsenceType>>({});
 
-  // Set initial team when teams are loaded
-  useEffect(() => {
-    if (teams.length > 0 && !selectedTeamId) {
-      setSelectedTeamId(teams[0].id);
-    }
-  }, [teams, selectedTeamId]);
-
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
   const formattedDate = format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es });
 
-  const selectedTeam = teams.find(t => t.id === selectedTeamId);
+  // Filter teams based on role - coaches only see their assigned teams
+  const availableTeams = useMemo(() => 
+    isDirector ? teams : teams.filter(t => assignedTeams.includes(t.id)),
+    [isDirector, teams, assignedTeams]
+  );
 
-  // Filter teams based on role
-  const availableTeams = isDirector ? teams : teams.filter(t => assignedTeams.includes(t.id));
+  // Set initial team when available teams are loaded
+  useEffect(() => {
+    if (availableTeams.length > 0 && (!selectedTeamId || !availableTeams.find(t => t.id === selectedTeamId))) {
+      setSelectedTeamId(availableTeams[0].id);
+    }
+  }, [availableTeams, selectedTeamId]);
+
+  const selectedTeam = availableTeams.find(t => t.id === selectedTeamId);
 
   // Players that belong to the selected team
   const teamPlayers = useMemo(() => 
