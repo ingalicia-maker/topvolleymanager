@@ -110,6 +110,15 @@ export function useClub() {
     fetchClub();
   }, [user]);
 
+  // Allow other parts of the app (e.g., invitation acceptance) to force a refresh
+  useEffect(() => {
+    const handler = () => {
+      fetchClub();
+    };
+    window.addEventListener('club-membership-changed', handler);
+    return () => window.removeEventListener('club-membership-changed', handler);
+  }, [user]);
+
   const createClub = async (name: string, role: 'coach' | 'director' = 'director'): Promise<{ club: Club | null; error: string | null }> => {
     if (!user) return { club: null, error: 'Usuario no autenticado' };
 
