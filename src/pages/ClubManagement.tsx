@@ -261,8 +261,13 @@ export default function ClubManagement() {
     return 'https://topvolleymanager.com';
   };
 
+  // Generate a short, clean invitation link: /inv/TOKEN (no query params)
+  const getInviteLink = (token: string) => {
+    return `${getInviteBaseUrl()}/inv/${token}`;
+  };
+
   const copyInviteLink = (token: string) => {
-    const link = `${getInviteBaseUrl()}/invitation?invite=${token}`;
+    const link = getInviteLink(token);
     navigator.clipboard.writeText(link);
     toast.success('Enlace copiado al portapapeles');
   };
