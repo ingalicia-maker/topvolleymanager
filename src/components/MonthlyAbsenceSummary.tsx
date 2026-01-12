@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { AlertTriangle, CheckCircle, ChevronRight, Users } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ChevronRight, Users, X, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +28,7 @@ export function MonthlyAbsenceSummary() {
     [isDirector, teams, assignedTeams]
   );
 
-  // Get absences for current month for visible teams
+  // Get absences for current month for visible teams with player info
   const monthlyStats = useMemo(() => {
     const visibleTeamIds = visibleTeams.map(t => t.id);
     
@@ -57,6 +57,29 @@ export function MonthlyAbsenceSummary() {
       ? Math.round(((expectedAttendances - total) / expectedAttendances) * 100) 
       : 100;
 
+    // Group absences by player for detail view
+    const absencesByPlayer: Record<string, { player: typeof players[0] | undefined, justified: number, unjustified: number, dates: string[] }> = {};
+    monthAbsences.forEach(a => {
+      if (!absencesByPlayer[a.player_id]) {
+        absencesByPlayer[a.player_id] = {
+          player: players.find(p => p.id === a.player_id),
+          justified: 0,
+          unjustified: 0,
+          dates: []
+        };
+      }
+      if (a.absence_type === 'justified') {
+        absencesByPlayer[a.player_id].justified++;
+      } else {
+        absencesByPlayer[a.player_id].unjustified++;
+      }
+      absencesByPlayer[a.player_id].dates.push(a.date);
+    });
+
+    // Sort by total absences desc
+    const playerList = Object.values(absencesByPlayer)
+      .sort((a, b) => (b.justified + b.unjustified) - (a.justified + a.unjustified));
+
     return {
       total,
       justified,
@@ -64,15 +87,16 @@ export function MonthlyAbsenceSummary() {
       playersWithAbsences,
       totalPlayers,
       attendanceRate,
+      playerList,
     };
   }, [ausencias, visibleTeams, currentMonthKey, players]);
 
   if (visibleTeams.length === 0) return null;
 
   return (
-    <Link to="/ausencias">
-      <Card className="shadow-lg hover:shadow-xl transition-shadow">
-        <CardContent className="p-4">
+    <Card className="shadow-lg">
+      <CardContent className="p-4">
+        <Link to="/ausencias" className="block">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
@@ -89,42 +113,75 @@ export function MonthlyAbsenceSummary() {
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </div>
+        </Link>
 
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-muted/50 rounded-lg p-2">
-              <p className="text-lg font-bold text-foreground">{monthlyStats.total}</p>
-              <p className="text-[10px] text-muted-foreground">Total</p>
-            </div>
-            <div className="bg-amber-500/10 rounded-lg p-2">
-              <div className="flex items-center justify-center gap-1">
-                <CheckCircle className="h-3 w-3 text-amber-600" />
-                <p className="text-lg font-bold text-amber-600">{monthlyStats.justified}</p>
-              </div>
-              <p className="text-[10px] text-muted-foreground">Justificadas</p>
-            </div>
-            <div className="bg-destructive/10 rounded-lg p-2">
-              <div className="flex items-center justify-center gap-1">
-                <AlertTriangle className="h-3 w-3 text-destructive" />
-                <p className="text-lg font-bold text-destructive">{monthlyStats.unjustified}</p>
-              </div>
-              <p className="text-[10px] text-muted-foreground">Sin justificar</p>
-            </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="bg-muted/50 rounded-lg p-2">
+            <p className="text-lg font-bold text-foreground">{monthlyStats.total}</p>
+            <p className="text-[10px] text-muted-foreground">Total</p>
           </div>
+          <div className="bg-amber-500/10 rounded-lg p-2">
+            <div className="flex items-center justify-center gap-1">
+              <CheckCircle className="h-3 w-3 text-amber-600" />
+              <p className="text-lg font-bold text-amber-600">{monthlyStats.justified}</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground">Justificadas</p>
+          </div>
+          <div className="bg-destructive/10 rounded-lg p-2">
+            <div className="flex items-center justify-center gap-1">
+              <X className="h-3 w-3 text-destructive" />
+              <p className="text-lg font-bold text-destructive">{monthlyStats.unjustified}</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground">Sin justificar</p>
+          </div>
+        </div>
 
-          <div className="flex items-center justify-between mt-3 pt-3 border-t">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Users className="h-3 w-3" />
-              <span>{monthlyStats.playersWithAbsences} de {monthlyStats.totalPlayers} jugadoras con ausencias</span>
-            </div>
-            <Badge 
-              variant={monthlyStats.attendanceRate >= 90 ? 'default' : monthlyStats.attendanceRate >= 75 ? 'secondary' : 'destructive'}
-              className="text-[10px]"
-            >
-              {monthlyStats.attendanceRate}% asistencia
-            </Badge>
+        {/* Player details - who has absences */}
+        {monthlyStats.playerList.length > 0 && (
+          <div className="mt-3 pt-3 border-t space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground mb-2">Jugadoras con ausencias:</p>
+            {monthlyStats.playerList.slice(0, 5).map(({ player, justified, unjustified }) => (
+              <div 
+                key={player?.id || Math.random()} 
+                className="flex items-center justify-between p-1.5 rounded bg-muted/30"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium">{player?.name || 'Desconocida'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {justified > 0 && (
+                    <Badge className="text-[10px] h-5 bg-amber-500">{justified} J</Badge>
+                  )}
+                  {unjustified > 0 && (
+                    <Badge variant="destructive" className="text-[10px] h-5">{unjustified} NJ</Badge>
+                  )}
+                </div>
+              </div>
+            ))}
+            {monthlyStats.playerList.length > 5 && (
+              <p className="text-xs text-muted-foreground text-center pt-1">
+                +{monthlyStats.playerList.length - 5} más...
+              </p>
+            )}
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+        )}
+
+        <div className="flex items-center justify-between mt-3 pt-3 border-t">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Users className="h-3 w-3" />
+            <span>{monthlyStats.playersWithAbsences} de {monthlyStats.totalPlayers} jugadoras con ausencias</span>
+          </div>
+          <Badge 
+            variant={monthlyStats.attendanceRate >= 90 ? 'default' : monthlyStats.attendanceRate >= 75 ? 'secondary' : 'destructive'}
+            className="text-[10px]"
+          >
+            {monthlyStats.attendanceRate}% asistencia
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
