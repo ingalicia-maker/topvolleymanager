@@ -200,7 +200,14 @@ export default function Auth() {
       }
 
       toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
-      localStorage.setItem('is_new_director', 'true');
+      
+      // Only mark as new director if coming from director signup, not invitation
+      const pendingRole = localStorage.getItem('pending_signup_role');
+      if (pendingRole === 'director') {
+        localStorage.setItem('is_new_director', 'true');
+      }
+      localStorage.removeItem('pending_signup_role');
+      
       setShowEmailConfirmation(false);
       // onAuthStateChange will handle navigation
     } catch (error) {
@@ -428,7 +435,7 @@ export default function Auth() {
     );
   }
 
-  // Show email confirmation screen for directors with OTP input
+  // Show email confirmation screen with OTP input
   if (showEmailConfirmation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -439,16 +446,54 @@ export default function Auth() {
             </div>
             <CardTitle className="text-2xl">{t('auth.confirmEmail', 'Confirma tu email')}</CardTitle>
             <CardDescription className="text-base">
-              {t('auth.verificationEmailSent', 'Te hemos enviado un email de verificación a')} <strong>{email}</strong>
+              {t('auth.verificationCodeSent', 'Te hemos enviado un código de verificación a')} <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {t('auth.clickEmailLink', 'Haz clic en el enlace del email para verificar tu cuenta. Si no lo ves, revisa tu carpeta de spam.')}
+                {t('auth.enterCodeFromEmail', 'Introduce el código de 6 dígitos que hemos enviado a tu email. Si no lo ves, revisa tu carpeta de spam.')}
               </AlertDescription>
             </Alert>
+
+            {/* OTP Input */}
+            <div className="flex flex-col items-center space-y-4">
+              <p className="text-sm font-medium">{t('auth.verificationCode', 'Código de verificación')}</p>
+              <InputOTP
+                maxLength={6}
+                value={verificationCode}
+                onChange={setVerificationCode}
+                disabled={verifying}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+              
+              <Button
+                onClick={handleVerifyCode}
+                disabled={verifying || verificationCode.length !== 6}
+                className="w-full"
+              >
+                {verifying ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t('auth.verifying', 'Verificando...')}
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    {t('auth.verifyCode', 'Verificar código')}
+                  </>
+                )}
+              </Button>
+            </div>
 
             <div className="text-center space-y-2">
               <p className="text-sm text-muted-foreground">
