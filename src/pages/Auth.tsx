@@ -27,7 +27,8 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [alsoCoach, setAlsoCoach] = useState(false);
   const [directorDeclarationAccepted, setDirectorDeclarationAccepted] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; name?: string }>({}); 
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; name?: string }>({});
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
@@ -215,9 +216,14 @@ export default function Auth() {
     e.preventDefault();
     if (!validateInputs(true)) return;
 
-    // Director must accept declaration
+    // Director must accept declaration and terms
     if (!directorDeclarationAccepted) {
       toast.error('Debes aceptar la declaración de autenticidad para registrarte como Director Deportivo');
+      return;
+    }
+    
+    if (!termsAccepted) {
+      toast.error('Debes aceptar los términos y condiciones para continuar');
       return;
     }
 
@@ -235,6 +241,7 @@ export default function Auth() {
           is_also_coach: alsoCoach,
           assigned_teams: [],
           director_declaration_accepted_at: new Date().toISOString(),
+          terms_accepted_at: new Date().toISOString(),
         },
       },
     });
@@ -568,10 +575,32 @@ export default function Auth() {
                       </label>
                     </div>
                     
-                    {directorDeclarationAccepted && (
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="terms-acceptance"
+                        checked={termsAccepted}
+                        onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                      />
+                      <label
+                        htmlFor="terms-acceptance"
+                        className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
+                      >
+                        He leído y acepto los{' '}
+                        <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
+                          Términos y Condiciones
+                        </a>{' '}
+                        y la{' '}
+                        <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
+                          Política de Privacidad
+                        </a>{' '}
+                        de la aplicación *
+                      </label>
+                    </div>
+                    
+                    {directorDeclarationAccepted && termsAccepted && (
                       <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>Declaración aceptada</span>
+                        <span>Declaraciones aceptadas</span>
                       </div>
                     )}
                     
@@ -587,14 +616,14 @@ export default function Auth() {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={loading || !directorDeclarationAccepted}
+                  disabled={loading || !directorDeclarationAccepted || !termsAccepted}
                 >
                   {loading ? 'Creando cuenta...' : 'Crear cuenta como Director'}
                 </Button>
                 
-                {!directorDeclarationAccepted && (
+                {(!directorDeclarationAccepted || !termsAccepted) && (
                   <p className="text-xs text-center text-muted-foreground">
-                    Acepta la declaración de autenticidad para continuar
+                    Acepta todas las declaraciones para continuar
                   </p>
                 )}
                 

@@ -34,7 +34,10 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Shield,
+  FileText,
 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -107,6 +110,13 @@ export default function ClubManagement() {
   const [editingStopName, setEditingStopName] = useState('');
   const [addingStop, setAddingStop] = useState(false);
   
+  // Legal settings
+  const [responsiblePersonName, setResponsiblePersonName] = useState(club?.responsible_person_name || '');
+  const [responsiblePersonEmail, setResponsiblePersonEmail] = useState(club?.responsible_person_email || '');
+  const [termsAndConditions, setTermsAndConditions] = useState(club?.terms_and_conditions || '');
+  const [responsibilityCode, setResponsibilityCode] = useState(club?.responsibility_code || '');
+  const [savingLegal, setSavingLegal] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch member profiles
@@ -149,6 +159,10 @@ export default function ClubManagement() {
     setAccentColor(club.accent_color || '25 95% 53%');
     setFontFamily(club.font_family || 'Inter');
     setLogoUrl(club.logo_url || null);
+    setResponsiblePersonName(club.responsible_person_name || '');
+    setResponsiblePersonEmail(club.responsible_person_email || '');
+    setTermsAndConditions(club.terms_and_conditions || '');
+    setResponsibilityCode(club.responsibility_code || '');
   }, [club]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -343,6 +357,25 @@ export default function ClubManagement() {
     }
   };
 
+  const handleSaveLegalSettings = async () => {
+    setSavingLegal(true);
+    const success = await updateClub({
+      responsible_person_name: responsiblePersonName.trim() || null,
+      responsible_person_email: responsiblePersonEmail.trim() || null,
+      terms_and_conditions: termsAndConditions.trim() || null,
+      responsibility_code: responsibilityCode.trim() || null,
+      terms_updated_at: new Date().toISOString(),
+      responsibility_code_updated_at: new Date().toISOString(),
+    });
+    setSavingLegal(false);
+
+    if (success) {
+      toast.success('Configuración legal guardada correctamente');
+    } else {
+      toast.error('Error al guardar la configuración legal');
+    }
+  };
+
   if (!club) {
     return (
       <div className="min-h-screen bg-background pb-20">
@@ -361,20 +394,24 @@ export default function ClubManagement() {
 
       <div className="p-4">
         <Tabs defaultValue="general">
-          <TabsList className="w-full mb-4 grid grid-cols-4">
-            <TabsTrigger value="general" className="gap-1">
+          <TabsList className="w-full mb-4 grid grid-cols-5">
+            <TabsTrigger value="general" className="gap-1 text-xs sm:text-sm">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">General</span>
             </TabsTrigger>
-            <TabsTrigger value="visual" className="gap-1">
+            <TabsTrigger value="visual" className="gap-1 text-xs sm:text-sm">
               <Palette className="h-4 w-4" />
               <span className="hidden sm:inline">Visual</span>
             </TabsTrigger>
-            <TabsTrigger value="members" className="gap-1">
+            <TabsTrigger value="legal" className="gap-1 text-xs sm:text-sm">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Legal</span>
+            </TabsTrigger>
+            <TabsTrigger value="members" className="gap-1 text-xs sm:text-sm">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Miembros</span>
             </TabsTrigger>
-            <TabsTrigger value="invitations" className="gap-1">
+            <TabsTrigger value="invitations" className="gap-1 text-xs sm:text-sm">
               <Link2 className="h-4 w-4" />
               <span className="hidden sm:inline">Invitar</span>
             </TabsTrigger>
@@ -568,6 +605,100 @@ export default function ClubManagement() {
                 <Button onClick={handleSaveClub} disabled={saving} className="w-full">
                   {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                   Guardar configuración visual
+                </Button>
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="legal" className="space-y-4">
+            {!isDirector ? (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Solo los directores pueden modificar la configuración legal.
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <User className="h-5 w-5" />
+                      Responsable del Tratamiento
+                    </CardTitle>
+                    <CardDescription>Datos del Director Deportivo responsable del club</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="responsibleName">Nombre del responsable</Label>
+                      <Input
+                        id="responsibleName"
+                        value={responsiblePersonName}
+                        onChange={(e) => setResponsiblePersonName(e.target.value)}
+                        placeholder="Nombre y apellidos del Director Deportivo"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="responsibleEmail">Email de contacto</Label>
+                      <Input
+                        id="responsibleEmail"
+                        type="email"
+                        value={responsiblePersonEmail}
+                        onChange={(e) => setResponsiblePersonEmail(e.target.value)}
+                        placeholder="email@club.com"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <FileText className="h-5 w-5" />
+                      Términos y Condiciones del Club
+                    </CardTitle>
+                    <CardDescription>
+                      Condiciones de uso y tratamiento de datos personales. Este texto se muestra a los usuarios al registrarse.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={termsAndConditions}
+                      onChange={(e) => setTermsAndConditions(e.target.value)}
+                      placeholder="Escribe aquí los términos y condiciones del club..."
+                      className="min-h-[200px] font-mono text-xs"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Se recomienda incluir: finalidad del tratamiento, base legal, destinatarios, derechos y conservación de datos.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Shield className="h-5 w-5" />
+                      Código de Responsabilidad
+                    </CardTitle>
+                    <CardDescription>
+                      Los nuevos miembros deberán aceptar este código al unirse al club. Define las normas de uso de datos.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={responsibilityCode}
+                      onChange={(e) => setResponsibilityCode(e.target.value)}
+                      placeholder="Escribe aquí el código de responsabilidad del club..."
+                      className="min-h-[200px] font-mono text-xs"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Se recomienda incluir: confidencialidad, uso responsable, respeto a la privacidad y cumplimiento legal (RGPD).
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Button onClick={handleSaveLegalSettings} disabled={savingLegal} className="w-full">
+                  {savingLegal && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  Guardar configuración legal
                 </Button>
               </>
             )}
