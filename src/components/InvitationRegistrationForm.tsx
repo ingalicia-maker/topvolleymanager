@@ -227,6 +227,8 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
   const acceptInvitationAndRedirect = async () => {
     try {
+      console.log('[InvitationForm] Accepting invitation with token:', inviteToken.substring(0, 10) + '...');
+      
       const { error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken });
       
       if (error && !error.message?.toLowerCase().includes('ya eres miembro')) {
@@ -235,13 +237,20 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
         return;
       }
       
-      // Trigger club membership refresh
-      window.dispatchEvent(new Event('club-membership-changed'));
+      console.log('[InvitationForm] Invitation accepted successfully!');
       
       // Show welcome dialog
       triggerCoachWelcome();
       
       toast.success(`¡Bienvenido a ${clubPreview?.club_name}!`);
+      
+      // Trigger club membership refresh and wait for it to complete
+      window.dispatchEvent(new Event('club-membership-changed'));
+      
+      // Small delay to ensure the club hook has time to refetch before navigation
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Navigate to dashboard
       navigate('/', { replace: true });
     } catch (error) {
       console.error('[InvitationForm] Unexpected error:', error);
