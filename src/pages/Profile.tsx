@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,7 +19,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX } from 'lucide-react';
+import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX, CheckCircle } from 'lucide-react';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -30,6 +32,31 @@ export default function Profile() {
   const { subscription, isPremium } = useSubscription();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
   const [saving, setSaving] = useState(false);
+  const [showResponsibilityDialog, setShowResponsibilityDialog] = useState(false);
+  const [acceptingCode, setAcceptingCode] = useState(false);
+
+  const handleAcceptResponsibilityCode = async () => {
+    if (!user) return;
+    setAcceptingCode(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ responsibility_code_accepted_at: new Date().toISOString() })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      toast.success('Código de responsabilidad aceptado correctamente');
+      setShowResponsibilityDialog(false);
+      // Reload page to refresh profile data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error accepting responsibility code:', error);
+      toast.error('Error al aceptar el código de responsabilidad');
+    } finally {
+      setAcceptingCode(false);
+    }
+  };
 
   const handlePushToggle = async () => {
     if (isSubscribed) {
@@ -143,6 +170,16 @@ export default function Profile() {
                     Aún no has aceptado el código de responsabilidad del club
                   </p>
                 </div>
+                {club?.responsibility_code && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowResponsibilityDialog(true)}
+                    className="shrink-0 border-amber-500 text-amber-600 hover:bg-amber-500/20"
+                  >
+                    Aceptar
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>
@@ -341,6 +378,54 @@ export default function Profile() {
         </Button>
       </div>
       <BottomNav />
+
+      {/* Responsibility Code Dialog */}
+      <Dialog open={showResponsibilityDialog} onOpenChange={setShowResponsibilityDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileCheck className="h-5 w-5 text-primary" />
+              Código de Responsabilidad
+            </DialogTitle>
+            <DialogDescription>
+              Lee y acepta el código de responsabilidad del club {club?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[50vh] pr-4">
+            <div className="prose prose-sm dark:prose-invert">
+              {club?.responsibility_code ? (
+                <div 
+                  className="text-sm text-muted-foreground whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: club.responsibility_code.replace(/\n/g, '<br/>') }}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground italic">
+                  El club no ha configurado un código de responsabilidad.
+                </p>
+              )}
+            </div>
+          </ScrollArea>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowResponsibilityDialog(false)}
+              disabled={acceptingCode}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleAcceptResponsibilityCode}
+              disabled={acceptingCode || !club?.responsibility_code}
+              className="gap-2"
+            >
+              <CheckCircle className="h-4 w-4" />
+              {acceptingCode ? 'Aceptando...' : 'Acepto el código'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
