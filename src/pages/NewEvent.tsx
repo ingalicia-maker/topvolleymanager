@@ -20,7 +20,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bus, MapPin, Clock, Users } from 'lucide-react';
+import { Bus, MapPin, Clock, Users, ChevronDown, ChevronUp } from 'lucide-react';
 
 type EventType = 'training' | 'match' | 'displacement';
 
@@ -44,6 +44,7 @@ export default function NewEvent() {
   const [invitedPlayers, setInvitedPlayers] = useState<string[]>([]);
   const [playerTab, setPlayerTab] = useState('team');
   const [loading, setLoading] = useState(false);
+  const [expandedOtherTeams, setExpandedOtherTeams] = useState<string[]>([]);
 
   // Displacement-specific state
   const [destination, setDestination] = useState('');
@@ -69,6 +70,40 @@ export default function NewEvent() {
   const selectedTeam = teams.find(t => t.id === teamId);
   const teamPlayers = players.filter(p => p.teams?.includes(teamId));
   const otherPlayers = players.filter(p => !p.teams?.includes(teamId));
+  
+  // Group other players by their teams (excluding the selected team)
+  const otherTeams = teams.filter(t => t.id !== teamId);
+  const getPlayersForOtherTeam = (otherTeamId: string) => 
+    players.filter(p => p.teams?.includes(otherTeamId) && !p.teams?.includes(teamId));
+  
+  const toggleOtherTeamExpand = (otherTeamId: string) => {
+    setExpandedOtherTeams(prev =>
+      prev.includes(otherTeamId) ? prev.filter(id => id !== otherTeamId) : [...prev, otherTeamId]
+    );
+  };
+  
+  const selectAllFromOtherTeam = (otherTeamId: string) => {
+    const teamPlayerIds = getPlayersForOtherTeam(otherTeamId).map(p => p.id);
+    setInvitedPlayers(prev => {
+      const withoutThisTeam = prev.filter(id => !teamPlayerIds.includes(id));
+      return [...withoutThisTeam, ...teamPlayerIds];
+    });
+  };
+  
+  const deselectAllFromOtherTeam = (otherTeamId: string) => {
+    const teamPlayerIds = getPlayersForOtherTeam(otherTeamId).map(p => p.id);
+    setInvitedPlayers(prev => prev.filter(id => !teamPlayerIds.includes(id)));
+  };
+  
+  const isAllOtherTeamSelected = (otherTeamId: string) => {
+    const teamPlayerIds = getPlayersForOtherTeam(otherTeamId);
+    return teamPlayerIds.length > 0 && teamPlayerIds.every(p => invitedPlayers.includes(p.id));
+  };
+  
+  const getSelectedCountFromOtherTeam = (otherTeamId: string) => {
+    const teamPlayerIds = getPlayersForOtherTeam(otherTeamId).map(p => p.id);
+    return teamPlayerIds.filter(id => invitedPlayers.includes(id)).length;
+  };
 
   const togglePlayer = (playerId: string) => {
     setInvitedPlayers(prev =>
@@ -625,35 +660,79 @@ export default function NewEvent() {
                   )}
                 </div>
               ) : (
-                <div className="mt-3 space-y-2">
-                  {otherPlayers.length === 0 ? (
+                <div className="mt-3 space-y-3">
+                  {otherTeams.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4 text-sm">
-                      No hay otras jugadoras
+                      No hay otros equipos
                     </p>
                   ) : (
-                    <>
-                      <div className="flex justify-end mb-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={allOtherSelected ? deselectAllOther : selectAllOther}
-                          disabled={loading}
-                        >
-                          {allOtherSelected ? 'Quitar todas' : 'Seleccionar todas'}
-                        </Button>
-                      </div>
-                      {otherPlayers.map((player) => (
-                        <PlayerCard
-                          key={player.id}
-                          player={player}
-                          selectable
-                          selected={invitedPlayers.includes(player.id)}
-                          onSelect={togglePlayer}
-                          clickable={false}
-                        />
-                      ))}
-                    </>
+                    otherTeams.map((team) => {
+                      const teamOtherPlayers = getPlayersForOtherTeam(team.id);
+                      const isExpanded = expandedOtherTeams.includes(team.id);
+                      const selectedCount = getSelectedCountFromOtherTeam(team.id);
+                      const allSelected = isAllOtherTeamSelected(team.id);
+                      
+                      if (teamOtherPlayers.length === 0) return null;
+                      
+                      return (
+                        <Card key={team.id} className="overflow-hidden">
+                          <button
+                            type="button"
+                            className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                            onClick={() => toggleOtherTeamExpand(team.id)}
+                            disabled={loading}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-3 h-3 rounded-full shrink-0"
+                                style={{ backgroundColor: team.color }}
+                              />
+                              <span className="font-medium">{team.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                ({teamOtherPlayers.length} jugadoras)
+                              </span>
+                              {selectedCount > 0 && (
+                                <Badge variant="default" className="ml-1">
+                                  {selectedCount} seleccionadas
+                                </Badge>
+                              )}
+                            </div>
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </button>
+                          
+                          {isExpanded && (
+                            <CardContent className="pt-0 pb-3 px-3 space-y-2">
+                              <div className="flex justify-end mb-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => allSelected ? deselectAllFromOtherTeam(team.id) : selectAllFromOtherTeam(team.id)}
+                                  disabled={loading}
+                                >
+                                  {allSelected ? 'Quitar todas' : 'Seleccionar todas'}
+                                </Button>
+                              </div>
+                              {teamOtherPlayers.map((player) => (
+                                <PlayerCard
+                                  key={player.id}
+                                  player={player}
+                                  selectable
+                                  selected={invitedPlayers.includes(player.id)}
+                                  onSelect={togglePlayer}
+                                  showTeams={false}
+                                  clickable={false}
+                                />
+                              ))}
+                            </CardContent>
+                          )}
+                        </Card>
+                      );
+                    })
                   )}
                 </div>
               )}
