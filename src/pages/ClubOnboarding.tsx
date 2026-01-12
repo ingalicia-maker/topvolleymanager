@@ -293,20 +293,29 @@ export default function ClubOnboarding() {
               <CardDescription>
                 {clubInfo ? (
                   <>Estás a punto de unirte a <strong>{clubInfo.name}</strong></>
+                ) : loadingClubInfo ? (
+                  'Cargando información de la invitación...'
                 ) : (
-                  'Introduce el código de invitación que te han compartido.'
+                  'Introduce el enlace o código de invitación que te han compartido.'
                 )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!pathToken && !searchParams.get('invite') && !location.hash && (
+              {/* Only show input if no token was provided via URL */}
+              {!pathToken && !searchParams.get('invite') && !getHashToken() && (
                 <div className="space-y-2">
-                  <Label htmlFor="inviteToken">Código de invitación</Label>
+                  <Label htmlFor="inviteToken">Enlace o código de invitación</Label>
                   <Input
                     id="inviteToken"
                     value={inviteToken}
-                    onChange={(e) => setInviteToken(e.target.value)}
-                    placeholder="Pega aquí el código"
+                    onChange={(e) => {
+                      setInviteToken(e.target.value);
+                      // If user pastes a full URL, try to load club info
+                      if (e.target.value.length > 20) {
+                        fetchClubInfoFromToken(e.target.value);
+                      }
+                    }}
+                    placeholder="Pega aquí el enlace de invitación"
                     autoFocus
                   />
                 </div>
@@ -372,6 +381,9 @@ export default function ClubOnboarding() {
                     setMode('select');
                     setJoinResult(null);
                     setResponsibilityCodeAccepted(false);
+                    setInviteToken('');
+                    setClubInfo(null);
+                    setClubResponsibilityCode(null);
                   }}
                   className="flex-1"
                 >
@@ -379,13 +391,13 @@ export default function ClubOnboarding() {
                 </Button>
                 <Button
                   onClick={handleJoinClub}
-                  disabled={submitting || !inviteToken.trim() || (clubResponsibilityCode && !responsibilityCodeAccepted)}
+                  disabled={submitting || !inviteToken.trim() || loadingClubInfo || (clubResponsibilityCode && !responsibilityCodeAccepted)}
                   className="flex-1"
                 >
                   {submitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    'Unirme'
+                    'Unirme al club'
                   )}
                 </Button>
               </div>
