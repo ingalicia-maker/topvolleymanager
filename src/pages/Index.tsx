@@ -10,6 +10,7 @@ import { OnboardingTour } from '@/components/OnboardingTour';
 import { CoachWelcomeDialog } from '@/components/CoachWelcomeDialog';
 import { MonthlyAbsenceSummary } from '@/components/MonthlyAbsenceSummary';
 import { ResponsibilityCodeBanner } from '@/components/ResponsibilityCodeBanner';
+import { CoachTeamSelector } from '@/components/CoachTeamSelector';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -146,6 +147,11 @@ export default function Index() {
 
     {/* Responsibility Code Banner - Very Prominent */}
     <ResponsibilityCodeBanner />
+
+    {/* Coach Team Selector - for coaches to manage their assigned teams */}
+    <div className="px-4 mt-4">
+      <CoachTeamSelector />
+    </div>
 
     <div className="px-4 -mt-2 space-y-6">
       {/* Premium Upgrade Banner for Free Users */}

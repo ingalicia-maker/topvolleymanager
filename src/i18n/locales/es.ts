@@ -28,6 +28,8 @@ export default {
     notifications: '{{count}} notificación(es)',
     weeklySummary: 'Resumen Semanal',
     teamStats: 'Estadísticas de tus equipos',
+    configure: 'Configurar',
+    saving: 'Guardando...',
   },
 
   // Navigation
@@ -170,6 +172,13 @@ export default {
     noTeams: 'No hay equipos registrados',
     deleteConfirm: '¿Eliminar este equipo?',
     create: 'Crear Equipo',
+    myTeams: 'Mis Equipos',
+    noTeamsAssigned: 'No tienes equipos asignados. Configura tus equipos para empezar.',
+    selectYourTeams: 'Selecciona tus equipos',
+    selectTeamsDescription: 'Elige los equipos que vas a gestionar como entrenador/a.',
+    noTeamsAvailable: 'No hay equipos disponibles en el club.',
+    selectAtLeastOne: 'Debes seleccionar al menos un equipo',
+    teamsUpdated: 'Equipos actualizados correctamente',
   },
 
   // Events
