@@ -258,7 +258,8 @@ export default function ClubManagement() {
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1') return window.location.origin;
 
-    return 'https://topvolleymanager.com';
+    // Use www to avoid SSL issues on some registrars/root-domain setups.
+    return 'https://www.topvolleymanager.com';
   };
 
   // Generate a short, clean invitation link: /inv/TOKEN (no query params)
@@ -293,9 +294,7 @@ export default function ClubManagement() {
     if (invitation) {
       setLastInviteToken(invitation.token);
       try {
-        await navigator.clipboard.writeText(
-          `${getInviteBaseUrl()}/invitation?invite=${invitation.token}`
-        );
+        await navigator.clipboard.writeText(getInviteLink(invitation.token));
         toast.success('Enlace regenerado y copiado');
       } catch {
         toast.success('Enlace regenerado. ¡Cópialo!');
@@ -359,9 +358,7 @@ export default function ClubManagement() {
 
       // Best effort: auto-copy
       try {
-        await navigator.clipboard.writeText(
-          `${getInviteBaseUrl()}/invitation?invite=${invitation.token}`
-        );
+        await navigator.clipboard.writeText(getInviteLink(invitation.token));
         toast.success('Enlace de invitación creado y copiado');
       } catch {
         toast.success('Enlace de invitación creado. ¡Cópialo y compártelo!');
@@ -901,7 +898,7 @@ export default function ClubManagement() {
                     <Label>Último enlace generado</Label>
                     <div className="flex items-center gap-2">
                       <Input
-                        value={`${getInviteBaseUrl()}/invitation?invite=${lastInviteToken}`}
+                        value={getInviteLink(lastInviteToken)}
                         readOnly
                         className="flex-1 text-xs font-mono bg-background"
                       />
@@ -937,7 +934,7 @@ export default function ClubManagement() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                 {invitations.map((inv) => {
-                    const inviteLink = `${getInviteBaseUrl()}/invitation?invite=${inv.token}`;
+                    const inviteLink = getInviteLink(inv.token);
                     const { status, label, color, icon: StatusIcon } = getInvitationStatus(inv);
                     const isActive = status === 'active';
 
