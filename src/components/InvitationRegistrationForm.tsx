@@ -227,29 +227,27 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
   const acceptInvitationAndRedirect = async () => {
     try {
-      console.log('[InvitationForm] Accepting invitation with token:', inviteToken.substring(0, 10) + '...');
-      
       const { error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken });
-      
+
       if (error && !error.message?.toLowerCase().includes('ya eres miembro')) {
         console.error('[InvitationForm] Error accepting invitation:', error);
         toast.error('Error al unirse al club. Por favor, contacta con el administrador.');
         return;
       }
-      
-      console.log('[InvitationForm] Invitation accepted successfully!');
-      
+
       // Show welcome dialog
       triggerCoachWelcome();
-      
+
       toast.success(`¡Bienvenido a ${clubPreview?.club_name}!`);
-      
+
       // Trigger club membership refresh and wait for it to complete
       window.dispatchEvent(new Event('club-membership-changed'));
-      
-      // Small delay to ensure the club hook has time to refetch before navigation
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
+      // Clean up localStorage once membership is accepted
+      localStorage.removeItem('pending_signup_role');
+      localStorage.removeItem('pending_invite_token');
+
       // Navigate to dashboard
       navigate('/', { replace: true });
     } catch (error) {
@@ -288,21 +286,17 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
         return;
       }
 
-      toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
-      
-      // Clean up localStorage
-      localStorage.removeItem('pending_signup_role');
-      localStorage.removeItem('pending_invite_token');
-      
-      // Accept invitation and redirect
-      await acceptInvitationAndRedirect();
-      
-    } catch (error) {
-      console.error('Error verifying code:', error);
-      toast.error(t('auth.verificationError', 'Error al verificar el código'));
-      setVerifying(false);
-    }
-  };
+       toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
+       
+       // Accept invitation and redirect (no limpiamos el token hasta que se complete correctamente)
+       await acceptInvitationAndRedirect();
+       
+     } catch (error) {
+       console.error('Error verifying code:', error);
+       toast.error(t('auth.verificationError', 'Error al verificar el código'));
+       setVerifying(false);
+     }
+   };
 
   const handleResendEmail = async () => {
     const fullName = `${name.trim()} ${surname1.trim()}${surname2.trim() ? ' ' + surname2.trim() : ''}`;
