@@ -241,7 +241,13 @@ export function useConversations() {
           .select()
           .single();
 
-        if (convError) return { id: null, error: convError.message };
+        if (convError) {
+          console.error('Conversation insert error:', convError);
+          return { 
+            id: null, 
+            error: `${convError.message} [code: ${convError.code}${convError.details ? `, details: ${convError.details}` : ''}${convError.hint ? `, hint: ${convError.hint}` : ''}]` 
+          };
+        }
 
         // Add creator as participant
         const { error: creatorParticipantError } = await supabase
@@ -251,7 +257,13 @@ export function useConversations() {
             user_id: user.id,
           });
 
-        if (creatorParticipantError) return { id: null, error: creatorParticipantError.message };
+        if (creatorParticipantError) {
+          console.error('Creator participant insert error:', creatorParticipantError);
+          return { 
+            id: null, 
+            error: `Participante creador: ${creatorParticipantError.message} [code: ${creatorParticipantError.code}]` 
+          };
+        }
 
         // Add other participants
         for (const userId of participantIds) {
@@ -262,7 +274,13 @@ export function useConversations() {
               user_id: userId,
             });
 
-          if (participantError) return { id: null, error: participantError.message };
+          if (participantError) {
+            console.error('Participant insert error:', participantError);
+            return { 
+              id: null, 
+              error: `Participante ${userId}: ${participantError.message} [code: ${participantError.code}]` 
+            };
+          }
         }
 
         await fetchConversations();
