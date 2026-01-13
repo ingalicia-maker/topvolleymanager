@@ -35,8 +35,6 @@ export default function Auth() {
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verifying, setVerifying] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
   
   // Short code invitation state
@@ -97,25 +95,50 @@ export default function Auth() {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // If user is already logged in and comes from invitation, try to accept it
-        if (isInvitationFlow && inviteToken) {
-          try {
-            const { error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken });
-            if (!error || error.message?.toLowerCase().includes('ya eres miembro')) {
-              window.dispatchEvent(new Event('club-membership-changed'));
-              triggerCoachWelcome();
-              toast.success('¡Te has unido al club!');
-              navigate('/', { replace: true });
-              return;
-            }
-          } catch (err) {
-            console.error('[Auth] Error accepting invitation for logged-in user:', err);
+      if (!session) return;
+
+      // 1) If user is already logged in and comes from invitation token, try to accept it
+      if (isInvitationFlow && inviteToken) {
+        try {
+          const { error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken });
+          if (!error || error.message?.toLowerCase().includes('ya eres miembro')) {
+            window.dispatchEvent(new Event('club-membership-changed'));
+            triggerCoachWelcome();
+            toast.success('¡Te has unido al club!');
+            navigate('/', { replace: true });
+            return;
           }
+        } catch (err) {
+          console.error('[Auth] Error accepting invitation for logged-in user:', err);
         }
-        navigate(redirectTo, { replace: true });
       }
+
+      // 2) If user just verified email after signup with short code, auto-join the club
+      const pendingRole = localStorage.getItem('pending_signup_role');
+      const pendingCode = localStorage.getItem('pending_invitation_code');
+      if (pendingRole === 'coach' && pendingCode) {
+        try {
+          const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', { _code: pendingCode });
+          if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
+            window.dispatchEvent(new Event('club-membership-changed'));
+            triggerCoachWelcome();
+            toast.success('¡Te has unido al club!');
+          }
+        } catch (err) {
+          console.error('[Auth] Error joining club after email verification:', err);
+        }
+        localStorage.removeItem('pending_invitation_code');
+        localStorage.removeItem('pending_signup_role');
+        setShowEmailConfirmation(false);
+      } else if (pendingRole === 'director') {
+        localStorage.setItem('is_new_director', 'true');
+        localStorage.removeItem('pending_signup_role');
+        setShowEmailConfirmation(false);
+      }
+
+      navigate(redirectTo, { replace: true });
     };
+
     checkSession();
   }, [navigate, redirectTo, isInvitationFlow, inviteToken]);
 
@@ -124,8 +147,33 @@ export default function Auth() {
     if (isInvitationFlow) return; // Invitation flow handles its own navigation
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && event === 'SIGNED_IN') {
-        navigate(redirectTo, { replace: true });
+      if (event === 'SIGNED_IN' && session) {
+        void (async () => {
+          const pendingRole = localStorage.getItem('pending_signup_role');
+          const pendingCode = localStorage.getItem('pending_invitation_code');
+
+          if (pendingRole === 'coach' && pendingCode) {
+            try {
+              const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', { _code: pendingCode });
+              if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
+                window.dispatchEvent(new Event('club-membership-changed'));
+                triggerCoachWelcome();
+                toast.success('¡Te has unido al club!');
+              }
+            } catch (err) {
+              console.error('[Auth] Error joining club after SIGNED_IN:', err);
+            }
+            localStorage.removeItem('pending_invitation_code');
+            localStorage.removeItem('pending_signup_role');
+            setShowEmailConfirmation(false);
+          } else if (pendingRole === 'director') {
+            localStorage.setItem('is_new_director', 'true');
+            localStorage.removeItem('pending_signup_role');
+            setShowEmailConfirmation(false);
+          }
+
+          navigate(redirectTo, { replace: true });
+        })();
       }
     });
 
@@ -252,94 +300,25 @@ export default function Auth() {
     setLoading(false);
   };
 
-  const sendVerificationEmail = async (userEmail: string, userName: string) => {
+  const resendSignupEmail = async () => {
     try {
-      const { error } = await supabase.functions.invoke('send-verification-email', {
-        body: { 
-          email: userEmail, 
-          name: userName,
-          language: i18n.language || 'es'
-        }
+      const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim(),
+        options: { emailRedirectTo: redirectUrl },
       });
-      
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error sending verification email:', error);
+      console.error('Error resending signup email:', error);
       return false;
-    }
-  };
-
-  const handleVerifyCode = async () => {
-    if (verificationCode.length !== 6) {
-      toast.error(t('auth.invalidCode', 'Código inválido'));
-      return;
-    }
-
-    setVerifying(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-email-code', {
-        body: { email: email.trim(), code: verificationCode }
-      });
-
-      if (error || !data?.success) {
-        toast.error(t('auth.codeExpiredOrInvalid', 'Código expirado o inválido'));
-        setVerifying(false);
-        return;
-      }
-
-      // Sign in after verification
-      const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-
-      if (signInError) {
-        toast.error(signInError.message);
-        setVerifying(false);
-        return;
-      }
-
-      toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
-
-      // Check if coach with pending invitation code
-      const pendingRole = localStorage.getItem('pending_signup_role');
-      const pendingCode = localStorage.getItem('pending_invitation_code');
-      
-      if (pendingRole === 'coach' && pendingCode) {
-        try {
-          const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', { 
-            _code: pendingCode 
-          });
-          if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
-            window.dispatchEvent(new Event('club-membership-changed'));
-            triggerCoachWelcome();
-            toast.success('¡Te has unido al club!');
-          }
-        } catch (joinError) {
-          console.error('[Auth] Error joining club after verification:', joinError);
-        }
-        localStorage.removeItem('pending_invitation_code');
-      } else if (pendingRole === 'director') {
-        localStorage.setItem('is_new_director', 'true');
-      }
-      localStorage.removeItem('pending_signup_role');
-
-      setShowEmailConfirmation(false);
-
-      if (signInData.session) {
-        navigate(redirectTo, { replace: true });
-      }
-    } catch (error) {
-      console.error('Error verifying code:', error);
-      toast.error(t('auth.verificationError', 'Error al verificar el código'));
-      setVerifying(false);
     }
   };
 
   const handleResendEmail = async () => {
     setResendingEmail(true);
-    const success = await sendVerificationEmail(email.trim(), name.trim());
+    const success = await resendSignupEmail();
     if (success) {
       toast.success(t('auth.emailResent', 'Email reenviado'));
     } else {
@@ -420,7 +399,7 @@ export default function Auth() {
     localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
 
     setLoading(true);
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/auth?redirect=/`;
 
     const { error, data } = await supabase.auth.signUp({
       email: email.trim(),
@@ -447,19 +426,19 @@ export default function Auth() {
       return;
     }
 
-    // Send custom verification email
+    // If email confirmation is required, show "check your email" screen.
     if (data.user && !data.session) {
-      const emailSent = await sendVerificationEmail(email.trim(), name.trim());
-      if (emailSent) {
-        setShowEmailConfirmation(true);
-      } else {
-        toast.error(t('auth.emailSendError', 'Error al enviar el email de verificación'));
-      }
-    } else if (data.session) {
-      // Auto-join club after signup
+      setShowEmailConfirmation(true);
+      toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
+      setLoading(false);
+      return;
+    }
+
+    // If the backend auto-logged in (rare), auto-join immediately.
+    if (data.session) {
       try {
-        const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', { 
-          _code: invitationCode.toUpperCase() 
+        const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', {
+          _code: invitationCode.toUpperCase(),
         });
         if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
           window.dispatchEvent(new Event('club-membership-changed'));
@@ -493,7 +472,7 @@ export default function Auth() {
     localStorage.setItem('pending_signup_role', 'director');
 
     setLoading(true);
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/auth?redirect=/`;
 
     const { error, data } = await supabase.auth.signUp({
       email: email.trim(),
@@ -521,16 +500,14 @@ export default function Auth() {
       return;
     }
 
-    // Send custom verification email
     if (data.user && !data.session) {
-      const emailSent = await sendVerificationEmail(email.trim(), name.trim());
-      if (emailSent) {
-        setShowEmailConfirmation(true);
-        localStorage.setItem('is_new_director', 'true');
-      } else {
-        toast.error(t('auth.emailSendError', 'Error al enviar el email de verificación'));
-      }
-    } else if (data.session) {
+      setShowEmailConfirmation(true);
+      toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
+      setLoading(false);
+      return;
+    }
+
+    if (data.session) {
       localStorage.setItem('is_new_director', 'true');
       toast.success('¡Cuenta creada correctamente!');
     }
@@ -636,7 +613,7 @@ export default function Auth() {
     );
   }
 
-  // Email confirmation screen (OTP)
+  // Email confirmation screen (magic link)
   if (showEmailConfirmation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -645,62 +622,23 @@ export default function Auth() {
             <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
               <Mail className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">{t('auth.confirmEmail', 'Confirma tu email')}</CardTitle>
+            <CardTitle className="text-2xl">{t('auth.confirmEmail', 'Verifica tu email')}</CardTitle>
             <CardDescription className="text-base">
-              {t('auth.verificationCodeSent', 'Te hemos enviado un código de verificación a')} <strong>{email}</strong>
+              Te hemos enviado un email a <strong>{email}</strong> con un botón de <strong>Verificar email</strong>.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {t('auth.enterCodeFromEmail', 'Introduce el código de 6 dígitos que hemos enviado a tu email. Si no lo ves, revisa tu carpeta de spam.')}
+                Pulsa el botón del email y se abrirá la app iniciando sesión automáticamente. Si no lo ves, revisa spam.
               </AlertDescription>
             </Alert>
 
-            <div className="flex flex-col items-center space-y-4">
-              <p className="text-sm font-medium">{t('auth.verificationCode', 'Código de verificación')}</p>
-              <InputOTP
-                maxLength={6}
-                value={verificationCode}
-                onChange={setVerificationCode}
-                disabled={verifying}
-              >
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
-                </InputOTPGroup>
-              </InputOTP>
-              
-              <Button
-                onClick={handleVerifyCode}
-                disabled={verifying || verificationCode.length !== 6}
-                className="w-full"
-              >
-                {verifying ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t('auth.verifying', 'Verificando...')}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    {t('auth.verifyCode', 'Verificar código')}
-                  </>
-                )}
-              </Button>
-            </div>
-
             <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground">
-                {t('auth.noEmailReceived', '¿No recibiste el email?')}
-              </p>
-              <Button 
-                variant="ghost" 
+              <p className="text-sm text-muted-foreground">¿No recibiste el email?</p>
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={handleResendEmail}
                 disabled={resendingEmail}
@@ -720,10 +658,7 @@ export default function Auth() {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => {
-                  setShowEmailConfirmation(false);
-                  setVerificationCode('');
-                }}
+                onClick={() => setShowEmailConfirmation(false)}
               >
                 {t('auth.backToLogin', 'Volver al inicio')}
               </Button>
