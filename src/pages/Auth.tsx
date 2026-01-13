@@ -42,7 +42,11 @@ export default function Auth() {
   // Short code invitation state
   const [invitationCode, setInvitationCode] = useState('');
   const [verifyingCode, setVerifyingCode] = useState(false);
-  const [verifiedClub, setVerifiedClub] = useState<{ club_id: string; club_name: string } | null>(null);
+  const [verifiedClub, setVerifiedClub] = useState<{ club_id: string; club_name: string; responsibility_code?: string } | null>(null);
+  
+  // Registration mode: 'select' | 'director' | 'coach'
+  const [registrationMode, setRegistrationMode] = useState<'select' | 'director' | 'coach'>('select');
+  const [responsibilityCodeAccepted, setResponsibilityCodeAccepted] = useState(false);
 
   const redirectTo = searchParams.get('redirect') || '/';
 
@@ -298,9 +302,25 @@ export default function Auth() {
 
       toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
 
-      // Mark as new director for onboarding
+      // Check if coach with pending invitation code
       const pendingRole = localStorage.getItem('pending_signup_role');
-      if (pendingRole === 'director') {
+      const pendingCode = localStorage.getItem('pending_invitation_code');
+      
+      if (pendingRole === 'coach' && pendingCode) {
+        try {
+          const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', { 
+            _code: pendingCode 
+          });
+          if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
+            window.dispatchEvent(new Event('club-membership-changed'));
+            triggerCoachWelcome();
+            toast.success('¡Te has unido al club!');
+          }
+        } catch (joinError) {
+          console.error('[Auth] Error joining club after verification:', joinError);
+        }
+        localStorage.removeItem('pending_invitation_code');
+      } else if (pendingRole === 'director') {
         localStorage.setItem('is_new_director', 'true');
       }
       localStorage.removeItem('pending_signup_role');
@@ -355,7 +375,8 @@ export default function Auth() {
       
       setVerifiedClub({ 
         club_id: invitation.club_id, 
-        club_name: invitation.club_name 
+        club_name: invitation.club_name,
+        responsibility_code: invitation.responsibility_code
       });
       toast.success(`¡Club encontrado: ${invitation.club_name}!`);
     } catch (err) {
@@ -374,6 +395,85 @@ export default function Auth() {
       setVerifiedClub(null);
     }
   }, [invitationCode]);
+
+  // Sign up for coaches with invitation code
+  const handleCoachSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateInputs(true)) return;
+    
+    if (!verifiedClub) {
+      toast.error('Debes verificar el código de invitación primero');
+      return;
+    }
+    
+    if (!termsAccepted) {
+      toast.error('Debes aceptar los términos y condiciones');
+      return;
+    }
+    
+    if (!responsibilityCodeAccepted) {
+      toast.error('Debes aceptar el código de responsabilidad del club');
+      return;
+    }
+
+    localStorage.setItem('pending_signup_role', 'coach');
+    localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
+
+    setLoading(true);
+    const redirectUrl = `${window.location.origin}/`;
+
+    const { error, data } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          name: name.trim(),
+          is_director: false,
+          assigned_teams: [],
+          terms_accepted_at: new Date().toISOString(),
+          responsibility_code_accepted_at: new Date().toISOString(),
+        },
+      },
+    });
+
+    if (error) {
+      if (error.message.includes('already registered')) {
+        toast.error('Este email ya está registrado. Inicia sesión para unirte al club.');
+      } else {
+        toast.error(error.message);
+      }
+      setLoading(false);
+      return;
+    }
+
+    // Send custom verification email
+    if (data.user && !data.session) {
+      const emailSent = await sendVerificationEmail(email.trim(), name.trim());
+      if (emailSent) {
+        setShowEmailConfirmation(true);
+      } else {
+        toast.error(t('auth.emailSendError', 'Error al enviar el email de verificación'));
+      }
+    } else if (data.session) {
+      // Auto-join club after signup
+      try {
+        const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', { 
+          _code: invitationCode.toUpperCase() 
+        });
+        if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
+          window.dispatchEvent(new Event('club-membership-changed'));
+          triggerCoachWelcome();
+          toast.success(`¡Te has unido a ${verifiedClub.club_name}!`);
+          navigate('/', { replace: true });
+        }
+      } catch (joinError) {
+        console.error('[Auth] Error joining club after coach signup:', joinError);
+      }
+    }
+
+    setLoading(false);
+  };
 
   // Sign up for directors
   const handleSignUp = async (e: React.FormEvent) => {
@@ -688,200 +788,406 @@ export default function Auth() {
                   {loading ? 'Cargando...' : 'Entrar'}
                 </Button>
               </form>
-              
-              {/* Short Code Invitation Section */}
-              <div className="mt-6 pt-6 border-t">
-                <div className="text-center space-y-3">
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Ticket className="w-4 h-4" />
-                    <span className="text-sm font-medium">¿Tienes un código de invitación?</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Si un Director te ha compartido un código de 6 caracteres, introdúcelo aquí para unirte a su club.
-                  </p>
-                  <div className="flex justify-center">
-                    <InputOTP
-                      maxLength={6}
-                      value={invitationCode}
-                      onChange={(value) => setInvitationCode(value.toUpperCase())}
-                      disabled={verifyingCode}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} className="uppercase" />
-                        <InputOTPSlot index={1} className="uppercase" />
-                        <InputOTPSlot index={2} className="uppercase" />
-                        <InputOTPSlot index={3} className="uppercase" />
-                        <InputOTPSlot index={4} className="uppercase" />
-                        <InputOTPSlot index={5} className="uppercase" />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                  {verifyingCode && (
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Verificando código...</span>
-                    </div>
-                  )}
-                  {verifiedClub && (
-                    <Alert className="border-green-500/50 bg-green-500/10">
-                      <Users className="h-4 w-4 text-green-600" />
-                      <AlertDescription className="text-green-700 dark:text-green-400">
-                        <strong>{verifiedClub.club_name}</strong>
-                        <br />
-                        <span className="text-xs">Inicia sesión para unirte automáticamente a este club.</span>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              </div>
             </TabsContent>
 
             <TabsContent value="register" className="mt-4">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-name">Nombre completo *</Label>
-                  <Input
-                    id="register-name"
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    placeholder="Tu nombre y apellidos"
-                    disabled={loading}
-                  />
-                  {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">Email *</Label>
-                  <Input
-                    id="register-email"
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="tu@email.com"
-                    disabled={loading}
-                  />
-                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">Contraseña *</Label>
-                  <Input
-                    id="register-password"
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    disabled={loading}
-                  />
-                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-confirm-password">Confirmar contraseña *</Label>
-                  <Input
-                    id="register-confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    placeholder="Repite tu contraseña"
-                    disabled={loading}
-                  />
-                  {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
-                </div>
-
-                {/* Director registration info */}
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                    <div className="space-y-1 flex-1">
-                      <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                        Registro como Director Deportivo
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Acceso total a todos los equipos, configuración del club y gestión de entrenadores
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2 italic">
-                        Debes registrarte como Director Deportivo para crear tu club por primera vez. Luego, podrás añadir equipos y entrenadores de tu club o simplemente gestionar tu propio equipo.
-                      </p>
-                    </div>
-                  </div>
+              {/* Registration Mode Selector */}
+              {registrationMode === 'select' && (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground text-center mb-4">
+                    ¿Cómo quieres registrarte?
+                  </p>
                   
-                  {/* Also coach option */}
-                  <div className="flex items-start space-x-3 pt-2 border-t border-amber-500/20">
-                    <Checkbox
-                      id="also-coach"
-                      checked={alsoCoach}
-                      onCheckedChange={(checked) => setAlsoCoach(checked === true)}
-                    />
-                    <label
-                      htmlFor="also-coach"
-                      className="text-xs text-muted-foreground cursor-pointer leading-relaxed flex items-center gap-2"
-                    >
-                      <User className="w-3 h-3" />
-                      También seré entrenador de algún equipo
-                    </label>
-                  </div>
-                  
-                  {/* Director declaration */}
-                  <div className="pt-2 border-t border-amber-500/20 space-y-3">
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        id="director-declaration"
-                        checked={directorDeclarationAccepted}
-                        onCheckedChange={(checked) => setDirectorDeclarationAccepted(checked === true)}
-                      />
-                      <label
-                        htmlFor="director-declaration"
-                        className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
-                      >
-                        Declaro la autenticidad de mis datos y confirmo que actúo como Director Deportivo del club que voy a representar en esta aplicación *
-                      </label>
-                    </div>
-                    
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        id="terms-acceptance"
-                        checked={termsAccepted}
-                        onCheckedChange={(checked) => setTermsAccepted(checked === true)}
-                      />
-                      <label
-                        htmlFor="terms-acceptance"
-                        className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
-                      >
-                        He leído y acepto los{' '}
-                        <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
-                          Términos y Condiciones
-                        </a>{' '}
-                        y la{' '}
-                        <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
-                          Política de Privacidad
-                        </a>{' '}
-                        de la aplicación *
-                      </label>
-                    </div>
-                    
-                    {directorDeclarationAccepted && termsAccepted && (
-                      <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Declaraciones aceptadas</span>
+                  {/* Option 1: Director */}
+                  <button
+                    type="button"
+                    onClick={() => setRegistrationMode('director')}
+                    className="w-full p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors text-left"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Shield className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-amber-700 dark:text-amber-400">
+                          Soy Director Deportivo
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Quiero crear un nuevo club y gestionar mis equipos
+                        </p>
                       </div>
-                    )}
-                    
-                    <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
-                      <Mail className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span>
-                        {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
-                      </span>
-                    </p>
-                  </div>
+                    </div>
+                  </button>
+                  
+                  {/* Option 2: Coach with code */}
+                  <button
+                    type="button"
+                    onClick={() => setRegistrationMode('coach')}
+                    className="w-full p-4 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Ticket className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-primary">
+                          Tengo un código de invitación
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Un Director me ha compartido un código para unirme a su club
+                        </p>
+                      </div>
+                    </div>
+                  </button>
                 </div>
+              )}
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading || !directorDeclarationAccepted || !termsAccepted}
-                >
-                  {loading ? 'Creando cuenta...' : 'Crear cuenta de Director'}
-                </Button>
-              </form>
+              {/* Director Registration Form */}
+              {registrationMode === 'director' && (
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setRegistrationMode('select')}
+                    className="mb-2 -ml-2"
+                  >
+                    ← Volver
+                  </Button>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-name">Nombre completo *</Label>
+                    <Input
+                      id="register-name"
+                      type="text"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      placeholder="Tu nombre y apellidos"
+                      disabled={loading}
+                    />
+                    {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email">Email *</Label>
+                    <Input
+                      id="register-email"
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="tu@email.com"
+                      disabled={loading}
+                    />
+                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password">Contraseña *</Label>
+                    <Input
+                      id="register-password"
+                      type="password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                      disabled={loading}
+                    />
+                    {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-confirm-password">Confirmar contraseña *</Label>
+                    <Input
+                      id="register-confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      placeholder="Repite tu contraseña"
+                      disabled={loading}
+                    />
+                    {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
+                  </div>
+
+                  {/* Director registration info */}
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                      <div className="space-y-1 flex-1">
+                        <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                          Registro como Director Deportivo
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Acceso total a todos los equipos, configuración del club y gestión de entrenadores
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Also coach option */}
+                    <div className="flex items-start space-x-3 pt-2 border-t border-amber-500/20">
+                      <Checkbox
+                        id="also-coach"
+                        checked={alsoCoach}
+                        onCheckedChange={(checked) => setAlsoCoach(checked === true)}
+                      />
+                      <label
+                        htmlFor="also-coach"
+                        className="text-xs text-muted-foreground cursor-pointer leading-relaxed flex items-center gap-2"
+                      >
+                        <User className="w-3 h-3" />
+                        También seré entrenador de algún equipo
+                      </label>
+                    </div>
+                    
+                    {/* Director declaration */}
+                    <div className="pt-2 border-t border-amber-500/20 space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="director-declaration"
+                          checked={directorDeclarationAccepted}
+                          onCheckedChange={(checked) => setDirectorDeclarationAccepted(checked === true)}
+                        />
+                        <label
+                          htmlFor="director-declaration"
+                          className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
+                        >
+                          Declaro la autenticidad de mis datos y confirmo que actúo como Director Deportivo del club que voy a representar en esta aplicación *
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="terms-acceptance"
+                          checked={termsAccepted}
+                          onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                        />
+                        <label
+                          htmlFor="terms-acceptance"
+                          className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
+                        >
+                          He leído y acepto los{' '}
+                          <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
+                            Términos y Condiciones
+                          </a>{' '}
+                          y la{' '}
+                          <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
+                            Política de Privacidad
+                          </a>{' '}
+                          de la aplicación *
+                        </label>
+                      </div>
+                      
+                      {directorDeclarationAccepted && termsAccepted && (
+                        <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Declaraciones aceptadas</span>
+                        </div>
+                      )}
+                      
+                      <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
+                        <Mail className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>
+                          {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={loading || !directorDeclarationAccepted || !termsAccepted}
+                  >
+                    {loading ? 'Creando cuenta...' : 'Crear cuenta de Director'}
+                  </Button>
+                </form>
+              )}
+
+              {/* Coach Registration with Invitation Code */}
+              {registrationMode === 'coach' && (
+                <div className="space-y-4">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setRegistrationMode('select');
+                      setInvitationCode('');
+                      setVerifiedClub(null);
+                    }}
+                    className="mb-2 -ml-2"
+                  >
+                    ← Volver
+                  </Button>
+
+                  {/* Step 1: Enter invitation code */}
+                  {!verifiedClub && (
+                    <div className="space-y-4">
+                      <div className="text-center space-y-2">
+                        <Ticket className="w-12 h-12 mx-auto text-primary" />
+                        <p className="font-medium">Introduce tu código de invitación</p>
+                        <p className="text-xs text-muted-foreground">
+                          El código tiene 6 caracteres y te lo ha facilitado el Director de tu club
+                        </p>
+                      </div>
+                      
+                      <div className="flex justify-center">
+                        <InputOTP
+                          maxLength={6}
+                          value={invitationCode}
+                          onChange={(value) => setInvitationCode(value.toUpperCase())}
+                          disabled={verifyingCode}
+                        >
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} className="uppercase text-lg" />
+                            <InputOTPSlot index={1} className="uppercase text-lg" />
+                            <InputOTPSlot index={2} className="uppercase text-lg" />
+                            <InputOTPSlot index={3} className="uppercase text-lg" />
+                            <InputOTPSlot index={4} className="uppercase text-lg" />
+                            <InputOTPSlot index={5} className="uppercase text-lg" />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                      
+                      {verifyingCode && (
+                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Verificando código...</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Step 2: Registration form after code verified */}
+                  {verifiedClub && (
+                    <form onSubmit={handleCoachSignUp} className="space-y-4">
+                      <Alert className="border-green-500/50 bg-green-500/10">
+                        <Users className="h-4 w-4 text-green-600" />
+                        <AlertDescription className="text-green-700 dark:text-green-400">
+                          <strong>¡Club encontrado!</strong>
+                          <br />
+                          Te unirás a: <strong>{verifiedClub.club_name}</strong>
+                        </AlertDescription>
+                      </Alert>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="coach-name">Nombre completo *</Label>
+                        <Input
+                          id="coach-name"
+                          type="text"
+                          value={name}
+                          onChange={e => setName(e.target.value)}
+                          placeholder="Tu nombre y apellidos"
+                          disabled={loading}
+                        />
+                        {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="coach-email">Email *</Label>
+                        <Input
+                          id="coach-email"
+                          type="email"
+                          value={email}
+                          onChange={e => setEmail(e.target.value)}
+                          placeholder="tu@email.com"
+                          disabled={loading}
+                        />
+                        {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="coach-password">Contraseña *</Label>
+                        <Input
+                          id="coach-password"
+                          type="password"
+                          value={password}
+                          onChange={e => setPassword(e.target.value)}
+                          placeholder="Mínimo 6 caracteres"
+                          disabled={loading}
+                        />
+                        {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="coach-confirm-password">Confirmar contraseña *</Label>
+                        <Input
+                          id="coach-confirm-password"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          placeholder="Repite tu contraseña"
+                          disabled={loading}
+                        />
+                        {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
+                      </div>
+
+                      {/* Terms and Responsibility Code */}
+                      <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+                        <div className="flex items-start space-x-3">
+                          <Checkbox
+                            id="coach-terms"
+                            checked={termsAccepted}
+                            onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                          />
+                          <label
+                            htmlFor="coach-terms"
+                            className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
+                          >
+                            He leído y acepto los{' '}
+                            <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
+                              Términos y Condiciones
+                            </a>{' '}
+                            y la{' '}
+                            <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
+                              Política de Privacidad
+                            </a>{' '}
+                            de la aplicación *
+                          </label>
+                        </div>
+                        
+                        <div className="flex items-start space-x-3 pt-2 border-t border-primary/20">
+                          <Checkbox
+                            id="responsibility-code"
+                            checked={responsibilityCodeAccepted}
+                            onCheckedChange={(checked) => setResponsibilityCodeAccepted(checked === true)}
+                          />
+                          <label
+                            htmlFor="responsibility-code"
+                            className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
+                          >
+                            He leído y acepto el{' '}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (verifiedClub?.responsibility_code) {
+                                  toast.info(verifiedClub.responsibility_code, { duration: 10000 });
+                                } else {
+                                  toast.info('Código de responsabilidad estándar del club');
+                                }
+                              }}
+                              className="text-primary underline hover:no-underline"
+                            >
+                              Código de Responsabilidad
+                            </button>{' '}
+                            del club *
+                          </label>
+                        </div>
+                        
+                        {termsAccepted && responsibilityCodeAccepted && (
+                          <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Aceptaciones completadas</span>
+                          </div>
+                        )}
+                        
+                        <p className="text-xs text-primary flex items-start gap-2">
+                          <Mail className="w-4 h-4 shrink-0 mt-0.5" />
+                          <span>
+                            {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
+                          </span>
+                        </p>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full" 
+                        disabled={loading || !termsAccepted || !responsibilityCodeAccepted}
+                      >
+                        {loading ? 'Creando cuenta...' : 'Crear cuenta y unirme al club'}
+                      </Button>
+                    </form>
+                  )}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
