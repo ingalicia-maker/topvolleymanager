@@ -686,6 +686,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          phone: string | null
           responsibility_code_accepted_at: string | null
           terms_accepted_at: string | null
           updated_at: string | null
@@ -697,6 +698,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          phone?: string | null
           responsibility_code_accepted_at?: string | null
           terms_accepted_at?: string | null
           updated_at?: string | null
@@ -708,6 +710,7 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          phone?: string | null
           responsibility_code_accepted_at?: string | null
           terms_accepted_at?: string | null
           updated_at?: string | null

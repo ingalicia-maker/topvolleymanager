@@ -12,7 +12,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useClub } from '@/hooks/useClub';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Users, Shield, Mail, CheckCircle, Clock, UserX, MessageSquare, Send, FileCheck, FileX } from 'lucide-react';
+import { Users, Shield, Mail, Phone, CheckCircle, Clock, UserX, MessageSquare, Send, FileCheck, FileX, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -29,11 +29,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useConversations } from '@/hooks/useConversations';
+import { CoachDetailDialog } from '@/components/CoachDetailDialog';
 
 interface CoachProfile {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   assigned_teams: string[] | null;
   created_at: string | null;
   role: 'coach' | 'director';
@@ -64,6 +66,10 @@ export default function CoachManagement() {
   const [groupChatTitle, setGroupChatTitle] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [creatingGroupChat, setCreatingGroupChat] = useState(false);
+  
+  // Coach detail dialog
+  const [selectedCoach, setSelectedCoach] = useState<CoachProfile | null>(null);
+  const [coachDetailOpen, setCoachDetailOpen] = useState(false);
 
   const handleDirectMessage = async (userId: string) => {
     try {
@@ -465,7 +471,11 @@ export default function CoachManagement() {
                 return (
                   <div
                     key={coach.id}
-                    className="p-3 rounded-lg border border-border bg-card"
+                    className="p-3 rounded-lg border border-border bg-card cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => {
+                      setSelectedCoach(coach);
+                      setCoachDetailOpen(true);
+                    }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1 flex-1">
@@ -482,6 +492,12 @@ export default function CoachManagement() {
                           <Mail className="h-3 w-3" />
                           {coach.email}
                         </div>
+                        {coach.phone && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            {coach.phone}
+                          </div>
+                        )}
                         {coach.created_at && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3" />
@@ -512,13 +528,28 @@ export default function CoachManagement() {
                           )}
                         </div>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCoach(coach);
+                          setCoachDetailOpen(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
 
                     <div className="mt-3 pt-3 border-t flex gap-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleDirectMessage(coach.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDirectMessage(coach.id);
+                        }}
                         className="gap-1"
                       >
                         <MessageSquare className="h-4 w-4" />
@@ -527,7 +558,10 @@ export default function CoachManagement() {
                       {!hasCoachRole ? (
                         <Button
                           size="sm"
-                          onClick={() => handleAssignCoachRole(coach.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAssignCoachRole(coach.id);
+                          }}
                           disabled={processingId === coach.id}
                           className="flex-1 gap-1"
                         >
@@ -538,7 +572,10 @@ export default function CoachManagement() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleRemoveCoachRole(coach.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveCoachRole(coach.id);
+                          }}
                           disabled={processingId === coach.id}
                           className="flex-1 gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                         >
@@ -740,6 +777,23 @@ export default function CoachManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Coach Detail Dialog */}
+      <CoachDetailDialog
+        open={coachDetailOpen}
+        onOpenChange={setCoachDetailOpen}
+        coach={selectedCoach}
+        teams={teams}
+        onCoachUpdated={() => {
+          refetch();
+          queryClient.invalidateQueries({ queryKey: ['all-user-roles'] });
+        }}
+        onCoachDeleted={() => {
+          refetch();
+          queryClient.invalidateQueries({ queryKey: ['all-user-roles'] });
+        }}
+        currentUserId={user?.id}
+      />
 
       <BottomNav />
     </div>
