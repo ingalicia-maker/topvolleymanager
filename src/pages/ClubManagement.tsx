@@ -887,10 +887,10 @@ export default function ClubManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <UserPlus className="h-5 w-5" />
-                  Crear Enlace de Invitación
+                  Invitar Miembros
                 </CardTitle>
                 <CardDescription>
-                  Genera un enlace que puedes compartir con quien quieras invitar
+                  Genera un código de invitación que pueden introducir al registrarse
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -919,44 +919,60 @@ export default function ClubManagement() {
                   {creatingInvite ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
-                    <Link2 className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4 mr-2" />
                   )}
-                  Generar enlace de invitación
+                  Generar código de invitación
                 </Button>
 
                 {lastInviteToken && (
-                  <div className="space-y-2">
-                    <Label>Último enlace generado</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={getInviteLink(lastInviteToken)}
-                        readOnly
-                        className="flex-1 text-xs font-mono bg-background"
-                      />
+                  <div className="space-y-3 p-4 rounded-lg border-2 border-primary/50 bg-primary/5">
+                    <Label className="text-sm font-medium">Código de invitación generado</Label>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="text-3xl font-mono font-bold tracking-widest text-primary bg-background px-4 py-2 rounded-lg border">
+                        {invitations.find(i => i.token === lastInviteToken)?.short_code || '------'}
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => copyInviteLink(lastInviteToken)}
-                        className="shrink-0 gap-2"
+                        onClick={() => {
+                          const code = invitations.find(i => i.token === lastInviteToken)?.short_code;
+                          if (code) {
+                            navigator.clipboard.writeText(code);
+                            toast.success('Código copiado');
+                          }
+                        }}
+                        className="shrink-0"
                       >
                         <Copy className="h-4 w-4" />
-                        Copiar
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openAndValidateInviteLink(lastInviteToken)}
-                        className="shrink-0 gap-2"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Abrir
-                      </Button>
+                    </div>
+                    <p className="text-xs text-center text-muted-foreground">
+                      Comparte este código con el nuevo miembro para que lo introduzca al registrarse
+                    </p>
+                    
+                    <div className="border-t pt-3 mt-3">
+                      <Label className="text-xs text-muted-foreground">O comparte el enlace directo:</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Input
+                          value={getInviteLink(lastInviteToken)}
+                          readOnly
+                          className="flex-1 text-xs font-mono bg-background"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyInviteLink(lastInviteToken)}
+                          className="shrink-0"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
 
                 <p className="text-xs text-muted-foreground text-center">
-                  El enlace será válido por 7 días
+                  El código será válido por 7 días
                 </p>
               </CardContent>
             </Card>
@@ -977,6 +993,7 @@ export default function ClubManagement() {
                     const inviteLink = getInviteLink(inv.token);
                     const { status, label, color, icon: StatusIcon } = getInvitationStatus(inv);
                     const isActive = status === 'active';
+                    const shortCode = inv.short_code;
 
                     return (
                       <div
@@ -987,6 +1004,11 @@ export default function ClubManagement() {
                       >
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center gap-2">
+                            {isActive && shortCode && (
+                              <span className="font-mono font-bold text-lg tracking-wider text-primary">
+                                {shortCode}
+                              </span>
+                            )}
                             <Badge variant={inv.role === 'director' ? 'default' : 'secondary'}>
                               {inv.role === 'director' ? 'Director' : 'Entrenador'}
                             </Badge>
@@ -1002,34 +1024,32 @@ export default function ClubManagement() {
                           </span>
                         </div>
 
-                        {/* Only show copyable link if active */}
+                        {/* Show code copy button and link if active */}
                         {isActive && (
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Input
-                              value={inviteLink}
-                              readOnly
-                              className="flex-1 min-w-0 text-xs font-mono bg-background"
-                            />
-                            <div className="flex items-center gap-2">
+                            {shortCode && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => copyInviteLink(inv.token)}
+                                onClick={() => {
+                                  navigator.clipboard.writeText(shortCode);
+                                  toast.success('Código copiado');
+                                }}
                                 className="shrink-0 gap-2"
                               >
                                 <Copy className="h-4 w-4" />
-                                Copiar
+                                Copiar código
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openAndValidateInviteLink(inv.token)}
-                                className="shrink-0 gap-2"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                                Abrir
-                              </Button>
-                            </div>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyInviteLink(inv.token)}
+                              className="shrink-0 gap-2 text-muted-foreground"
+                            >
+                              <Link2 className="h-4 w-4" />
+                              Copiar enlace
+                            </Button>
                           </div>
                         )}
 
