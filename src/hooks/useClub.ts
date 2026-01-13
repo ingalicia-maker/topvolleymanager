@@ -31,6 +31,7 @@ export interface ClubInvitation {
   id: string;
   club_id: string;
   token: string;
+  short_code: string | null;
   role: string;
   email: string | null;
   used_at: string | null;

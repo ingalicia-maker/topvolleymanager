@@ -10,7 +10,7 @@ import { useClub } from '@/hooks/useClub';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Building2, Users, Link2, Loader2, CheckCircle, XCircle, Shield } from 'lucide-react';
+import { Building2, Users, Link2, Loader2, CheckCircle, XCircle, Shield, KeyRound } from 'lucide-react';
 
 export default function ClubOnboarding() {
   const navigate = useNavigate();
@@ -23,12 +23,14 @@ export default function ClubOnboarding() {
   const [mode, setMode] = useState<'select' | 'create' | 'join'>('select');
   const [clubName, setClubName] = useState('');
   const [inviteToken, setInviteToken] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [joinResult, setJoinResult] = useState<{ success: boolean; message: string } | null>(null);
   const [responsibilityCodeAccepted, setResponsibilityCodeAccepted] = useState(false);
   const [clubResponsibilityCode, setClubResponsibilityCode] = useState<string | null>(null);
   const [clubInfo, setClubInfo] = useState<{ name: string; responsible_person_name?: string } | null>(null);
   const [loadingClubInfo, setLoadingClubInfo] = useState(false);
+  const [useCodeMode, setUseCodeMode] = useState(false);
 
   const getHashToken = () => {
     const hash = location.hash || '';
@@ -107,6 +109,51 @@ export default function ClubOnboarding() {
     setLoadingClubInfo(false);
   };
 
+  const fetchClubInfoFromCode = async (code: string) => {
+    if (code.length < 6) return;
+    
+    setLoadingClubInfo(true);
+    setJoinResult(null);
+
+    try {
+      const { data, error } = await supabase.rpc('get_invitation_preview_by_code', { _code: code.toUpperCase() });
+
+      if (error || !data || (Array.isArray(data) && data.length === 0)) {
+        setJoinResult({ success: false, message: 'Código no válido o expirado' });
+        setClubInfo(null);
+        setClubResponsibilityCode(null);
+        setLoadingClubInfo(false);
+        return;
+      }
+
+      const preview = Array.isArray(data) ? data[0] : data;
+
+      if (preview.used_at) {
+        setJoinResult({ success: false, message: 'Este código ya ha sido utilizado' });
+        setLoadingClubInfo(false);
+        return;
+      }
+
+      if (new Date(preview.expires_at) < new Date()) {
+        setJoinResult({ success: false, message: 'El código ha expirado' });
+        setLoadingClubInfo(false);
+        return;
+      }
+
+      setClubInfo({
+        name: preview.club_name,
+        responsible_person_name: preview.responsible_person_name,
+      });
+      setClubResponsibilityCode(preview.responsibility_code);
+      setJoinResult(null);
+    } catch (error) {
+      console.error('[ClubOnboarding] Error fetching club info by code:', error);
+      setJoinResult({ success: false, message: 'Error al verificar el código' });
+    }
+
+    setLoadingClubInfo(false);
+  };
+
   // Redirect if already has a club
   useEffect(() => {
     if (hasClub === true) {
@@ -133,8 +180,12 @@ export default function ClubOnboarding() {
   };
 
   const handleJoinClub = async () => {
-    if (!inviteToken.trim()) {
-      toast.error('Abre el enlace de invitación para unirte al club');
+    // Determine if using code or token
+    const usingCode = useCodeMode && inviteCode.trim().length >= 6;
+    const usingToken = !useCodeMode && inviteToken.trim();
+
+    if (!usingCode && !usingToken) {
+      toast.error(useCodeMode ? 'Introduce un código de invitación válido' : 'Abre el enlace de invitación para unirte al club');
       return;
     }
 
@@ -147,20 +198,38 @@ export default function ClubOnboarding() {
     setJoinResult(null);
 
     try {
-      // Use the RPC function to accept the invitation (security definer)
-      const { data, error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken.trim() });
+      let result: { success: boolean; error?: string; club_id?: string };
 
-      if (error) {
-        // Parse Postgres error message
-        let errorMsg = error.message;
-        if (errorMsg.includes('Invitación no válida')) {
-          errorMsg = 'Invitación no válida o expirada';
-        } else if (errorMsg.includes('Ya eres miembro')) {
-          errorMsg = 'Ya eres miembro de este club';
-        } else if (errorMsg.includes('expirado')) {
-          errorMsg = 'La invitación ha expirado';
+      if (usingCode) {
+        // Use short code RPC
+        const { data, error } = await supabase.rpc('accept_club_invitation_by_code', { _code: inviteCode.trim().toUpperCase() });
+        
+        if (error) {
+          result = { success: false, error: error.message };
+        } else {
+          result = data as { success: boolean; error?: string; club_id?: string };
         }
-        setJoinResult({ success: false, message: errorMsg });
+      } else {
+        // Use token RPC
+        const { data, error } = await supabase.rpc('accept_club_invitation', { _token: inviteToken.trim() });
+        
+        if (error) {
+          let errorMsg = error.message;
+          if (errorMsg.includes('Invitación no válida')) {
+            errorMsg = 'Invitación no válida o expirada';
+          } else if (errorMsg.includes('Ya eres miembro')) {
+            errorMsg = 'Ya eres miembro de este club';
+          } else if (errorMsg.includes('expirado')) {
+            errorMsg = 'La invitación ha expirado';
+          }
+          result = { success: false, error: errorMsg };
+        } else {
+          result = { success: true };
+        }
+      }
+
+      if (!result.success) {
+        setJoinResult({ success: false, message: result.error || 'Error al unirse al club' });
         setSubmitting(false);
         return;
       }
@@ -176,7 +245,7 @@ export default function ClubOnboarding() {
       setJoinResult({ success: true, message: '¡Te has unido al club!' });
       toast.success('¡Te has unido al club!');
 
-      // Clear stored token once membership is accepted
+      // Clear stored data once membership is accepted
       localStorage.removeItem('pending_invite_token');
       localStorage.removeItem('pending_signup_role');
 
@@ -289,14 +358,43 @@ export default function ClubOnboarding() {
                 ) : loadingClubInfo ? (
                   'Cargando información de la invitación...'
                 ) : (
-                  'Abre el enlace de invitación que te han compartido para continuar.'
+                  'Introduce el código de invitación que te han compartido'
                 )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!inviteToken.trim() && !loadingClubInfo && !clubInfo && (
-                <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
-                  No hay ningún enlace de invitación activo. Abre el enlace completo desde el mensaje que te enviaron.
+              {/* Show code input if no token from URL */}
+              {!inviteToken.trim() && !clubInfo && (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="inviteCode" className="flex items-center gap-2">
+                      <KeyRound className="h-4 w-4" />
+                      Código de invitación
+                    </Label>
+                    <Input
+                      id="inviteCode"
+                      value={inviteCode}
+                      onChange={(e) => {
+                        const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+                        setInviteCode(val);
+                        setUseCodeMode(true);
+                        if (val.length === 6) {
+                          fetchClubInfoFromCode(val);
+                        } else {
+                          setClubInfo(null);
+                          setClubResponsibilityCode(null);
+                          setJoinResult(null);
+                        }
+                      }}
+                      placeholder="ABC123"
+                      className="text-center text-2xl font-mono tracking-widest"
+                      maxLength={6}
+                      autoFocus
+                    />
+                    <p className="text-xs text-muted-foreground text-center">
+                      Introduce el código de 6 caracteres que te ha dado el director de tu club
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -361,6 +459,8 @@ export default function ClubOnboarding() {
                     setJoinResult(null);
                     setResponsibilityCodeAccepted(false);
                     setInviteToken('');
+                    setInviteCode('');
+                    setUseCodeMode(false);
                     setClubInfo(null);
                     setClubResponsibilityCode(null);
                     localStorage.removeItem('pending_invite_token');
@@ -370,7 +470,7 @@ export default function ClubOnboarding() {
                 >
                   Atrás
                 </Button>
-                {inviteToken.trim() && (
+                {(inviteToken.trim() || (useCodeMode && inviteCode.length === 6 && clubInfo)) && (
                   <Button
                     onClick={handleJoinClub}
                     disabled={
