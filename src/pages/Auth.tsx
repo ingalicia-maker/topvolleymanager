@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2, Users, Ticket } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
@@ -38,6 +38,11 @@ export default function Auth() {
   const [verificationCode, setVerificationCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
+  
+  // Short code invitation state
+  const [invitationCode, setInvitationCode] = useState('');
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [verifiedClub, setVerifiedClub] = useState<{ club_id: string; club_name: string } | null>(null);
 
   const redirectTo = searchParams.get('redirect') || '/';
 
@@ -191,6 +196,29 @@ export default function Auth() {
         toast.error('No se ha podido completar la invitación');
       }
     }
+    
+    // If user entered a short code and verified a club, auto-join
+    if (verifiedClub && invitationCode.length === 6) {
+      try {
+        const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', { 
+          _code: invitationCode.toUpperCase() 
+        });
+        if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
+          window.dispatchEvent(new Event('club-membership-changed'));
+          triggerCoachWelcome();
+          toast.success(`¡Te has unido a ${verifiedClub.club_name}!`);
+          navigate('/', { replace: true });
+          setLoading(false);
+          return;
+        } else if (joinError) {
+          console.error('[Auth] Error joining via short code:', joinError);
+          toast.error('Error al unirse al club: ' + joinError.message);
+        }
+      } catch (joinError) {
+        console.error('[Auth] Error accepting invitation via code after sign-in:', joinError);
+        toast.error('No se ha podido completar la invitación');
+      }
+    }
 
     toast.success('¡Bienvenido!');
     setLoading(false);
@@ -299,6 +327,53 @@ export default function Auth() {
     }
     setResendingEmail(false);
   };
+
+  // Verify short invitation code
+  const handleVerifyInvitationCode = async () => {
+    if (invitationCode.length !== 6) return;
+    
+    setVerifyingCode(true);
+    try {
+      const { data, error } = await supabase.rpc('get_invitation_preview_by_code', { 
+        _code: invitationCode.toUpperCase() 
+      });
+      
+      if (error || !data || data.length === 0) {
+        toast.error('Código inválido o expirado');
+        setVerifiedClub(null);
+        setVerifyingCode(false);
+        return;
+      }
+      
+      const invitation = data[0];
+      if (invitation.used_at) {
+        toast.error('Este código ya ha sido utilizado');
+        setVerifiedClub(null);
+        setVerifyingCode(false);
+        return;
+      }
+      
+      setVerifiedClub({ 
+        club_id: invitation.club_id, 
+        club_name: invitation.club_name 
+      });
+      toast.success(`¡Club encontrado: ${invitation.club_name}!`);
+    } catch (err) {
+      console.error('Error verifying invitation code:', err);
+      toast.error('Error al verificar el código');
+    }
+    setVerifyingCode(false);
+  };
+
+  // Watch invitation code changes for auto-verify
+  useEffect(() => {
+    if (invitationCode.length === 6 && !verifiedClub) {
+      handleVerifyInvitationCode();
+    }
+    if (invitationCode.length < 6) {
+      setVerifiedClub(null);
+    }
+  }, [invitationCode]);
 
   // Sign up for directors
   const handleSignUp = async (e: React.FormEvent) => {
@@ -613,6 +688,52 @@ export default function Auth() {
                   {loading ? 'Cargando...' : 'Entrar'}
                 </Button>
               </form>
+              
+              {/* Short Code Invitation Section */}
+              <div className="mt-6 pt-6 border-t">
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <Ticket className="w-4 h-4" />
+                    <span className="text-sm font-medium">¿Tienes un código de invitación?</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Si un Director te ha compartido un código de 6 caracteres, introdúcelo aquí para unirte a su club.
+                  </p>
+                  <div className="flex justify-center">
+                    <InputOTP
+                      maxLength={6}
+                      value={invitationCode}
+                      onChange={(value) => setInvitationCode(value.toUpperCase())}
+                      disabled={verifyingCode}
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} className="uppercase" />
+                        <InputOTPSlot index={1} className="uppercase" />
+                        <InputOTPSlot index={2} className="uppercase" />
+                        <InputOTPSlot index={3} className="uppercase" />
+                        <InputOTPSlot index={4} className="uppercase" />
+                        <InputOTPSlot index={5} className="uppercase" />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+                  {verifyingCode && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Verificando código...</span>
+                    </div>
+                  )}
+                  {verifiedClub && (
+                    <Alert className="border-green-500/50 bg-green-500/10">
+                      <Users className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="text-green-700 dark:text-green-400">
+                        <strong>{verifiedClub.club_name}</strong>
+                        <br />
+                        <span className="text-xs">Inicia sesión para unirte automáticamente a este club.</span>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="register" className="mt-4">
