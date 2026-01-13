@@ -92,6 +92,7 @@ export type Database = {
           expires_at: string
           id: string
           role: string
+          short_code: string | null
           token: string
           used_at: string | null
         }
@@ -103,6 +104,7 @@ export type Database = {
           expires_at?: string
           id?: string
           role?: string
+          short_code?: string | null
           token?: string
           used_at?: string | null
         }
@@ -114,6 +116,7 @@ export type Database = {
           expires_at?: string
           id?: string
           role?: string
+          short_code?: string | null
           token?: string
           used_at?: string | null
         }
@@ -978,14 +981,28 @@ export type Database = {
     }
     Functions: {
       accept_club_invitation: { Args: { _token: string }; Returns: Json }
+      accept_club_invitation_by_code: { Args: { _code: string }; Returns: Json }
       cleanup_expired_verification_tokens: { Args: never; Returns: undefined }
       consume_credit: { Args: { _user_id: string }; Returns: boolean }
+      generate_short_code: { Args: never; Returns: string }
       get_grace_period_days_remaining: {
         Args: { _user_id: string }
         Returns: number
       }
       get_invitation_preview: {
         Args: { _token: string }
+        Returns: {
+          club_id: string
+          club_name: string
+          expires_at: string
+          responsibility_code: string
+          responsible_person_name: string
+          role: string
+          used_at: string
+        }[]
+      }
+      get_invitation_preview_by_code: {
+        Args: { _code: string }
         Returns: {
           club_id: string
           club_name: string
