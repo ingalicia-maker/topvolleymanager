@@ -5,6 +5,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -19,7 +21,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX, CheckCircle } from 'lucide-react';
+import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX, CheckCircle, Phone } from 'lucide-react';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -31,9 +33,17 @@ export default function Profile() {
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const { subscription, isPremium } = useSubscription();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
+  const [phone, setPhone] = useState('');
   const [saving, setSaving] = useState(false);
   const [showResponsibilityDialog, setShowResponsibilityDialog] = useState(false);
   const [acceptingCode, setAcceptingCode] = useState(false);
+
+  // Load phone from profile
+  useEffect(() => {
+    if (profile?.phone) {
+      setPhone(profile.phone);
+    }
+  }, [profile]);
 
   const handleAcceptResponsibilityCode = async () => {
     if (!user) return;
@@ -82,10 +92,16 @@ export default function Profile() {
     if (!user) return;
     setSaving(true);
     
-    // Update assigned teams only - director role is managed via invitations
+    // Update assigned teams and phone
     const teamsSuccess = await updateAssignedTeams(selectedTeams);
     
-    if (teamsSuccess) {
+    // Update phone in profile
+    const { error: phoneError } = await supabase
+      .from('profiles')
+      .update({ phone: phone.trim() || null })
+      .eq('id', user.id);
+    
+    if (teamsSuccess && !phoneError) {
       toast.success('Perfil actualizado correctamente');
     } else {
       toast.error('Error al actualizar perfil');
@@ -93,7 +109,7 @@ export default function Profile() {
     setSaving(false);
   };
 
-  const hasChanges = JSON.stringify(selectedTeams.sort()) !== JSON.stringify(assignedTeams.sort());
+  const hasChanges = JSON.stringify(selectedTeams.sort()) !== JSON.stringify(assignedTeams.sort()) || phone !== (profile?.phone || '');
 
   if (loading || teamsLoading) {
     return (
@@ -128,6 +144,23 @@ export default function Profile() {
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
               <p className="font-medium">{profile?.email}</p>
+            </div>
+            <div>
+              <Label htmlFor="phone" className="text-sm text-muted-foreground flex items-center gap-1">
+                <Phone className="h-3 w-3" />
+                Teléfono
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+34 600 000 000"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Visible para el Director Deportivo
+              </p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Roles actuales:</p>
@@ -243,17 +276,20 @@ export default function Profile() {
           </Card>
         )}
 
-        {/* Subscription & Language */}
+        {/* Subscription & Language - only show subscription to directors */}
         <Card>
           <CardContent className="p-4 space-y-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/subscription')}
-              className="w-full gap-2"
-            >
-              {isPremium ? <Crown className="h-4 w-4 text-amber-500" /> : <Zap className="h-4 w-4" />}
-              {t('subscription.title')} - {isPremium ? t('subscription.premium') : `${subscription.creditsRemaining} ${t('subscription.creditsRemaining')}`}
-            </Button>
+            {/* Only directors see the subscription button */}
+            {isDirector && (
+              <Button
+                variant="outline"
+                onClick={() => navigate('/subscription')}
+                className="w-full gap-2"
+              >
+                {isPremium ? <Crown className="h-4 w-4 text-amber-500" /> : <Zap className="h-4 w-4" />}
+                {t('subscription.title')} - {isPremium ? t('subscription.premium') : `${subscription.creditsRemaining} ${t('subscription.creditsRemaining')}`}
+              </Button>
+            )}
             
             {subscription.isAdmin && (
               <Button
