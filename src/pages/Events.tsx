@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Plus, Filter, Bus } from 'lucide-react';
+import { Plus, Filter, Bus, Calendar as CalendarIcon, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
+import { EventCalendar } from '@/components/EventCalendar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TEAMS } from '@/types/volleyball';
@@ -21,10 +22,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+type ViewMode = 'list' | 'calendar';
+
 export default function Events() {
   const { events, loading } = useEvents();
   const { assignedTeams, isDirector } = useUserRole();
   const [teamFilter, setTeamFilter] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -79,6 +83,26 @@ export default function Events() {
         title="Eventos"
         rightAction={
           <div className="flex gap-2">
+            {/* View Mode Toggle */}
+            <div className="flex border rounded-md overflow-hidden">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-none h-8 px-2"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-none h-8 px-2"
+                onClick={() => setViewMode('calendar')}
+              >
+                <CalendarIcon className="h-4 w-4" />
+              </Button>
+            </div>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link to="/displacements">
@@ -127,38 +151,42 @@ export default function Events() {
         }
       />
       <div className="p-4">
-        <Tabs defaultValue="upcoming" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="upcoming" className="flex-1">
-              Próximos ({upcomingEvents.length})
-            </TabsTrigger>
-            <TabsTrigger value="past" className="flex-1">
-              Pasados ({pastEvents.length})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="upcoming" className="mt-4 space-y-3">
-            {upcomingEvents.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No hay eventos próximos
-              </p>
-            ) : (
-              upcomingEvents.map(event => (
-                <EventCard key={event.id} event={event} />
-              ))
-            )}
-          </TabsContent>
-          <TabsContent value="past" className="mt-4 space-y-3">
-            {pastEvents.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No hay eventos pasados
-              </p>
-            ) : (
-              pastEvents.map(event => (
-                <EventCard key={event.id} event={event} />
-              ))
-            )}
-          </TabsContent>
-        </Tabs>
+        {viewMode === 'calendar' ? (
+          <EventCalendar events={filteredEvents} />
+        ) : (
+          <Tabs defaultValue="upcoming" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="upcoming" className="flex-1">
+                Próximos ({upcomingEvents.length})
+              </TabsTrigger>
+              <TabsTrigger value="past" className="flex-1">
+                Pasados ({pastEvents.length})
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="upcoming" className="mt-4 space-y-3">
+              {upcomingEvents.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No hay eventos próximos
+                </p>
+              ) : (
+                upcomingEvents.map(event => (
+                  <EventCard key={event.id} event={event} />
+                ))
+              )}
+            </TabsContent>
+            <TabsContent value="past" className="mt-4 space-y-3">
+              {pastEvents.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No hay eventos pasados
+                </p>
+              ) : (
+                pastEvents.map(event => (
+                  <EventCard key={event.id} event={event} />
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
       <BottomNav />
     </div>

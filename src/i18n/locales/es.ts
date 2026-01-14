@@ -521,4 +521,13 @@ export default {
       terms: 'Términos',
     },
   },
+
+  // Cookies
+  cookies: {
+    title: 'Utilizamos cookies',
+    description: 'Usamos cookies propias y de terceros para mejorar tu experiencia, analizar el tráfico y mostrarte contenido personalizado. Al hacer clic en "Aceptar", consientes el uso de todas las cookies.',
+    learnMore: 'Más información',
+    accept: 'Aceptar',
+    decline: 'Rechazar',
+  },
 };
