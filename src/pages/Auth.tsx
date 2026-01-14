@@ -539,17 +539,16 @@ export default function Auth() {
               <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                 <Mail className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl">Revisa tu email</CardTitle>
+              <CardTitle className="text-2xl">{t('auth.checkYourEmail')}</CardTitle>
               <CardDescription className="text-base">
-                Te hemos enviado un enlace para restablecer tu contraseña a <strong>{email}</strong>
+                {t('auth.resetLinkSent')} <strong>{email}</strong>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Haz clic en el enlace del email para crear una nueva contraseña. 
-                  Si no lo ves, revisa tu carpeta de spam.
+                  {t('auth.clickResetLink')}
                 </AlertDescription>
               </Alert>
               <Button
@@ -561,7 +560,7 @@ export default function Auth() {
                   setEmail('');
                 }}
               >
-                Volver al inicio de sesión
+                {t('auth.backToLoginButton')}
               </Button>
             </CardContent>
           </Card>
@@ -573,15 +572,15 @@ export default function Auth() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Recuperar contraseña</CardTitle>
+            <CardTitle className="text-2xl">{t('auth.recoverPassword')}</CardTitle>
             <CardDescription>
-              Introduce tu email y te enviaremos un enlace para restablecer tu contraseña
+              {t('auth.enterEmailForReset')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handlePasswordReset} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reset-email">Email</Label>
+                <Label htmlFor="reset-email">{t('auth.email')}</Label>
                 <Input
                   id="reset-email"
                   type="email"
@@ -593,7 +592,7 @@ export default function Auth() {
                 {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+                {loading ? t('auth.sending') : t('auth.sendRecoveryLink')}
               </Button>
               <Button
                 type="button"
@@ -604,7 +603,7 @@ export default function Auth() {
                   setErrors({});
                 }}
               >
-                Volver al inicio de sesión
+                {t('auth.backToLoginButton')}
               </Button>
             </form>
           </CardContent>
@@ -622,21 +621,21 @@ export default function Auth() {
             <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
               <Mail className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">{t('auth.confirmEmail', 'Verifica tu email')}</CardTitle>
+            <CardTitle className="text-2xl">{t('auth.confirmEmail')}</CardTitle>
             <CardDescription className="text-base">
-              Te hemos enviado un email a <strong>{email}</strong> con un botón de <strong>Verificar email</strong>.
+              {t('auth.verificationEmailSentButton')} <strong>{t('auth.verifyEmailButton')}</strong>.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Pulsa el botón del email y se abrirá la app iniciando sesión automáticamente. Si no lo ves, revisa spam.
+                {t('auth.clickButtonToVerify')}
               </AlertDescription>
             </Alert>
 
             <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground">¿No recibiste el email?</p>
+              <p className="text-sm text-muted-foreground">{t('auth.noEmailReceived')}</p>
               <Button
                 variant="ghost"
                 size="sm"
@@ -646,10 +645,10 @@ export default function Auth() {
                 {resendingEmail ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t('auth.resending', 'Reenviando...')}
+                    {t('auth.resending')}
                   </>
                 ) : (
-                  t('auth.resendEmail', 'Reenviar email')
+                  t('auth.resendEmail')
                 )}
               </Button>
             </div>
@@ -660,7 +659,7 @@ export default function Auth() {
                 className="w-full"
                 onClick={() => setShowEmailConfirmation(false)}
               >
-                {t('auth.backToLogin', 'Volver al inicio')}
+                {t('auth.backToLogin')}
               </Button>
             </div>
           </CardContent>
@@ -687,7 +686,7 @@ export default function Auth() {
             <TabsContent value="login" className="mt-4">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
+                  <Label htmlFor="login-email">{t('auth.email')}</Label>
                   <Input
                     id="login-email"
                     type="email"
@@ -700,13 +699,13 @@ export default function Auth() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="login-password">Contraseña</Label>
+                    <Label htmlFor="login-password">{t('auth.password')}</Label>
                     <button
                       type="button"
                       onClick={() => setShowPasswordReset(true)}
                       className="text-xs text-primary hover:underline"
                     >
-                      ¿Olvidaste tu contraseña?
+                      {t('auth.forgotPassword')}
                     </button>
                   </div>
                   <Input
@@ -720,7 +719,7 @@ export default function Auth() {
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Cargando...' : 'Entrar'}
+                  {loading ? t('auth.loading') : t('auth.enter')}
                 </Button>
               </form>
             </TabsContent>
@@ -730,7 +729,7 @@ export default function Auth() {
               {registrationMode === 'select' && (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground text-center mb-4">
-                    ¿Cómo quieres registrarte?
+                    {t('auth.howToRegister')}
                   </p>
                   
                   {/* Option 1: Director */}
@@ -743,10 +742,10 @@ export default function Auth() {
                       <Shield className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <p className="font-medium text-amber-700 dark:text-amber-400">
-                          Soy Director Deportivo
+                          {t('auth.iAmDirector')}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Quiero crear un nuevo club y gestionar mis equipos
+                          {t('auth.createNewClub')}
                         </p>
                       </div>
                     </div>
@@ -762,10 +761,10 @@ export default function Auth() {
                       <Ticket className="w-6 h-6 text-primary shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <p className="font-medium text-primary">
-                          Tengo un código de invitación
+                          {t('auth.haveInvitationCode')}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Un Director me ha compartido un código para unirme a su club
+                          {t('auth.directorSharedCode')}
                         </p>
                       </div>
                     </div>
@@ -783,23 +782,23 @@ export default function Auth() {
                     onClick={() => setRegistrationMode('select')}
                     className="mb-2 -ml-2"
                   >
-                    ← Volver
+                    ← {t('auth.back')}
                   </Button>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="register-name">Nombre completo *</Label>
+                    <Label htmlFor="register-name">{t('auth.fullName')} *</Label>
                     <Input
                       id="register-name"
                       type="text"
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      placeholder="Tu nombre y apellidos"
+                      placeholder={t('auth.fullName')}
                       disabled={loading}
                     />
                     {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-email">Email *</Label>
+                    <Label htmlFor="register-email">{t('auth.email')} *</Label>
                     <Input
                       id="register-email"
                       type="email"
@@ -811,25 +810,25 @@ export default function Auth() {
                     {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-password">Contraseña *</Label>
+                    <Label htmlFor="register-password">{t('auth.password')} *</Label>
                     <Input
                       id="register-password"
                       type="password"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder={t('auth.minCharacters')}
                       disabled={loading}
                     />
                     {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-confirm-password">Confirmar contraseña *</Label>
+                    <Label htmlFor="register-confirm-password">{t('auth.confirmPassword')} *</Label>
                     <Input
                       id="register-confirm-password"
                       type="password"
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
-                      placeholder="Repite tu contraseña"
+                      placeholder={t('auth.repeatPassword')}
                       disabled={loading}
                     />
                     {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
@@ -841,10 +840,10 @@ export default function Auth() {
                       <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                       <div className="space-y-1 flex-1">
                         <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                          Registro como Director Deportivo
+                          {t('auth.directorRegistration')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Acceso total a todos los equipos, configuración del club y gestión de entrenadores
+                          {t('auth.directorAccess')}
                         </p>
                       </div>
                     </div>
@@ -861,7 +860,7 @@ export default function Auth() {
                         className="text-xs text-muted-foreground cursor-pointer leading-relaxed flex items-center gap-2"
                       >
                         <User className="w-3 h-3" />
-                        También seré entrenador de algún equipo
+                        {t('auth.alsoCoach')}
                       </label>
                     </div>
                     
@@ -877,7 +876,7 @@ export default function Auth() {
                           htmlFor="director-declaration"
                           className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
                         >
-                          Declaro la autenticidad de mis datos y confirmo que actúo como Director Deportivo del club que voy a representar en esta aplicación *
+                          {t('auth.declarationText')} *
                         </label>
                       </div>
                       
@@ -891,29 +890,29 @@ export default function Auth() {
                           htmlFor="terms-acceptance"
                           className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
                         >
-                          He leído y acepto los{' '}
+                          {t('auth.termsAcceptance')}{' '}
                           <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
-                            Términos y Condiciones
+                            {t('auth.termsAndConditions')}
                           </a>{' '}
-                          y la{' '}
+                          {t('auth.and')}{' '}
                           <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
-                            Política de Privacidad
+                            {t('auth.privacyPolicy')}
                           </a>{' '}
-                          de la aplicación *
+                          {t('auth.ofTheApp')} *
                         </label>
                       </div>
                       
                       {directorDeclarationAccepted && termsAccepted && (
                         <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
                           <CheckCircle2 className="w-4 h-4" />
-                          <span>Declaraciones aceptadas</span>
+                          <span>{t('auth.declarationsAccepted')}</span>
                         </div>
                       )}
                       
                       <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
                         <Mail className="w-4 h-4 shrink-0 mt-0.5" />
                         <span>
-                          {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
+                          {t('auth.emailConfirmationNote')}
                         </span>
                       </p>
                     </div>
@@ -924,7 +923,7 @@ export default function Auth() {
                     className="w-full" 
                     disabled={loading || !directorDeclarationAccepted || !termsAccepted}
                   >
-                    {loading ? 'Creando cuenta...' : 'Crear cuenta de Director'}
+                    {loading ? t('auth.creatingAccount') : t('auth.createDirectorAccount')}
                   </Button>
                 </form>
               )}
@@ -943,7 +942,7 @@ export default function Auth() {
                     }}
                     className="mb-2 -ml-2"
                   >
-                    ← Volver
+                    ← {t('auth.back')}
                   </Button>
 
                   {/* Step 1: Enter invitation code */}
@@ -951,9 +950,9 @@ export default function Auth() {
                     <div className="space-y-4">
                       <div className="text-center space-y-2">
                         <Ticket className="w-12 h-12 mx-auto text-primary" />
-                        <p className="font-medium">Introduce tu código de invitación</p>
+                        <p className="font-medium">{t('auth.enterInvitationCode')}</p>
                         <p className="text-xs text-muted-foreground">
-                          El código tiene 6 caracteres y te lo ha facilitado el Director de tu club
+                          {t('auth.codeHas6Chars')}
                         </p>
                       </div>
                       
@@ -978,7 +977,7 @@ export default function Auth() {
                       {verifyingCode && (
                         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Verificando código...</span>
+                          <span>{t('auth.verifyingCode')}</span>
                         </div>
                       )}
                     </div>
@@ -990,26 +989,26 @@ export default function Auth() {
                       <Alert className="border-green-500/50 bg-green-500/10">
                         <Users className="h-4 w-4 text-green-600" />
                         <AlertDescription className="text-green-700 dark:text-green-400">
-                          <strong>¡Club encontrado!</strong>
+                          <strong>{t('auth.clubFound')}</strong>
                           <br />
-                          Te unirás a: <strong>{verifiedClub.club_name}</strong>
+                          {t('auth.youWillJoin')} <strong>{verifiedClub.club_name}</strong>
                         </AlertDescription>
                       </Alert>
 
                       <div className="space-y-2">
-                        <Label htmlFor="coach-name">Nombre completo *</Label>
+                        <Label htmlFor="coach-name">{t('auth.fullName')} *</Label>
                         <Input
                           id="coach-name"
                           type="text"
                           value={name}
                           onChange={e => setName(e.target.value)}
-                          placeholder="Tu nombre y apellidos"
+                          placeholder={t('auth.fullName')}
                           disabled={loading}
                         />
                         {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="coach-email">Email *</Label>
+                        <Label htmlFor="coach-email">{t('auth.email')} *</Label>
                         <Input
                           id="coach-email"
                           type="email"
@@ -1021,25 +1020,25 @@ export default function Auth() {
                         {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="coach-password">Contraseña *</Label>
+                        <Label htmlFor="coach-password">{t('auth.password')} *</Label>
                         <Input
                           id="coach-password"
                           type="password"
                           value={password}
                           onChange={e => setPassword(e.target.value)}
-                          placeholder="Mínimo 6 caracteres"
+                          placeholder={t('auth.minCharacters')}
                           disabled={loading}
                         />
                         {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="coach-confirm-password">Confirmar contraseña *</Label>
+                        <Label htmlFor="coach-confirm-password">{t('auth.confirmPassword')} *</Label>
                         <Input
                           id="coach-confirm-password"
                           type="password"
                           value={confirmPassword}
                           onChange={e => setConfirmPassword(e.target.value)}
-                          placeholder="Repite tu contraseña"
+                          placeholder={t('auth.repeatPassword')}
                           disabled={loading}
                         />
                         {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
@@ -1057,15 +1056,15 @@ export default function Auth() {
                             htmlFor="coach-terms"
                             className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
                           >
-                            He leído y acepto los{' '}
+                            {t('auth.termsAcceptance')}{' '}
                             <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
-                              Términos y Condiciones
+                              {t('auth.termsAndConditions')}
                             </a>{' '}
-                            y la{' '}
+                            {t('auth.and')}{' '}
                             <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
-                              Política de Privacidad
+                              {t('auth.privacyPolicy')}
                             </a>{' '}
-                            de la aplicación *
+                            {t('auth.ofTheApp')} *
                           </label>
                         </div>
                         
@@ -1079,35 +1078,35 @@ export default function Auth() {
                             htmlFor="responsibility-code"
                             className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
                           >
-                            He leído y acepto el{' '}
+                            {t('auth.responsibilityCodeAcceptance')}{' '}
                             <button
                               type="button"
                               onClick={() => {
                                 if (verifiedClub?.responsibility_code) {
                                   toast.info(verifiedClub.responsibility_code, { duration: 10000 });
                                 } else {
-                                  toast.info('Código de responsabilidad estándar del club');
+                                  toast.info(t('auth.standardResponsibilityCode'));
                                 }
                               }}
                               className="text-primary underline hover:no-underline"
                             >
-                              Código de Responsabilidad
+                              {t('auth.responsibilityCode')}
                             </button>{' '}
-                            del club *
+                            {t('auth.ofTheClub')} *
                           </label>
                         </div>
                         
                         {termsAccepted && responsibilityCodeAccepted && (
                           <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
                             <CheckCircle2 className="w-4 h-4" />
-                            <span>Aceptaciones completadas</span>
+                            <span>{t('auth.acceptancesCompleted')}</span>
                           </div>
                         )}
                         
                         <p className="text-xs text-primary flex items-start gap-2">
                           <Mail className="w-4 h-4 shrink-0 mt-0.5" />
                           <span>
-                            {t('auth.emailConfirmationNote', 'Se te enviará un email para verificar tu identidad')}
+                            {t('auth.emailConfirmationNote')}
                           </span>
                         </p>
                       </div>
@@ -1117,7 +1116,7 @@ export default function Auth() {
                         className="w-full" 
                         disabled={loading || !termsAccepted || !responsibilityCodeAccepted}
                       >
-                        {loading ? 'Creando cuenta...' : 'Crear cuenta y unirme al club'}
+                        {loading ? t('auth.creatingAccount') : t('auth.createAccountAndJoin')}
                       </Button>
                     </form>
                   )}
