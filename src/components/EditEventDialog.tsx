@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +17,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { Shield, Info } from 'lucide-react';
 
 interface EditEventDialogProps {
   event: DbEvent;
@@ -34,6 +37,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
   const [location, setLocation] = useState(event.location);
   const [destination, setDestination] = useState(event.destination || '');
   const [notes, setNotes] = useState(event.notes || '');
+  const [keepForever, setKeepForever] = useState(event.keep_forever ?? false);
   const [saving, setSaving] = useState(false);
 
   const isDisplacement = event.type === 'displacement';
@@ -77,6 +81,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
       location: isDisplacement ? destination.trim() : location.trim(),
       destination: isDisplacement ? destination.trim() : null,
       notes: notes.trim() || null,
+      keep_forever: keepForever,
     };
 
     const success = await onSave(updates);
@@ -167,6 +172,36 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
               rows={3}
             />
           </div>
+
+          {/* Keep forever option */}
+          <Card className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
+            <CardContent className="p-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  Los eventos se eliminan automáticamente 30 días después de su publicación.
+                </p>
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg bg-white dark:bg-background border border-amber-200 dark:border-amber-700">
+                <Checkbox
+                  checked={keepForever}
+                  onCheckedChange={(checked) => setKeepForever(checked === true)}
+                  disabled={saving}
+                />
+                <div className="flex items-center gap-1">
+                  <Shield className="h-3 w-3 text-primary" />
+                  <span className="text-xs font-medium">Mantener guardado para siempre</span>
+                </div>
+              </label>
+
+              {keepForever && (
+                <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
+                  ✓ Este evento no se eliminará automáticamente.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <DialogFooter>
