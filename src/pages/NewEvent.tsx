@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
@@ -26,6 +26,7 @@ type EventType = 'training' | 'match' | 'displacement';
 
 export default function NewEvent() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
   const { addEvent, createRecurringEvents } = useEvents();
@@ -37,8 +38,8 @@ export default function NewEvent() {
   const [type, setType] = useState<EventType>('training');
   const [teamId, setTeamId] = useState('');
   
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useState(searchParams.get('date') || '');
+  const [time, setTime] = useState(searchParams.get('time') || '');
   const [location, setLocation] = useState('');
   const [notes, setNotes] = useState('');
   const [invitedPlayers, setInvitedPlayers] = useState<string[]>([]);

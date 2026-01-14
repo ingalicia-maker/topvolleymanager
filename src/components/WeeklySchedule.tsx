@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday, eachHourOfInterval, setHours, setMinutes } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, Plus } from 'lucide-react';
 import { DbEvent } from '@/hooks/useEvents';
 import { useTeams } from '@/hooks/useTeams';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
@@ -16,6 +16,7 @@ interface WeeklyScheduleProps {
 export function WeeklySchedule({ events }: WeeklyScheduleProps) {
   const { t } = useTranslation();
   const { teams } = useTeams();
+  const navigate = useNavigate();
 
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
@@ -62,6 +63,13 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
     const height = Math.max((durationMinutes / 60) * 48, 40);
     
     return { top: `${top}px`, height: `${height}px` };
+  };
+
+  // Handle click on empty cell to create event
+  const handleCellClick = (day: Date, hour: number) => {
+    const dateStr = format(day, 'yyyy-MM-dd');
+    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+    navigate(`/events/new?date=${dateStr}&time=${timeStr}`);
   };
 
   // Check if there are any events this week
@@ -134,13 +142,22 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
                     key={day.toISOString()} 
                     className={`flex-1 border-l relative ${isDayToday ? 'bg-primary/5' : ''}`}
                   >
-                    {/* Hour grid lines */}
+                    {/* Hour grid cells - clickable to create event */}
                     {hours.map(hour => (
-                      <div 
+                      <button
                         key={hour}
-                        className="absolute left-0 right-0 border-t border-muted/30"
-                        style={{ top: `${(hour - startHour) * 48}px` }}
-                      />
+                        onClick={() => handleCellClick(day, hour)}
+                        className="absolute left-0 right-0 border-t border-muted/30 hover:bg-primary/10 transition-colors group cursor-pointer"
+                        style={{ 
+                          top: `${(hour - startHour) * 48}px`,
+                          height: '48px'
+                        }}
+                        title={`Crear evento a las ${hour}:00`}
+                      >
+                        <div className="opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center transition-opacity">
+                          <Plus className="h-4 w-4 text-primary" />
+                        </div>
+                      </button>
                     ))}
 
                     {/* Events */}
