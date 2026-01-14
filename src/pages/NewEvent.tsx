@@ -20,7 +20,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bus, MapPin, Clock, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bus, MapPin, Clock, Users, ChevronDown, ChevronUp, AlertTriangle, Repeat, Shield, Calendar, Info } from 'lucide-react';
 
 type EventType = 'training' | 'match' | 'displacement';
 
@@ -28,7 +28,7 @@ export default function NewEvent() {
   const navigate = useNavigate();
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
-  const { addEvent } = useEvents();
+  const { addEvent, createRecurringEvents } = useEvents();
   const { stops: availableStops, loading: stopsLoading } = useStops();
   const { user } = useAuth();
   const { profile } = useUserRole();
@@ -52,6 +52,12 @@ export default function NewEvent() {
   const [selectedStops, setSelectedStops] = useState<string[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [totalCoaches, setTotalCoaches] = useState('1');
+
+  // Recurring and persistence state
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringPattern, setRecurringPattern] = useState<'weekly' | 'biweekly'>('weekly');
+  const [recurringEndDate, setRecurringEndDate] = useState('');
+  const [keepForever, setKeepForever] = useState(false);
 
   const nativeSelectClassName =
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
@@ -223,7 +229,7 @@ export default function NewEvent() {
       date,
       time: type === 'displacement' ? departureTime : time,
       location: type === 'displacement' ? destination.trim() : location.trim(),
-      invited_players: type === 'displacement' ? [] : invitedPlayers, // Empty for displacement - coaches add players later
+      invited_players: type === 'displacement' ? [] : invitedPlayers,
       confirmed_players: [],
       declined_players: [],
       notes: notes.trim() || null,
@@ -236,6 +242,11 @@ export default function NewEvent() {
       total_passengers: type === 'displacement' ? parseInt(totalCoaches) || 0 : null,
       selected_teams: type === 'displacement' ? selectedTeams : [],
       coach_submissions: coachSubmissions,
+      keep_forever: keepForever,
+      is_recurring: isRecurring,
+      recurring_pattern: isRecurring ? recurringPattern : null,
+      recurring_end_date: isRecurring && recurringEndDate ? recurringEndDate : null,
+      parent_event_id: null,
     });
 
     if (result) {
@@ -311,6 +322,11 @@ export default function NewEvent() {
             }
           }
         }
+      }
+
+      // Create recurring events if enabled
+      if (isRecurring && type === 'training') {
+        await createRecurringEvents(result, recurringPattern, recurringEndDate || undefined);
       }
 
       navigate(`/events/${result.id}`);
@@ -590,6 +606,99 @@ export default function NewEvent() {
             disabled={loading}
           />
         </div>
+
+        {/* Recurring event options - only for training */}
+        {type === 'training' && (
+          <Card className="border-primary/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Repeat className="h-4 w-4" />
+                Evento recurrente
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <Checkbox
+                  checked={isRecurring}
+                  onCheckedChange={(checked) => setIsRecurring(checked === true)}
+                  disabled={loading}
+                />
+                <span className="text-sm">Repetir este evento automáticamente</span>
+              </label>
+
+              {isRecurring && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="recurringPattern">Frecuencia</Label>
+                    <select
+                      id="recurringPattern"
+                      className={nativeSelectClassName}
+                      value={recurringPattern}
+                      onChange={(e) => setRecurringPattern(e.target.value as 'weekly' | 'biweekly')}
+                      disabled={loading}
+                    >
+                      <option value="weekly">Cada semana</option>
+                      <option value="biweekly">Cada 2 semanas</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="recurringEndDate" className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Hasta (opcional)
+                    </Label>
+                    <Input
+                      id="recurringEndDate"
+                      type="date"
+                      value={recurringEndDate}
+                      onChange={e => setRecurringEndDate(e.target.value)}
+                      min={date}
+                      disabled={loading}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Si no especificas fecha, se crearán eventos hasta fin de temporada
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Auto-deletion warning and keep forever option */}
+        <Card className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  Eliminación automática de eventos
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  Los eventos se eliminan automáticamente 30 días después de su publicación para mantener el sistema organizado.
+                </p>
+              </div>
+            </div>
+
+            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-white dark:bg-background border border-amber-200 dark:border-amber-700">
+              <Checkbox
+                checked={keepForever}
+                onCheckedChange={(checked) => setKeepForever(checked === true)}
+                disabled={loading}
+              />
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Mantener este evento guardado para siempre</span>
+              </div>
+            </label>
+
+            {keepForever && (
+              <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
+                ✓ Este evento no se eliminará automáticamente. Podrás eliminarlo manualmente cuando quieras.
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Player selection for standard events only */}
         {type !== 'displacement' && teamId && (

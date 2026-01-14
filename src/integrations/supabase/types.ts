@@ -365,10 +365,15 @@ export type Database = {
           destination: string | null
           id: string
           invited_players: string[] | null
+          is_recurring: boolean | null
+          keep_forever: boolean | null
           location: string
           notes: string | null
+          parent_event_id: string | null
           player_returns: Json | null
           player_stops: Json | null
+          recurring_end_date: string | null
+          recurring_pattern: string | null
           selected_teams: string[] | null
           stops: Json | null
           team_id: string
@@ -390,10 +395,15 @@ export type Database = {
           destination?: string | null
           id?: string
           invited_players?: string[] | null
+          is_recurring?: boolean | null
+          keep_forever?: boolean | null
           location: string
           notes?: string | null
+          parent_event_id?: string | null
           player_returns?: Json | null
           player_stops?: Json | null
+          recurring_end_date?: string | null
+          recurring_pattern?: string | null
           selected_teams?: string[] | null
           stops?: Json | null
           team_id: string
@@ -415,10 +425,15 @@ export type Database = {
           destination?: string | null
           id?: string
           invited_players?: string[] | null
+          is_recurring?: boolean | null
+          keep_forever?: boolean | null
           location?: string
           notes?: string | null
+          parent_event_id?: string | null
           player_returns?: Json | null
           player_stops?: Json | null
+          recurring_end_date?: string | null
+          recurring_pattern?: string | null
           selected_teams?: string[] | null
           stops?: Json | null
           team_id?: string
@@ -434,6 +449,13 @@ export type Database = {
             columns: ["club_id"]
             isOneToOne: false
             referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_parent_event_id_fkey"
+            columns: ["parent_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -986,6 +1008,7 @@ export type Database = {
       accept_club_invitation: { Args: { _token: string }; Returns: Json }
       accept_club_invitation_by_code: { Args: { _code: string }; Returns: Json }
       cleanup_expired_verification_tokens: { Args: never; Returns: undefined }
+      cleanup_old_events: { Args: never; Returns: number }
       consume_credit: { Args: { _user_id: string }; Returns: boolean }
       generate_short_code: { Args: never; Returns: string }
       get_grace_period_days_remaining: {
