@@ -268,6 +268,8 @@ export default {
     noUpcoming: 'No hay eventos próximos',
     createFirst: 'Crear primer evento',
     create: 'Crear Evento',
+    thisWeek: 'Esta Semana',
+    displacement: 'Desplazamiento',
   },
 
   // Absences
