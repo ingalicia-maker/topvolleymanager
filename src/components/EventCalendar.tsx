@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, parseISO, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,8 @@ import { DbEvent } from '@/hooks/useEvents';
 import { useTeams } from '@/hooks/useTeams';
 import { Link } from 'react-router-dom';
 
+type EventType = 'training' | 'match' | 'displacement';
+
 interface EventCalendarProps {
   events: DbEvent[];
 }
@@ -17,6 +19,20 @@ export function EventCalendar({ events }: EventCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { teams } = useTeams();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [activeFilters, setActiveFilters] = useState<EventType[]>(['training', 'match', 'displacement']);
+
+  const toggleFilter = (type: EventType) => {
+    setActiveFilters(prev => 
+      prev.includes(type) 
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
+  // Filter events by active type filters
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => activeFilters.includes(event.type as EventType));
+  }, [events, activeFilters]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -30,7 +46,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
   // Group events by date
   const eventsByDate = useMemo(() => {
     const grouped: Record<string, DbEvent[]> = {};
-    events.forEach(event => {
+    filteredEvents.forEach(event => {
       const dateKey = event.date;
       if (!grouped[dateKey]) {
         grouped[dateKey] = [];
@@ -38,7 +54,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
       grouped[dateKey].push(event);
     });
     return grouped;
-  }, [events]);
+  }, [filteredEvents]);
 
   const getEventsForDate = (date: Date): DbEvent[] => {
     const dateKey = format(date, 'yyyy-MM-dd');
@@ -158,20 +174,41 @@ export function EventCalendar({ events }: EventCalendarProps) {
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex flex-wrap gap-3 text-xs">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-blue-500" />
-          <span>Entrenamiento</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-green-500" />
-          <span>Partido</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-purple-500" />
-          <span>Desplazamiento</span>
-        </div>
+      {/* Filter Buttons */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => toggleFilter('training')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            activeFilters.includes('training')
+              ? 'bg-blue-500 text-white shadow-sm'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          <div className={`w-2 h-2 rounded-full ${activeFilters.includes('training') ? 'bg-white' : 'bg-blue-500'}`} />
+          Entrenamiento
+        </button>
+        <button
+          onClick={() => toggleFilter('match')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            activeFilters.includes('match')
+              ? 'bg-green-500 text-white shadow-sm'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          <div className={`w-2 h-2 rounded-full ${activeFilters.includes('match') ? 'bg-white' : 'bg-green-500'}`} />
+          Partido
+        </button>
+        <button
+          onClick={() => toggleFilter('displacement')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            activeFilters.includes('displacement')
+              ? 'bg-purple-500 text-white shadow-sm'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          <div className={`w-2 h-2 rounded-full ${activeFilters.includes('displacement') ? 'bg-white' : 'bg-purple-500'}`} />
+          Desplazamiento
+        </button>
       </div>
 
       {/* Selected Date Events */}
