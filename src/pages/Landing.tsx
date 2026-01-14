@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { CookieBanner } from '@/components/CookieBanner';
 import { 
   Users, 
   Calendar, 
@@ -339,6 +340,9 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Cookie Banner */}
+      <CookieBanner />
     </div>
   );
 }

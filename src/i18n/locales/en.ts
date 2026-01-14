@@ -521,4 +521,13 @@ export default {
       terms: 'Terms',
     },
   },
+
+  // Cookies
+  cookies: {
+    title: 'We use cookies',
+    description: 'We use our own and third-party cookies to improve your experience, analyze traffic, and show you personalized content. By clicking "Accept", you consent to the use of all cookies.',
+    learnMore: 'Learn more',
+    accept: 'Accept',
+    decline: 'Decline',
+  },
 };
