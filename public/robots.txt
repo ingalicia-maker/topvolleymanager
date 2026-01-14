@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://topvolleymanager.lovable.app/sitemap.xml
+Sitemap: https://topvolleymanager.com/sitemap.xml
