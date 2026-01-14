@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday } from 'date-fns';
+import { useMemo, useState } from 'react';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday, addWeeks, subWeeks, isSameWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CalendarDays, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DbEvent } from '@/hooks/useEvents';
 import { useTeams } from '@/hooks/useTeams';
 import { Link, useNavigate } from 'react-router-dom';
@@ -17,11 +18,29 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
   const { t } = useTranslation();
   const { teams } = useTeams();
   const navigate = useNavigate();
-
+  
   const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
-  const weekEnd = endOfWeek(today, { weekStartsOn: 1 }); // Sunday
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => 
+    startOfWeek(today, { weekStartsOn: 1 })
+  );
+
+  const weekStart = currentWeekStart;
+  const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
   const daysOfWeek = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  const isCurrentWeek = isSameWeek(currentWeekStart, today, { weekStartsOn: 1 });
+
+  const goToPreviousWeek = () => {
+    setCurrentWeekStart(prev => subWeeks(prev, 1));
+  };
+
+  const goToNextWeek = () => {
+    setCurrentWeekStart(prev => addWeeks(prev, 1));
+  };
+
+  const goToToday = () => {
+    setCurrentWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
+  };
 
   // Generate hours from 7:00 to 22:00
   const startHour = 7;
@@ -72,10 +91,11 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
     navigate(`/events/new?date=${dateStr}&time=${timeStr}`);
   };
 
-  // Check if there are any events this week
+  // Check if there are any events this week - but always show if navigating
   const hasEvents = Object.values(eventsByDay).some(dayEvents => dayEvents.length > 0);
 
-  if (!hasEvents) {
+  // Always show the calendar when not on current week, or when there are events
+  if (!hasEvents && isCurrentWeek) {
     return null;
   }
 
@@ -84,10 +104,43 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
   return (
     <Card className="shadow-lg">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <CalendarDays className="h-5 w-5 text-primary" />
-          {t('events.thisWeek')}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CalendarDays className="h-5 w-5 text-primary" />
+            {t('events.thisWeek')}
+          </CardTitle>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={goToPreviousWeek}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            {!isCurrentWeek && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs px-2"
+                onClick={goToToday}
+              >
+                Hoy
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={goToNextWeek}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          {format(weekStart, "d MMM", { locale: es })} - {format(weekEnd, "d MMM yyyy", { locale: es })}
+        </p>
       </CardHeader>
       <CardContent className="pt-0 px-2">
         <ScrollArea className="w-full">
