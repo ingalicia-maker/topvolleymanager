@@ -11,6 +11,7 @@ import { CoachWelcomeDialog } from '@/components/CoachWelcomeDialog';
 import { MonthlyAbsenceSummary } from '@/components/MonthlyAbsenceSummary';
 import { ResponsibilityCodeBanner } from '@/components/ResponsibilityCodeBanner';
 import { CoachTeamSelector } from '@/components/CoachTeamSelector';
+import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -214,6 +215,9 @@ export default function Index() {
       
       {/* Monthly Absence Summary */}
       <MonthlyAbsenceSummary />
+
+      {/* Weekly Schedule - Google Calendar style */}
+      <WeeklySchedule events={visibleEvents} />
 
       {/* Player of the Week */}
       <PlayerOfTheWeek />
