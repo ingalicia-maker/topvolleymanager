@@ -20,9 +20,9 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bus, MapPin, Clock, Users, ChevronDown, ChevronUp, AlertTriangle, Repeat, Shield, Calendar, Info } from 'lucide-react';
+import { Bus, MapPin, Clock, Users, ChevronDown, ChevronUp, AlertTriangle, Repeat, Shield, Calendar, Info, Bell, CalendarOff, Megaphone } from 'lucide-react';
 
-type EventType = 'training' | 'match' | 'displacement';
+type EventType = 'training' | 'match' | 'displacement' | 'incident' | 'holiday' | 'communication';
 
 export default function NewEvent() {
   const navigate = useNavigate();
@@ -53,6 +53,10 @@ export default function NewEvent() {
   const [selectedStops, setSelectedStops] = useState<string[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [totalCoaches, setTotalCoaches] = useState('1');
+  
+  // Notification event state (for incident, holiday, communication)
+  const [affectedTeams, setAffectedTeams] = useState<string[]>([]);
+  const [affectsAllTeams, setAffectsAllTeams] = useState(true);
 
   // Recurring and persistence state
   const [isRecurring, setIsRecurring] = useState(false);
@@ -164,14 +168,25 @@ export default function NewEvent() {
       case 'training': return 'Entrenamiento';
       case 'match': return 'Partido';
       case 'displacement': return 'Desplazamiento';
+      case 'incident': return 'Incidencia';
+      case 'holiday': return 'Festivo';
+      case 'communication': return 'Comunicación';
       default: return 'Evento';
     }
+  };
+
+  const isNotificationType = type === 'incident' || type === 'holiday' || type === 'communication';
+
+  const toggleAffectedTeam = (teamId: string) => {
+    setAffectedTeams(prev =>
+      prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (type !== 'displacement' && !teamId) {
+    if (!isNotificationType && type !== 'displacement' && !teamId) {
       toast.error('Selecciona un equipo');
       return;
     }
@@ -195,6 +210,16 @@ export default function NewEvent() {
       }
       if (selectedStops.length === 0) {
         toast.error('Selecciona al menos una parada');
+        return;
+      }
+    } else if (isNotificationType) {
+      // Notification types: incident, holiday, communication
+      if (!affectsAllTeams && affectedTeams.length === 0) {
+        toast.error('Selecciona al menos un equipo afectado');
+        return;
+      }
+      if (!notes.trim()) {
+        toast.error('Describe la incidencia o comunicación');
         return;
       }
     } else {
@@ -225,12 +250,24 @@ export default function NewEvent() {
 
     const result = await addEvent({
       type,
-      team_id: type === 'displacement' ? selectedTeams[0] : teamId,
+      team_id: isNotificationType 
+        ? (affectsAllTeams ? 'all' : affectedTeams[0] || 'all')
+        : type === 'displacement' 
+          ? selectedTeams[0] 
+          : teamId,
       title: getEventTitle(),
       date,
-      time: type === 'displacement' ? departureTime : time,
-      location: type === 'displacement' ? destination.trim() : location.trim(),
-      invited_players: type === 'displacement' ? [] : invitedPlayers,
+      time: isNotificationType 
+        ? (time || '00:00')
+        : type === 'displacement' 
+          ? departureTime 
+          : time,
+      location: isNotificationType 
+        ? (location.trim() || '-')
+        : type === 'displacement' 
+          ? destination.trim() 
+          : location.trim(),
+      invited_players: type === 'displacement' || isNotificationType ? [] : invitedPlayers,
       confirmed_players: [],
       declined_players: [],
       notes: notes.trim() || null,
@@ -241,7 +278,11 @@ export default function NewEvent() {
       player_stops: {},
       player_returns: {},
       total_passengers: type === 'displacement' ? parseInt(totalCoaches) || 0 : null,
-      selected_teams: type === 'displacement' ? selectedTeams : [],
+      selected_teams: isNotificationType 
+        ? (affectsAllTeams ? teams.map(t => t.id) : affectedTeams)
+        : type === 'displacement' 
+          ? selectedTeams 
+          : [],
       coach_submissions: coachSubmissions,
       keep_forever: keepForever,
       is_recurring: isRecurring,
@@ -350,12 +391,23 @@ export default function NewEvent() {
               if (e.target.value !== 'displacement') {
                 setSelectedTeams([]);
               }
+              if (!['incident', 'holiday', 'communication'].includes(e.target.value)) {
+                setAffectedTeams([]);
+                setAffectsAllTeams(true);
+              }
             }}
             disabled={loading}
           >
-            <option value="training">Entrenamiento</option>
-            <option value="match">Partido</option>
-            <option value="displacement">Desplazamiento</option>
+            <optgroup label="Actividades">
+              <option value="training">🏐 Entrenamiento</option>
+              <option value="match">🏆 Partido</option>
+              <option value="displacement">🚌 Desplazamiento</option>
+            </optgroup>
+            <optgroup label="Notificaciones">
+              <option value="incident">⚠️ Incidencia</option>
+              <option value="holiday">🎉 Festivo</option>
+              <option value="communication">📢 Comunicación</option>
+            </optgroup>
           </select>
         </div>
 
@@ -522,6 +574,155 @@ export default function NewEvent() {
                 </CardContent>
               </Card>
             )}
+          </>
+        ) : isNotificationType ? (
+          <>
+            {/* NOTIFICATION EVENT FLOW (incident, holiday, communication) */}
+            <Card className={`border-2 ${type === 'incident' ? 'border-orange-500/50 bg-orange-500/5' : type === 'holiday' ? 'border-green-500/50 bg-green-500/5' : 'border-blue-500/50 bg-blue-500/5'}`}>
+              <CardContent className="p-4 space-y-1">
+                <div className="flex items-center gap-2">
+                  {type === 'incident' && <AlertTriangle className="h-5 w-5 text-orange-600" />}
+                  {type === 'holiday' && <CalendarOff className="h-5 w-5 text-green-600" />}
+                  {type === 'communication' && <Megaphone className="h-5 w-5 text-blue-600" />}
+                  <span className="font-medium">
+                    {type === 'incident' && 'Incidencia de pista u otras'}
+                    {type === 'holiday' && 'Festivo o día sin actividad'}
+                    {type === 'communication' && 'Comunicación importante'}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {type === 'incident' && 'Informa sobre problemas con pistas, cambios de horario, etc.'}
+                  {type === 'holiday' && 'Marca días festivos o sin entrenamientos.'}
+                  {type === 'communication' && 'Envía información importante a los equipos.'}
+                </p>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-2">
+              <Label htmlFor="date">Fecha *</Label>
+              <Input
+                id="date"
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="time">Hora (opcional)</Label>
+              <select
+                id="time"
+                className={nativeSelectClassName}
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                disabled={loading}
+              >
+                <option value="">Todo el día</option>
+                {timeOptions.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Lugar afectado (opcional)</Label>
+              <Input
+                id="location"
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+                placeholder="Ej: Pabellón principal, Sala 2..."
+                disabled={loading}
+              />
+            </div>
+
+            {/* Team selector for notifications */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Equipos afectados *
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors hover:bg-muted/50">
+                  <input
+                    type="radio"
+                    name="affectsAll"
+                    checked={affectsAllTeams}
+                    onChange={() => setAffectsAllTeams(true)}
+                    disabled={loading}
+                    className="h-4 w-4"
+                  />
+                  <span className="font-medium">Todos los equipos</span>
+                </label>
+                
+                <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors hover:bg-muted/50">
+                  <input
+                    type="radio"
+                    name="affectsAll"
+                    checked={!affectsAllTeams}
+                    onChange={() => setAffectsAllTeams(false)}
+                    disabled={loading}
+                    className="h-4 w-4"
+                  />
+                  <span className="font-medium">Solo algunos equipos</span>
+                </label>
+
+                {!affectsAllTeams && (
+                  <div className="pl-4 space-y-2 border-l-2 border-muted">
+                    {teamsLoading ? (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      </div>
+                    ) : (
+                      teams.map(team => (
+                        <label
+                          key={team.id}
+                          className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors ${
+                            affectedTeams.includes(team.id) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                          }`}
+                        >
+                          <Checkbox
+                            checked={affectedTeams.includes(team.id)}
+                            onCheckedChange={() => toggleAffectedTeam(team.id)}
+                            disabled={loading}
+                          />
+                          <div 
+                            className="w-3 h-3 rounded-full shrink-0" 
+                            style={{ backgroundColor: team.color }}
+                          />
+                          <span className="font-medium">{team.name}</span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="flex items-center gap-2">
+                <Info className="h-4 w-4" />
+                Descripción *
+              </Label>
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder={
+                  type === 'incident' 
+                    ? 'Ej: La pista 1 estará cerrada por mantenimiento...'
+                    : type === 'holiday'
+                    ? 'Ej: Festivo local, no hay entrenamientos...'
+                    : 'Ej: Reunión de padres el próximo viernes...'
+                }
+                rows={3}
+                disabled={loading}
+              />
+            </div>
           </>
         ) : (
           <>

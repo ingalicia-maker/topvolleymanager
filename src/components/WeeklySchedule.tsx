@@ -3,7 +3,7 @@ import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday, addWeeks, s
 import { es } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, Plus, ChevronLeft, ChevronRight, AlertTriangle, CalendarOff, Megaphone } from 'lucide-react';
 import { DbEvent } from '@/hooks/useEvents';
 import { useTeams } from '@/hooks/useTeams';
 import { Link, useNavigate } from 'react-router-dom';
@@ -62,6 +62,7 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
   }, [events, daysOfWeek]);
 
   const getTeamName = (teamId: string): string => {
+    if (teamId === 'all') return 'Todos';
     const team = teams.find(t => t.id === teamId);
     return team?.name || 'Equipo';
   };
@@ -71,17 +72,53 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
     return team?.color || '#6b7280';
   };
 
-  // Calculate event position and height based on time
-  const getEventStyle = (event: DbEvent) => {
+  // Get color and icon for notification types
+  const getEventTypeStyle = (event: DbEvent) => {
+    switch (event.type) {
+      case 'incident':
+        return { color: '#ea580c', icon: AlertTriangle };
+      case 'holiday':
+        return { color: '#16a34a', icon: CalendarOff };
+      case 'communication':
+        return { color: '#2563eb', icon: Megaphone };
+      default:
+        return { color: getTeamColor(event.team_id), icon: null };
+    }
+  };
+
+  const isNotificationType = (type: string) => 
+    ['incident', 'holiday', 'communication'].includes(type);
+
+  // Group events by time slot for handling overlaps
+  const groupEventsByTimeSlot = (dayEvents: DbEvent[]) => {
+    const grouped: Record<string, DbEvent[]> = {};
+    dayEvents.forEach(event => {
+      const hour = parseInt(event.time.split(':')[0]);
+      const key = `${hour}`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(event);
+    });
+    return grouped;
+  };
+
+  // Calculate event position and height based on time, with overlap handling
+  const getEventStyle = (event: DbEvent, index: number, totalInSlot: number) => {
     const [hours, minutes] = event.time.split(':').map(Number);
     const startMinutes = (hours - startHour) * 60 + minutes;
     const top = (startMinutes / 60) * 48; // 48px per hour
     
-    // Default duration: 1.5 hours for training, 2 hours for match
-    const durationMinutes = event.type === 'match' ? 120 : 90;
-    const height = Math.max((durationMinutes / 60) * 48, 40);
+    // Notification types take full width but are shorter
+    const isNotification = isNotificationType(event.type);
     
-    return { top: `${top}px`, height: `${height}px` };
+    // Default duration: 1.5 hours for training, 2 hours for match, 30min for notifications
+    const durationMinutes = isNotification ? 30 : event.type === 'match' ? 120 : 90;
+    const height = Math.max((durationMinutes / 60) * 48, isNotification ? 24 : 40);
+    
+    // Calculate width and left position for overlapping events
+    const width = totalInSlot > 1 && !isNotification ? `${100 / totalInSlot}%` : '100%';
+    const left = totalInSlot > 1 && !isNotification ? `${(index * 100) / totalInSlot}%` : '0';
+    
+    return { top: `${top}px`, height: `${height}px`, width, left };
   };
 
   // Handle click on empty cell to create event
@@ -213,35 +250,66 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
                       </button>
                     ))}
 
-                    {/* Events */}
-                    {dayEvents.map(event => {
-                      const style = getEventStyle(event);
-                      const teamColor = getTeamColor(event.team_id);
-                      
-                      return (
-                        <Link
-                          key={event.id}
-                          to={`/events/${event.id}`}
-                          className="absolute left-0.5 right-0.5 rounded overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all z-10"
-                          style={{
-                            ...style,
-                            backgroundColor: teamColor,
-                          }}
-                        >
-                          <div className="p-1 text-white h-full flex flex-col">
-                            <span className="font-bold text-xs leading-tight truncate">
-                              {getTeamName(event.team_id)}
-                            </span>
-                            <span className="text-[10px] opacity-90">
-                              {event.time.slice(0, 5)}
-                            </span>
-                            <span className="text-[10px] opacity-80 truncate">
-                              {event.location}
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                    {/* Events with overlap handling */}
+                    {(() => {
+                      const timeSlots = groupEventsByTimeSlot(dayEvents);
+                      return dayEvents.map(event => {
+                        const hour = parseInt(event.time.split(':')[0]);
+                        const slotEvents = timeSlots[`${hour}`] || [];
+                        const indexInSlot = slotEvents.findIndex(e => e.id === event.id);
+                        const totalInSlot = slotEvents.length;
+                        
+                        const style = getEventStyle(event, indexInSlot, totalInSlot);
+                        const typeStyle = getEventTypeStyle(event);
+                        const isNotification = isNotificationType(event.type);
+                        const IconComponent = typeStyle.icon;
+                        
+                        return (
+                          <Link
+                            key={event.id}
+                            to={`/events/${event.id}`}
+                            className={`absolute rounded overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all z-10 ${
+                              isNotification ? 'border-l-4' : ''
+                            }`}
+                            style={{
+                              top: style.top,
+                              height: style.height,
+                              width: style.width,
+                              left: style.left,
+                              backgroundColor: typeStyle.color,
+                              borderLeftColor: isNotification ? typeStyle.color : undefined,
+                              marginLeft: totalInSlot > 1 ? '1px' : '2px',
+                              marginRight: totalInSlot > 1 ? '1px' : '2px',
+                            }}
+                          >
+                            <div className="p-1 text-white h-full flex flex-col">
+                              {isNotification ? (
+                                <div className="flex items-center gap-1">
+                                  {IconComponent && <IconComponent className="h-3 w-3 shrink-0" />}
+                                  <span className="font-bold text-[10px] leading-tight truncate">
+                                    {event.title}
+                                  </span>
+                                </div>
+                              ) : (
+                                <>
+                                  <span className="font-bold text-xs leading-tight truncate">
+                                    {getTeamName(event.team_id)}
+                                  </span>
+                                  <span className="text-[10px] opacity-90">
+                                    {event.time.slice(0, 5)}
+                                  </span>
+                                  {style.height !== '24px' && (
+                                    <span className="text-[10px] opacity-80 truncate">
+                                      {event.location}
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </Link>
+                        );
+                      });
+                    })()}
                   </div>
                 );
               })}

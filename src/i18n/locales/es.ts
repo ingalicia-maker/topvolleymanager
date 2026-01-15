@@ -270,6 +270,9 @@ export default {
     create: 'Crear Evento',
     thisWeek: 'Esta Semana',
     displacement: 'Desplazamiento',
+    incident: 'Incidencia',
+    holiday: 'Festivo',
+    communication: 'Comunicación',
   },
 
   // Absences

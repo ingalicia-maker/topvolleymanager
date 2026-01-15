@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Users, Trophy, Dumbbell, Bus, CheckCircle, Clock } from 'lucide-react';
+import { Calendar, MapPin, Users, Trophy, Dumbbell, Bus, CheckCircle, Clock, AlertTriangle, CalendarOff, Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTeams } from '@/hooks/useTeams';
 import { DbEvent } from '@/hooks/useEvents';
@@ -16,8 +16,10 @@ export function EventCard({ event }: EventCardProps) {
   
   // For displacements: get all involved teams
   const isDisplacement = event.type === 'displacement';
-  const selectedTeams = isDisplacement ? (event.selected_teams || []) : [];
+  const isNotificationType = ['incident', 'holiday', 'communication'].includes(event.type);
+  const selectedTeams = (isDisplacement || isNotificationType) ? (event.selected_teams || []) : [];
   const involvedTeams = selectedTeams.map(id => teams.find(t => t.id === id)).filter(Boolean);
+  const affectsAllTeams = event.team_id === 'all' || selectedTeams.length === teams.length;
   
   // Check submission status for displacements
   const coachSubmissions = event.coach_submissions || {};
@@ -33,6 +35,9 @@ export function EventCard({ event }: EventCardProps) {
     switch (event.type) {
       case 'match': return <Trophy className="h-4 w-4 text-amber-500" />;
       case 'displacement': return <Bus className="h-4 w-4 text-blue-500" />;
+      case 'incident': return <AlertTriangle className="h-4 w-4 text-orange-500" />;
+      case 'holiday': return <CalendarOff className="h-4 w-4 text-green-500" />;
+      case 'communication': return <Megaphone className="h-4 w-4 text-blue-500" />;
       default: return <Dumbbell className="h-4 w-4 text-primary" />;
     }
   };
@@ -41,7 +46,19 @@ export function EventCard({ event }: EventCardProps) {
     switch (event.type) {
       case 'match': return { variant: 'default' as const, label: 'Partido' };
       case 'displacement': return { variant: 'outline' as const, label: 'Desplazamiento' };
+      case 'incident': return { variant: 'destructive' as const, label: 'Incidencia' };
+      case 'holiday': return { variant: 'default' as const, label: 'Festivo', className: 'bg-green-600 hover:bg-green-700' };
+      case 'communication': return { variant: 'default' as const, label: 'Comunicación', className: 'bg-blue-600 hover:bg-blue-700' };
       default: return { variant: 'secondary' as const, label: 'Entrenamiento' };
+    }
+  };
+
+  const getNotificationColor = () => {
+    switch (event.type) {
+      case 'incident': return '#ea580c';
+      case 'holiday': return '#16a34a';
+      case 'communication': return '#2563eb';
+      default: return undefined;
     }
   };
 
@@ -50,8 +67,10 @@ export function EventCard({ event }: EventCardProps) {
   return (
     <Link to={`/events/${event.id}`}>
       <Card className="overflow-hidden transition-all hover:shadow-lg active:scale-[0.98]">
-        {/* Color bar - show gradient for multiple teams in displacement */}
-        {isDisplacement && involvedTeams.length > 1 ? (
+        {/* Color bar - show gradient for multiple teams or notification color */}
+        {isNotificationType ? (
+          <div className="h-1.5" style={{ backgroundColor: getNotificationColor() }} />
+        ) : isDisplacement && involvedTeams.length > 1 ? (
           <div className="h-1.5 flex">
             {involvedTeams.map((tm, idx) => (
               <div 
@@ -72,7 +91,7 @@ export function EventCard({ event }: EventCardProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 {getEventIcon()}
-                <Badge variant={badge.variant} className="text-xs">
+                <Badge variant={badge.variant} className={`text-xs ${(badge as any).className || ''}`}>
                   {badge.label}
                 </Badge>
                 {/* Show submission status for displacements */}
@@ -92,7 +111,11 @@ export function EventCard({ event }: EventCardProps) {
               </div>
               <h3 className="font-bold text-foreground truncate">{event.title}</h3>
               {/* Show teams involved */}
-              {isDisplacement && involvedTeams.length > 0 ? (
+              {isNotificationType ? (
+                <p className="text-sm text-muted-foreground">
+                  {affectsAllTeams ? 'Todos los equipos' : involvedTeams.map(t => t?.name).join(', ')}
+                </p>
+              ) : isDisplacement && involvedTeams.length > 0 ? (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {involvedTeams.map(tm => (
                     <span 
