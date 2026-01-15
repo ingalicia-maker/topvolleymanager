@@ -2,7 +2,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export type SubscriptionStatus = 'free' | 'premium' | 'vip';
+export type SubscriptionStatus = 'free' | 'starter' | 'pro' | 'elite' | 'vip';
+
+export interface SubscriptionLimits {
+  maxTeams: number;
+  maxCoaches: number;
+  canExport: boolean;
+  canViewCharts: boolean;
+  canUseBusStops: boolean;
+}
 
 export interface Subscription {
   status: SubscriptionStatus;
@@ -12,6 +20,45 @@ export interface Subscription {
   inGracePeriod: boolean;
   gracePeriodDaysRemaining: number;
 }
+
+// Plan limits configuration
+const PLAN_LIMITS: Record<SubscriptionStatus, SubscriptionLimits> = {
+  free: {
+    maxTeams: 2,
+    maxCoaches: 0, // Director only
+    canExport: false,
+    canViewCharts: false,
+    canUseBusStops: false,
+  },
+  starter: {
+    maxTeams: 4,
+    maxCoaches: 2,
+    canExport: true,
+    canViewCharts: true,
+    canUseBusStops: true,
+  },
+  pro: {
+    maxTeams: 10,
+    maxCoaches: 10,
+    canExport: true,
+    canViewCharts: true,
+    canUseBusStops: true,
+  },
+  elite: {
+    maxTeams: Infinity,
+    maxCoaches: Infinity,
+    canExport: true,
+    canViewCharts: true,
+    canUseBusStops: true,
+  },
+  vip: {
+    maxTeams: Infinity,
+    maxCoaches: Infinity,
+    canExport: true,
+    canViewCharts: true,
+    canUseBusStops: true,
+  },
+};
 
 export function useSubscription() {
   const { user } = useAuth();
@@ -59,12 +106,22 @@ export function useSubscription() {
         const { data: graceDaysRemaining } = await supabase
           .rpc('get_grace_period_days_remaining', { _user_id: user.id });
 
-        const status = subData?.status as SubscriptionStatus || 'free';
+        // Map old 'premium' status to 'starter' for backwards compatibility
+        let status: SubscriptionStatus = 'free';
+        if (subData?.status) {
+          if (subData.status === 'premium') {
+            status = 'starter';
+          } else if (['starter', 'pro', 'elite', 'vip'].includes(subData.status)) {
+            status = subData.status as SubscriptionStatus;
+          }
+        }
+        
         const isAdmin = isAdminData || false;
         const isVip = isVipData || false;
         
         // VIPs and admins have unlimited credits (show 999)
-        const credits = (isAdmin || isVip || status === 'premium' || status === 'vip') 
+        const isPaidPlan = status !== 'free';
+        const credits = (isAdmin || isVip || isPaidPlan) 
           ? 999 
           : (creditsData || 5);
 
@@ -89,8 +146,8 @@ export function useSubscription() {
   const consumeCredit = async (): Promise<boolean> => {
     if (!user) return false;
     
-    // VIPs, admins, and premium users don't consume credits
-    if (subscription.isAdmin || subscription.isVip || subscription.status === 'premium') {
+    // Paid plans don't consume credits
+    if (subscription.isAdmin || subscription.isVip || subscription.status !== 'free') {
       return true;
     }
 
@@ -112,21 +169,20 @@ export function useSubscription() {
     }
   };
 
-  const isPremium = subscription.status === 'premium' || subscription.status === 'vip' || subscription.isAdmin || subscription.isVip;
-  
-  const canExport = isPremium;
-  const canViewCharts = isPremium;
-  const canUseBusStops = isPremium;
-  const maxTeams = isPremium ? Infinity : 1;
+  const limits = PLAN_LIMITS[subscription.status] || PLAN_LIMITS.free;
+  const isPaidPlan = subscription.status !== 'free';
 
   return {
     subscription,
     loading,
     consumeCredit,
-    isPremium,
-    canExport,
-    canViewCharts,
-    canUseBusStops,
-    maxTeams,
+    isPremium: isPaidPlan, // Backwards compatibility
+    isPaidPlan,
+    canExport: limits.canExport,
+    canViewCharts: limits.canViewCharts,
+    canUseBusStops: limits.canUseBusStops,
+    maxTeams: limits.maxTeams,
+    maxCoaches: limits.maxCoaches,
+    limits,
   };
 }

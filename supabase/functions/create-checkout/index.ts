@@ -12,9 +12,21 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Price IDs
-const PRICE_MONTHLY = "price_1SnbIBPNqf8w4NJDicwJvJGT"; // 5€/mes
-const PRICE_YEARLY = "price_1SnbLGPNqf8w4NJD5miilpCr"; // 40€/año
+// Price IDs - You'll need to create these in Stripe Dashboard
+const PRICES = {
+  starter_monthly: "price_1SnbIBPNqf8w4NJDicwJvJGT", // 5€/mes
+  starter_yearly: "price_1SnbLGPNqf8w4NJD5miilpCr", // 40€/año
+  pro_monthly: "price_pro_monthly_15", // 15€/mes - REPLACE WITH REAL PRICE ID
+  pro_yearly: "price_pro_yearly_120", // 120€/año - REPLACE WITH REAL PRICE ID
+};
+
+// Map price IDs to subscription status
+const PRICE_TO_STATUS: Record<string, string> = {
+  [PRICES.starter_monthly]: 'starter',
+  [PRICES.starter_yearly]: 'starter',
+  [PRICES.pro_monthly]: 'pro',
+  [PRICES.pro_yearly]: 'pro',
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -50,7 +62,11 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
 
-    const priceId = plan === 'yearly' ? PRICE_YEARLY : PRICE_MONTHLY;
+    // Get price ID based on plan
+    const priceId = PRICES[plan as keyof typeof PRICES];
+    if (!priceId) {
+      throw new Error(`Invalid plan: ${plan}`);
+    }
     logStep("Selected price", { plan, priceId });
 
     const session = await stripe.checkout.sessions.create({
@@ -65,6 +81,10 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${req.headers.get("origin")}/subscription?success=true`,
       cancel_url: `${req.headers.get("origin")}/subscription?canceled=true`,
+      metadata: {
+        user_id: user.id,
+        plan_type: plan,
+      },
     });
 
     logStep("Checkout session created", { sessionId: session.id });
