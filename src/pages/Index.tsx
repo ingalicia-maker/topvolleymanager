@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut, UsersRound } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut, UsersRound, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
@@ -303,12 +303,21 @@ export default function Index() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
-          <Link to="/players/new">
-            <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
-              <UserPlus className="h-5 w-5" />
-              <span className="text-sm">{t('players.add')}</span>
-            </Button>
-          </Link>
+          {isDirector && teams.length === 0 ? (
+            <Link to="/teams">
+              <Button className="w-full h-auto py-4 flex-col gap-2">
+                <Plus className="h-5 w-5" />
+                <span className="text-sm">{t('teams.createFirst')}</span>
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/players/new">
+              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
+                <UserPlus className="h-5 w-5" />
+                <span className="text-sm">{t('players.add')}</span>
+              </Button>
+            </Link>
+          )}
           <Link to="/events/new">
             <Button className="w-full h-auto py-4 flex-col gap-2">
               <CalendarPlus className="h-5 w-5" />
