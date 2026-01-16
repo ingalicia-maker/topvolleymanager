@@ -422,6 +422,7 @@ export default {
     teamLimitReached: 'Has alcanzado el límite de equipos',
     coachLimitReached: 'Has alcanzado el límite de entrenadores',
     upgradeForMore: 'Actualiza tu plan para añadir más',
+    saveYearly: 'Ahorra {{percent}}',
   },
 
   // Admin

@@ -43,12 +43,26 @@ export default function Landing() {
     'landing.pricing.free.feature4',
   ];
 
-  const premiumFeatures = [
-    'landing.pricing.premium.feature1',
-    'landing.pricing.premium.feature2',
-    'landing.pricing.premium.feature3',
-    'landing.pricing.premium.feature4',
-    'landing.pricing.premium.feature5',
+  const starterFeatures = [
+    'landing.pricing.starter.feature1',
+    'landing.pricing.starter.feature2',
+    'landing.pricing.starter.feature3',
+    'landing.pricing.starter.feature4',
+    'landing.pricing.starter.feature5',
+  ];
+
+  const proFeatures = [
+    'landing.pricing.pro.feature1',
+    'landing.pricing.pro.feature2',
+    'landing.pricing.pro.feature3',
+    'landing.pricing.pro.feature4',
+  ];
+
+  const eliteFeatures = [
+    'landing.pricing.elite.feature1',
+    'landing.pricing.elite.feature2',
+    'landing.pricing.elite.feature3',
+    'landing.pricing.elite.feature4',
   ];
 
   const demoScreens = [
@@ -243,57 +257,112 @@ export default function Landing() {
           <p className="text-muted-foreground text-center mb-12">
             {t('landing.pricing.subtitle')}
           </p>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {/* Free Plan */}
             <Card className="relative overflow-hidden">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-2">{t('subscription.free')}</h3>
-                <p className="text-muted-foreground mb-6">{t('landing.pricing.free.desc')}</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">0€</span>
-                  <span className="text-muted-foreground">/{t('landing.pricing.month')}</span>
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold mb-2">{t('landing.pricing.free.name')}</h3>
+                <p className="text-muted-foreground text-sm mb-4">{t('landing.pricing.free.desc')}</p>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold">0€</span>
+                  <span className="text-muted-foreground text-sm">/{t('landing.pricing.month')}</span>
                 </div>
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2 mb-6 text-sm">
                   {freeFeatures.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2">
-                      <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
                       <span>{t(feature)}</span>
                     </li>
                   ))}
                 </ul>
                 <Link to="/auth" className="block">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" size="sm">
                     {t('landing.getStarted')}
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
-            {/* Premium Plan */}
-            <Card className="relative overflow-hidden border-primary shadow-lg">
-              <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1 text-sm font-medium rounded-bl-lg">
-                {t('landing.pricing.popular')}
-              </div>
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-2">{t('subscription.premium')}</h3>
-                <p className="text-muted-foreground mb-6">{t('landing.pricing.premium.desc')}</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">5€</span>
-                  <span className="text-muted-foreground">/{t('landing.pricing.month')}</span>
+            {/* Starter Plan */}
+            <Card className="relative overflow-hidden border-primary/50">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold mb-2">{t('landing.pricing.starter.name')}</h3>
+                <p className="text-muted-foreground text-sm mb-4">{t('landing.pricing.starter.desc')}</p>
+                <div className="mb-2">
+                  <span className="text-3xl font-bold">5€</span>
+                  <span className="text-muted-foreground text-sm">/{t('landing.pricing.month')}</span>
                 </div>
-                <ul className="space-y-3 mb-8">
-                  {premiumFeatures.map((feature, index) => (
+                <p className="text-xs text-primary mb-4">
+                  {t('landing.pricing.year')}: 40€ ({t('subscription.saveYearly', { percent: '33%' })})
+                </p>
+                <ul className="space-y-2 mb-6 text-sm">
+                  {starterFeatures.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2">
-                      <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
                       <span>{t(feature)}</span>
                     </li>
                   ))}
                 </ul>
                 <Link to="/auth" className="block">
-                  <Button className="w-full">
+                  <Button className="w-full" size="sm">
                     {t('landing.pricing.subscribe')}
                   </Button>
                 </Link>
+              </CardContent>
+            </Card>
+
+            {/* Pro Plan */}
+            <Card className="relative overflow-hidden border-primary shadow-lg">
+              <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-medium rounded-bl-lg">
+                {t('landing.pricing.popular')}
+              </div>
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold mb-2">{t('landing.pricing.pro.name')}</h3>
+                <p className="text-muted-foreground text-sm mb-4">{t('landing.pricing.pro.desc')}</p>
+                <div className="mb-2">
+                  <span className="text-3xl font-bold">15€</span>
+                  <span className="text-muted-foreground text-sm">/{t('landing.pricing.month')}</span>
+                </div>
+                <p className="text-xs text-primary mb-4">
+                  {t('landing.pricing.year')}: 120€ ({t('subscription.saveYearly', { percent: '33%' })})
+                </p>
+                <ul className="space-y-2 mb-6 text-sm">
+                  {proFeatures.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span>{t(feature)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/auth" className="block">
+                  <Button className="w-full" size="sm">
+                    {t('landing.pricing.subscribe')}
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Elite Plan */}
+            <Card className="relative overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold mb-2">{t('landing.pricing.elite.name')}</h3>
+                <p className="text-muted-foreground text-sm mb-4">{t('landing.pricing.elite.desc')}</p>
+                <div className="mb-4">
+                  <span className="text-2xl font-bold">{t('landing.pricing.custom')}</span>
+                </div>
+                <ul className="space-y-2 mb-6 text-sm">
+                  {eliteFeatures.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span>{t(feature)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <a href="mailto:info@topvolleymanager.com" className="block">
+                  <Button variant="outline" className="w-full" size="sm">
+                    {t('landing.pricing.contactUs')}
+                  </Button>
+                </a>
               </CardContent>
             </Card>
           </div>

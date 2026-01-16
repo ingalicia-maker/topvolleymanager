@@ -128,13 +128,7 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
     navigate(`/events/new?date=${dateStr}&time=${timeStr}`);
   };
 
-  // Check if there are any events this week - but always show if navigating
-  const hasEvents = Object.values(eventsByDay).some(dayEvents => dayEvents.length > 0);
-
-  // Always show the calendar when not on current week, or when there are events
-  if (!hasEvents && isCurrentWeek) {
-    return null;
-  }
+  // Always show the weekly schedule - it's useful for navigation and creating events
 
   const totalHeight = (endHour - startHour + 1) * 48; // 48px per hour
 

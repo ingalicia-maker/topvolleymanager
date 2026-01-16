@@ -422,6 +422,7 @@ export default {
     teamLimitReached: 'Team limit reached',
     coachLimitReached: 'Coach limit reached',
     upgradeForMore: 'Upgrade your plan to add more',
+    saveYearly: 'Save {{percent}}',
   },
 
   // Admin
