@@ -18,17 +18,17 @@ import { Plus, Trash2, ChevronDown, ChevronUp, History } from 'lucide-react';
 type PhoneType = 'player' | 'parent' | 'tutor';
 
 // Phone validation: requires + prefix for international format
-const validatePhone = (phone: string): { isValid: boolean; error?: string } => {
+const validatePhone = (phone: string, t: (key: string) => string): { isValid: boolean; error?: string } => {
   const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-  if (!cleaned) return { isValid: false, error: 'El teléfono es obligatorio' };
+  if (!cleaned) return { isValid: false, error: t('players.phoneRequired') };
   
   if (!cleaned.startsWith('+')) {
-    return { isValid: false, error: 'Añade el prefijo del país (ej: +34, +39, +1)' };
+    return { isValid: false, error: t('players.addCountryPrefix') };
   }
   
   // At least 8 digits after the +
   if (cleaned.length < 9) {
-    return { isValid: false, error: 'El número es demasiado corto' };
+    return { isValid: false, error: t('players.numberTooShort') };
   }
   
   return { isValid: true };
@@ -140,26 +140,26 @@ export default function NewPlayer() {
     e.preventDefault();
     
     if (!name.trim()) {
-      toast.error('El nombre es obligatorio');
+      toast.error(t('auth.nameRequired'));
       return;
     }
     
-    const phoneValidation = validatePhone(phone);
+    const phoneValidation = validatePhone(phone, t);
     if (!phoneValidation.isValid) {
       toast.error(phoneValidation.error);
       return;
     }
     
     if (phone2.trim()) {
-      const phone2Validation = validatePhone(phone2);
+      const phone2Validation = validatePhone(phone2, t);
       if (!phone2Validation.isValid) {
-        toast.error(`Segundo teléfono: ${phone2Validation.error}`);
+        toast.error(t('players.secondPhoneError', { error: phone2Validation.error }));
         return;
       }
     }
     
     if (selectedTeams.length === 0) {
-      toast.error('Selecciona al menos un equipo');
+      toast.error(t('players.selectAtLeastOneTeam'));
       return;
     }
 
@@ -196,9 +196,9 @@ export default function NewPlayer() {
       setHeightMeasuredAt(format(new Date(), 'yyyy-MM'));
       setAdditionalMeasurements([]);
       setSelectedTeams(preselectedTeam ? [preselectedTeam] : []);
-      toast.success('Jugadora guardada. Puedes añadir otra o volver al inicio.', {
+      toast.success(t('players.playerSaved'), {
         action: {
-          label: 'Ir al inicio',
+          label: t('players.goHome'),
           onClick: () => navigate('/'),
         },
       });
@@ -208,38 +208,38 @@ export default function NewPlayer() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Nueva Jugadora" showBack />
+      <Header title={t('players.newPlayer')} showBack />
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
         {/* Basic Info */}
         <div className="space-y-2">
-          <Label htmlFor="name">Nombre *</Label>
+          <Label htmlFor="name">{t('players.name')} *</Label>
           <Input
             id="name"
             value={name}
             onChange={e => setName(e.target.value)}
-            placeholder="Nombre"
+            placeholder={t('players.name')}
             disabled={loading}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="surname1">Primer Apellido</Label>
+            <Label htmlFor="surname1">{t('players.surname1')}</Label>
             <Input
               id="surname1"
               value={surname1}
               onChange={e => setSurname1(e.target.value)}
-              placeholder="Opcional"
+              placeholder={t('players.optional')}
               disabled={loading}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="surname2">Segundo Apellido</Label>
+            <Label htmlFor="surname2">{t('players.surname2')}</Label>
             <Input
               id="surname2"
               value={surname2}
               onChange={e => setSurname2(e.target.value)}
-              placeholder="Opcional"
+              placeholder={t('players.optional')}
               disabled={loading}
             />
           </div>
@@ -248,7 +248,7 @@ export default function NewPlayer() {
         {/* Phone with Type */}
         <Card>
           <CardHeader className="py-3 px-4">
-            <CardTitle className="text-sm font-medium">Teléfono (WhatsApp) *</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('players.phoneWhatsApp')}</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0 space-y-3">
             <div className="flex gap-2">
@@ -289,7 +289,7 @@ export default function NewPlayer() {
                 className="w-full text-muted-foreground"
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Añadir segundo teléfono
+                {t('players.addSecondPhone')}
               </Button>
             ) : (
               <div className="space-y-2 pt-2 border-t">
@@ -298,7 +298,7 @@ export default function NewPlayer() {
                     type="tel"
                     value={phone2}
                     onChange={e => setPhone2(e.target.value)}
-                    placeholder="Segundo teléfono"
+                    placeholder={t('players.secondPhone')}
                     disabled={loading}
                     className="flex-1"
                   />
@@ -338,35 +338,35 @@ export default function NewPlayer() {
         {/* Basic Stats */}
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="number">Nº Camiseta</Label>
+            <Label htmlFor="number">{t('players.jerseyNumber')}</Label>
             <Input
               id="number"
               type="number"
               value={number}
               onChange={e => setNumber(e.target.value)}
-              placeholder="Ej: 7"
+              placeholder="7"
               disabled={loading}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="birthYear">Año Nac.</Label>
+            <Label htmlFor="birthYear">{t('players.birthYearShort')}</Label>
             <Input
               id="birthYear"
               type="number"
               value={birthYear}
               onChange={e => setBirthYear(e.target.value)}
-              placeholder="Ej: 2010"
+              placeholder="2010"
               disabled={loading}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="height">Altura (cm)</Label>
+            <Label htmlFor="height">{t('players.heightCm')}</Label>
             <Input
               id="height"
               type="number"
               value={height}
               onChange={e => setHeight(e.target.value)}
-              placeholder="Ej: 165"
+              placeholder="165"
               disabled={loading}
             />
           </div>
@@ -375,7 +375,7 @@ export default function NewPlayer() {
         {/* Height Measurement Date */}
         {height && (
           <div className="space-y-2">
-            <Label htmlFor="heightMeasuredAt">Fecha de medición de altura</Label>
+            <Label htmlFor="heightMeasuredAt">{t('players.heightMeasurementDate')}</Label>
             <Input
               id="heightMeasuredAt"
               type="month"
@@ -391,7 +391,7 @@ export default function NewPlayer() {
           <CardHeader className="py-3 px-4">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <History className="h-4 w-4" />
-              Medidas adicionales
+              {t('players.additionalMeasurements')}
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0 space-y-3">
@@ -406,7 +406,7 @@ export default function NewPlayer() {
                   <span className="font-medium text-sm">{type}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
-                      {entries[0]?.value} cm ({entries.length} {entries.length === 1 ? 'entrada' : 'entradas'})
+                      {entries[0]?.value} cm ({entries.length} {entries.length === 1 ? t('players.entry') : t('players.entries')})
                     </span>
                     {expandedMeasurementTypes.has(type) ? (
                       <ChevronUp className="h-4 w-4" />
@@ -455,7 +455,7 @@ export default function NewPlayer() {
                       className="w-full"
                     >
                       <Plus className="h-4 w-4 mr-1" />
-                      Añadir entrada
+                      {t('players.addEntry')}
                     </Button>
                   </div>
                 )}
@@ -473,11 +473,11 @@ export default function NewPlayer() {
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Añadir tipo de medida
+                {t('players.addMeasurementType')}
               </Button>
             ) : (
               <div className="space-y-2 p-3 border rounded-lg">
-                <Label className="text-xs text-muted-foreground">Selecciona o escribe un tipo:</Label>
+                <Label className="text-xs text-muted-foreground">{t('players.selectOrWriteType')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {measurementSuggestions.map(suggestion => (
                     <Button
@@ -496,7 +496,7 @@ export default function NewPlayer() {
                   <Input
                     value={customMeasurementName}
                     onChange={e => setCustomMeasurementName(e.target.value)}
-                    placeholder="Nombre personalizado"
+                    placeholder={t('players.customName')}
                     disabled={loading}
                   />
                   <Button
@@ -505,7 +505,7 @@ export default function NewPlayer() {
                     onClick={() => handleAddMeasurement(customMeasurementName)}
                     disabled={loading || !customMeasurementName.trim()}
                   >
-                    Añadir
+                    {t('common.add')}
                   </Button>
                 </div>
                 <Button
@@ -518,7 +518,7 @@ export default function NewPlayer() {
                   }}
                   className="w-full"
                 >
-                  Cancelar
+                  {t('common.cancel')}
                 </Button>
               </div>
             )}
@@ -527,19 +527,33 @@ export default function NewPlayer() {
 
         {/* Teams */}
         <div className="space-y-3">
-          <Label>Equipos *</Label>
+          <Label>{t('teams.title')} *</Label>
           {teamsLoading || roleLoading ? (
             <div className="flex items-center justify-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
             </div>
           ) : visibleTeams.length === 0 ? (
-            <Card className="border-amber-500/30 bg-amber-500/5">
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No tienes equipos asignados. Contacta con el Director Deportivo para que te asigne equipos.
-                </p>
-              </CardContent>
-            </Card>
+            isDirector ? (
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="p-4 text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    {t('teams.noTeamsYet')}
+                  </p>
+                  <Button onClick={() => navigate('/teams')} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('teams.createFirst')}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-amber-500/30 bg-amber-500/5">
+                <CardContent className="p-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {t('teams.noTeamsAssigned')}
+                  </p>
+                </CardContent>
+              </Card>
+            )
           ) : (
             <div className="space-y-2">
               {visibleTeams.map(team => (
@@ -567,7 +581,7 @@ export default function NewPlayer() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Guardando...' : 'Guardar Jugadora'}
+          {loading ? t('players.saving') : t('players.savePlayer')}
         </Button>
       </form>
       <BottomNav />

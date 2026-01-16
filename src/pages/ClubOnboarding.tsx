@@ -173,7 +173,8 @@ export default function ClubOnboarding() {
 
     if (result.club) {
       toast.success('¡Club creado correctamente!');
-      navigate('/', { replace: true });
+      // Force a page reload to ensure the club data is fresh
+      window.location.href = '/';
     } else {
       toast.error(result.error || 'Error al crear el club');
     }
