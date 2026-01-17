@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useClub } from '@/hooks/useClub';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { toast } from 'sonner';
 import { Users, Shield, Mail, Phone, CheckCircle, Clock, UserX, MessageSquare, Send, FileCheck, FileX, Eye } from 'lucide-react';
 import { format } from 'date-fns';
@@ -49,11 +51,13 @@ interface UserRole {
 }
 
 export default function CoachManagement() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { loading: roleLoading, profile: currentUserProfile, isDirector } = useUserRole();
   const { club, members: clubMembers, loading: clubLoading } = useClub();
   const { user } = useAuth();
   const { teams } = useTeams();
+  const { maxCoaches, isPaidPlan } = useSubscription();
   const { getOrCreateDirectConversation, createConversation } = useConversations();
   const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
