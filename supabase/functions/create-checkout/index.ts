@@ -12,12 +12,12 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Price IDs - You'll need to create these in Stripe Dashboard
+// Price IDs from Stripe Dashboard
 const PRICES = {
   starter_monthly: "price_1SnbIBPNqf8w4NJDicwJvJGT", // 5€/mes
   starter_yearly: "price_1SnbLGPNqf8w4NJD5miilpCr", // 40€/año
-  pro_monthly: "price_pro_monthly_15", // 15€/mes - REPLACE WITH REAL PRICE ID
-  pro_yearly: "price_pro_yearly_120", // 120€/año - REPLACE WITH REAL PRICE ID
+  pro_monthly: "price_1SpmIOPNqf8w4NJD3g8i1ccv", // 15€/mes
+  pro_yearly: "price_1SpmKNPNqf8w4NJDGjMrUJpd", // 120€/año
 };
 
 // Map price IDs to subscription status

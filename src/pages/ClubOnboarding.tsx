@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,13 +14,13 @@ import { toast } from 'sonner';
 import { Building2, Users, Link2, Loader2, CheckCircle, XCircle, Shield, KeyRound } from 'lucide-react';
 
 export default function ClubOnboarding() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { token: pathToken } = useParams<{ token?: string }>(); // For /inv/:token routes
+  const { token: pathToken } = useParams<{ token?: string }>();
   const { user } = useAuth();
   const { hasClub, loading, createClub, joinClubWithToken } = useClub();
-  
   const [mode, setMode] = useState<'select' | 'create' | 'join'>('select');
   const [clubName, setClubName] = useState('');
   const [inviteToken, setInviteToken] = useState('');
@@ -69,7 +70,7 @@ export default function ClubOnboarding() {
       const { data, error } = await supabase.rpc('get_invitation_preview', { _token: token });
 
       if (error) {
-        setJoinResult({ success: false, message: 'Invitación no válida o expirada' });
+        setJoinResult({ success: false, message: t('onboarding.invalidInvitation') });
         setLoadingClubInfo(false);
         return;
       }
@@ -78,20 +79,20 @@ export default function ClubOnboarding() {
       const preview = Array.isArray(data) ? data[0] : data;
 
       if (!preview) {
-        setJoinResult({ success: false, message: 'Invitación no válida o expirada' });
+        setJoinResult({ success: false, message: t('onboarding.invalidInvitation') });
         setLoadingClubInfo(false);
         return;
       }
 
       // Check if already used or expired
       if (preview.used_at) {
-        setJoinResult({ success: false, message: 'Esta invitación ya ha sido utilizada' });
+        setJoinResult({ success: false, message: t('onboarding.invitationUsed') });
         setLoadingClubInfo(false);
         return;
       }
 
       if (new Date(preview.expires_at) < new Date()) {
-        setJoinResult({ success: false, message: 'La invitación ha expirado' });
+        setJoinResult({ success: false, message: t('onboarding.invitationExpired') });
         setLoadingClubInfo(false);
         return;
       }
@@ -103,7 +104,7 @@ export default function ClubOnboarding() {
       setClubResponsibilityCode(preview.responsibility_code);
     } catch (error) {
       console.error('[ClubOnboarding] Error fetching club info:', error);
-      setJoinResult({ success: false, message: 'Error al cargar la invitación' });
+      setJoinResult({ success: false, message: t('onboarding.errorLoadingInvitation') });
     }
 
     setLoadingClubInfo(false);
@@ -119,7 +120,7 @@ export default function ClubOnboarding() {
       const { data, error } = await supabase.rpc('get_invitation_preview_by_code', { _code: code.toUpperCase() });
 
       if (error || !data || (Array.isArray(data) && data.length === 0)) {
-        setJoinResult({ success: false, message: 'Código no válido o expirado' });
+        setJoinResult({ success: false, message: t('onboarding.invalidCode') });
         setClubInfo(null);
         setClubResponsibilityCode(null);
         setLoadingClubInfo(false);
@@ -129,13 +130,13 @@ export default function ClubOnboarding() {
       const preview = Array.isArray(data) ? data[0] : data;
 
       if (preview.used_at) {
-        setJoinResult({ success: false, message: 'Este código ya ha sido utilizado' });
+        setJoinResult({ success: false, message: t('onboarding.codeUsed') });
         setLoadingClubInfo(false);
         return;
       }
 
       if (new Date(preview.expires_at) < new Date()) {
-        setJoinResult({ success: false, message: 'El código ha expirado' });
+        setJoinResult({ success: false, message: t('onboarding.codeExpired') });
         setLoadingClubInfo(false);
         return;
       }
@@ -148,7 +149,7 @@ export default function ClubOnboarding() {
       setJoinResult(null);
     } catch (error) {
       console.error('[ClubOnboarding] Error fetching club info by code:', error);
-      setJoinResult({ success: false, message: 'Error al verificar el código' });
+      setJoinResult({ success: false, message: t('onboarding.errorVerifyingCode') });
     }
 
     setLoadingClubInfo(false);
@@ -163,7 +164,7 @@ export default function ClubOnboarding() {
 
   const handleCreateClub = async () => {
     if (!clubName.trim()) {
-      toast.error('Introduce el nombre del club');
+      toast.error(t('onboarding.enterClubName'));
       return;
     }
 
@@ -172,11 +173,11 @@ export default function ClubOnboarding() {
     setSubmitting(false);
 
     if (result.club) {
-      toast.success('¡Club creado correctamente!');
+      toast.success(t('onboarding.clubCreated'));
       // Force a page reload to ensure the club data is fresh
       window.location.href = '/';
     } else {
-      toast.error(result.error || 'Error al crear el club');
+      toast.error(result.error || t('onboarding.errorCreatingClub'));
     }
   };
 
@@ -186,12 +187,12 @@ export default function ClubOnboarding() {
     const usingToken = !useCodeMode && inviteToken.trim();
 
     if (!usingCode && !usingToken) {
-      toast.error(useCodeMode ? 'Introduce un código de invitación válido' : 'Abre el enlace de invitación para unirte al club');
+      toast.error(useCodeMode ? t('onboarding.enterValidCode') : t('onboarding.openInviteLink'));
       return;
     }
 
     if (clubResponsibilityCode && !responsibilityCodeAccepted) {
-      toast.error('Debes aceptar el compromiso de responsabilidad del club para continuar');
+      toast.error(t('onboarding.acceptResponsibilityCode'));
       return;
     }
 
@@ -217,11 +218,11 @@ export default function ClubOnboarding() {
         if (error) {
           let errorMsg = error.message;
           if (errorMsg.includes('Invitación no válida')) {
-            errorMsg = 'Invitación no válida o expirada';
+            errorMsg = t('onboarding.invalidInvitation');
           } else if (errorMsg.includes('Ya eres miembro')) {
-            errorMsg = 'Ya eres miembro de este club';
+            errorMsg = t('onboarding.alreadyMember');
           } else if (errorMsg.includes('expirado')) {
-            errorMsg = 'La invitación ha expirado';
+            errorMsg = t('onboarding.invitationExpired');
           }
           result = { success: false, error: errorMsg };
         } else {
@@ -230,7 +231,7 @@ export default function ClubOnboarding() {
       }
 
       if (!result.success) {
-        setJoinResult({ success: false, message: result.error || 'Error al unirse al club' });
+        setJoinResult({ success: false, message: result.error || t('onboarding.errorJoining') });
         setSubmitting(false);
         return;
       }
@@ -243,8 +244,8 @@ export default function ClubOnboarding() {
           .eq('id', user.id);
       }
 
-      setJoinResult({ success: true, message: '¡Te has unido al club!' });
-      toast.success('¡Te has unido al club!');
+      setJoinResult({ success: true, message: t('onboarding.joinedClub') });
+      toast.success(t('onboarding.joinedClub'));
 
       // Clear stored data once membership is accepted
       localStorage.removeItem('pending_invite_token');
@@ -253,7 +254,7 @@ export default function ClubOnboarding() {
       setTimeout(() => navigate('/', { replace: true }), 1500);
     } catch (error: any) {
       console.error('[ClubOnboarding] Error joining club:', error);
-      setJoinResult({ success: false, message: error?.message || 'Error al unirse al club' });
+      setJoinResult({ success: false, message: error?.message || t('onboarding.errorJoining') });
     }
 
     setSubmitting(false);
@@ -274,9 +275,9 @@ export default function ClubOnboarding() {
           <Card>
             <CardHeader className="text-center">
               <Building2 className="h-12 w-12 mx-auto text-primary mb-2" />
-              <CardTitle className="text-2xl">Bienvenido a la App</CardTitle>
+              <CardTitle className="text-2xl">{t('onboarding.welcomeTitle')}</CardTitle>
               <CardDescription>
-                Para empezar, crea un nuevo club o únete a uno existente con un enlace de invitación.
+                {t('onboarding.welcomeDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -286,7 +287,7 @@ export default function ClubOnboarding() {
                 variant="default"
               >
                 <Building2 className="h-6 w-6" />
-                Crear un nuevo club
+                {t('onboarding.createNewClub')}
               </Button>
               <Button
                 onClick={() => setMode('join')}
@@ -294,7 +295,7 @@ export default function ClubOnboarding() {
                 variant="outline"
               >
                 <Link2 className="h-6 w-6" />
-                Unirme con invitación
+                {t('onboarding.joinWithInvitation')}
               </Button>
             </CardContent>
           </Card>
@@ -305,20 +306,20 @@ export default function ClubOnboarding() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
-                Crear nuevo club
+                {t('onboarding.createNewClubTitle')}
               </CardTitle>
               <CardDescription>
-                Introduce el nombre de tu club. Podrás cambiarlo después.
+                {t('onboarding.createNewClubDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="clubName">Nombre del club</Label>
+                <Label htmlFor="clubName">{t('onboarding.clubNameLabel')}</Label>
                 <Input
                   id="clubName"
                   value={clubName}
                   onChange={(e) => setClubName(e.target.value)}
-                  placeholder="Ej: Club Deportivo Valencia"
+                  placeholder={t('onboarding.clubNamePlaceholder')}
                   autoFocus
                 />
               </div>
@@ -328,7 +329,7 @@ export default function ClubOnboarding() {
                   onClick={() => setMode('select')}
                   className="flex-1"
                 >
-                  Atrás
+                  {t('common.back')}
                 </Button>
                 <Button
                   onClick={handleCreateClub}
@@ -338,7 +339,7 @@ export default function ClubOnboarding() {
                   {submitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    'Crear club'
+                    t('onboarding.createClubBtn')
                   )}
                 </Button>
               </div>
@@ -351,15 +352,15 @@ export default function ClubOnboarding() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Unirse a un club
+                {t('onboarding.joinClubTitle')}
               </CardTitle>
               <CardDescription>
                 {clubInfo ? (
-                  <>Estás a punto de unirte a <strong>{clubInfo.name}</strong></>
+                  <>{t('onboarding.aboutToJoin')} <strong>{clubInfo.name}</strong></>
                 ) : loadingClubInfo ? (
-                  'Cargando información de la invitación...'
+                  t('onboarding.loadingInvitation')
                 ) : (
-                  'Introduce el código de invitación que te han compartido'
+                  t('onboarding.enterInvitationCode')
                 )}
               </CardDescription>
             </CardHeader>
@@ -370,7 +371,7 @@ export default function ClubOnboarding() {
                   <div className="space-y-2">
                     <Label htmlFor="inviteCode" className="flex items-center gap-2">
                       <KeyRound className="h-4 w-4" />
-                      Código de invitación
+                      {t('onboarding.invitationCodeLabel')}
                     </Label>
                     <Input
                       id="inviteCode"
@@ -393,7 +394,7 @@ export default function ClubOnboarding() {
                       autoFocus
                     />
                     <p className="text-xs text-muted-foreground text-center">
-                      Introduce el código de 6 caracteres que te ha dado el director de tu club
+                      {t('onboarding.codeHint')}
                     </p>
                   </div>
                 </div>
@@ -407,7 +408,7 @@ export default function ClubOnboarding() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <Shield className="h-4 w-4 text-primary" />
-                    Compromiso de responsabilidad del club
+                    {t('onboarding.responsibilityCommitment')}
                   </div>
                   <ScrollArea className="h-48 rounded-lg border bg-muted/30 p-3">
                     <div className="text-xs text-muted-foreground whitespace-pre-wrap">
@@ -424,10 +425,10 @@ export default function ClubOnboarding() {
                       htmlFor="responsibility-acceptance"
                       className="text-sm cursor-pointer leading-relaxed"
                     >
-                      He leído y acepto el compromiso de responsabilidad del club{' '}
+                      {t('onboarding.acceptCommitment')}{' '}
                       {clubInfo?.responsible_person_name && (
                         <span className="text-muted-foreground">
-                          (Responsable: {clubInfo.responsible_person_name})
+                          ({t('onboarding.responsible')}: {clubInfo.responsible_person_name})
                         </span>
                       )}
                     </label>
@@ -469,7 +470,7 @@ export default function ClubOnboarding() {
                   }}
                   className="flex-1"
                 >
-                  Atrás
+                  {t('common.back')}
                 </Button>
                 {(inviteToken.trim() || (useCodeMode && inviteCode.length === 6 && clubInfo)) && (
                   <Button
@@ -484,7 +485,7 @@ export default function ClubOnboarding() {
                     {submitting ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      'Unirme al club'
+                      t('onboarding.joinClubBtn')
                     )}
                   </Button>
                 )}

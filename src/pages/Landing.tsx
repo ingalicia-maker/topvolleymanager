@@ -257,25 +257,25 @@ export default function Landing() {
           <p className="text-muted-foreground text-center mb-12">
             {t('landing.pricing.subtitle')}
           </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto items-stretch">
             {/* Free Plan */}
-            <Card className="relative overflow-hidden">
-              <CardContent className="p-6">
+            <Card className="relative overflow-hidden flex flex-col h-full">
+              <CardContent className="p-6 flex flex-col h-full">
                 <h3 className="text-xl font-bold mb-2">{t('landing.pricing.free.name')}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{t('landing.pricing.free.desc')}</p>
+                <p className="text-muted-foreground text-sm mb-4 min-h-[40px]">{t('landing.pricing.free.desc')}</p>
                 <div className="mb-4">
                   <span className="text-3xl font-bold">0€</span>
                   <span className="text-muted-foreground text-sm">/{t('landing.pricing.month')}</span>
                 </div>
-                <ul className="space-y-2 mb-6 text-sm">
+                <ul className="space-y-2 mb-6 text-sm flex-1">
                   {freeFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                       <span>{t(feature)}</span>
                     </li>
                   ))}
                 </ul>
-                <Link to="/auth" className="block">
+                <Link to="/auth" className="block mt-auto">
                   <Button variant="outline" className="w-full" size="sm">
                     {t('landing.getStarted')}
                   </Button>
@@ -284,10 +284,10 @@ export default function Landing() {
             </Card>
 
             {/* Starter Plan */}
-            <Card className="relative overflow-hidden border-primary/50">
-              <CardContent className="p-6">
+            <Card className="relative overflow-hidden border-primary/50 flex flex-col h-full">
+              <CardContent className="p-6 flex flex-col h-full">
                 <h3 className="text-xl font-bold mb-2">{t('landing.pricing.starter.name')}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{t('landing.pricing.starter.desc')}</p>
+                <p className="text-muted-foreground text-sm mb-4 min-h-[40px]">{t('landing.pricing.starter.desc')}</p>
                 <div className="mb-2">
                   <span className="text-3xl font-bold">5€</span>
                   <span className="text-muted-foreground text-sm">/{t('landing.pricing.month')}</span>
@@ -295,15 +295,15 @@ export default function Landing() {
                 <p className="text-xs text-primary mb-4">
                   {t('landing.pricing.year')}: 40€ ({t('subscription.saveYearly', { percent: '33%' })})
                 </p>
-                <ul className="space-y-2 mb-6 text-sm">
+                <ul className="space-y-2 mb-6 text-sm flex-1">
                   {starterFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                       <span>{t(feature)}</span>
                     </li>
                   ))}
                 </ul>
-                <Link to="/auth" className="block">
+                <Link to="/auth" className="block mt-auto">
                   <Button className="w-full" size="sm">
                     {t('landing.pricing.subscribe')}
                   </Button>
@@ -312,13 +312,13 @@ export default function Landing() {
             </Card>
 
             {/* Pro Plan */}
-            <Card className="relative overflow-hidden border-primary shadow-lg">
+            <Card className="relative overflow-hidden border-primary shadow-lg flex flex-col h-full">
               <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-medium rounded-bl-lg">
                 {t('landing.pricing.popular')}
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-6 flex flex-col h-full">
                 <h3 className="text-xl font-bold mb-2">{t('landing.pricing.pro.name')}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{t('landing.pricing.pro.desc')}</p>
+                <p className="text-muted-foreground text-sm mb-4 min-h-[40px]">{t('landing.pricing.pro.desc')}</p>
                 <div className="mb-2">
                   <span className="text-3xl font-bold">15€</span>
                   <span className="text-muted-foreground text-sm">/{t('landing.pricing.month')}</span>
@@ -326,15 +326,15 @@ export default function Landing() {
                 <p className="text-xs text-primary mb-4">
                   {t('landing.pricing.year')}: 120€ ({t('subscription.saveYearly', { percent: '33%' })})
                 </p>
-                <ul className="space-y-2 mb-6 text-sm">
+                <ul className="space-y-2 mb-6 text-sm flex-1">
                   {proFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                       <span>{t(feature)}</span>
                     </li>
                   ))}
                 </ul>
-                <Link to="/auth" className="block">
+                <Link to="/auth" className="block mt-auto">
                   <Button className="w-full" size="sm">
                     {t('landing.pricing.subscribe')}
                   </Button>
@@ -343,22 +343,22 @@ export default function Landing() {
             </Card>
 
             {/* Elite Plan */}
-            <Card className="relative overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
-              <CardContent className="p-6">
+            <Card className="relative overflow-hidden bg-gradient-to-br from-muted/50 to-muted flex flex-col h-full">
+              <CardContent className="p-6 flex flex-col h-full">
                 <h3 className="text-xl font-bold mb-2">{t('landing.pricing.elite.name')}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{t('landing.pricing.elite.desc')}</p>
+                <p className="text-muted-foreground text-sm mb-4 min-h-[40px]">{t('landing.pricing.elite.desc')}</p>
                 <div className="mb-4">
                   <span className="text-2xl font-bold">{t('landing.pricing.custom')}</span>
                 </div>
-                <ul className="space-y-2 mb-6 text-sm">
+                <ul className="space-y-2 mb-6 text-sm flex-1">
                   {eliteFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                       <span>{t(feature)}</span>
                     </li>
                   ))}
                 </ul>
-                <a href="mailto:info@topvolleymanager.com" className="block">
+                <a href="mailto:topvolleymanager@gmail.com" className="block mt-auto">
                   <Button variant="outline" className="w-full" size="sm">
                     {t('landing.pricing.contactUs')}
                   </Button>
