@@ -12,8 +12,10 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
 import { usePlayerRatings } from '@/hooks/usePlayerRatings';
+import { ImportSeasonPlayersDialog } from '@/components/ImportSeasonPlayersDialog';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { 
   Calendar, 
   Plus, 
@@ -25,15 +27,17 @@ import {
   BarChart3,
   Shield,
   Sparkles,
-  Archive
+  Archive,
+  UserPlus
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function SeasonManagement() {
+  const { t } = useTranslation();
   const { seasons, loading, activeSeason, createSeason, closeSeason, setAsActiveSeason } = useSeasons();
   const { isDirector, loading: roleLoading } = useUserRole();
-  const { players } = usePlayers();
+  const { players, refetch: refetchPlayers } = usePlayers();
   const { teams } = useTeams();
   const { ratings } = usePlayerRatings();
 
@@ -46,6 +50,8 @@ export default function SeasonManagement() {
 
   const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
   const [seasonToClose, setSeasonToClose] = useState<Season | null>(null);
+  
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   if (roleLoading || loading) {
     return (
@@ -171,74 +177,93 @@ export default function SeasonManagement() {
           </CardContent>
         </Card>
 
-        {/* Create New Season */}
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full gap-2" size="lg">
-              <Plus className="h-5 w-5" />
-              Nueva Temporada
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Crear Nueva Temporada
-              </DialogTitle>
-              <DialogDescription>
-                Al crear una nueva temporada, podrás reutilizar jugadoras, equipos y entrenadores existentes.
-                Las valoraciones anteriores se mantendrán asociadas a su temporada original.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="seasonName">Nombre de la Temporada</Label>
-                <Input
-                  id="seasonName"
-                  value={newSeasonName}
-                  onChange={(e) => setNewSeasonName(e.target.value)}
-                  placeholder={getSuggestedSeasonName()}
-                />
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-xs"
-                  onClick={() => setNewSeasonName(getSuggestedSeasonName())}
-                >
-                  Usar sugerencia: {getSuggestedSeasonName()}
+        {/* Director-only Actions */}
+        {isDirector && (
+          <div className="space-y-3">
+            {/* Create New Season */}
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full gap-2" size="lg">
+                  <Plus className="h-5 w-5" />
+                  {t('seasons.newSeason', 'Nueva Temporada')}
                 </Button>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="startDate">Fecha de Inicio</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={newSeasonStartDate}
-                  onChange={(e) => setNewSeasonStartDate(e.target.value)}
-                />
-              </div>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    {t('seasons.createSeason', 'Crear Nueva Temporada')}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {t('seasons.createDescription', 'Al crear una nueva temporada, podrás reutilizar jugadoras, equipos y entrenadores existentes. Las valoraciones anteriores se mantendrán asociadas a su temporada original.')}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="seasonName">{t('seasons.seasonName', 'Nombre de la Temporada')}</Label>
+                    <Input
+                      id="seasonName"
+                      value={newSeasonName}
+                      onChange={(e) => setNewSeasonName(e.target.value)}
+                      placeholder={getSuggestedSeasonName()}
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => setNewSeasonName(getSuggestedSeasonName())}
+                    >
+                      {t('seasons.useSuggestion', 'Usar sugerencia')}: {getSuggestedSeasonName()}
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">{t('seasons.startDate', 'Fecha de Inicio')}</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={newSeasonStartDate}
+                      onChange={(e) => setNewSeasonStartDate(e.target.value)}
+                    />
+                  </div>
 
-              <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/30">
-                <p className="text-sm text-blue-600">
-                  <strong>Nota:</strong> Todos los equipos, jugadoras y entrenadores actuales 
-                  seguirán disponibles en la nueva temporada. Podrás editarlos desde sus 
-                  respectivas secciones.
-                </p>
-              </div>
-            </div>
+                  <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                    <p className="text-sm text-blue-600">
+                      <strong>{t('common.note', 'Nota')}:</strong> {t('seasons.keepDataNote', 'Todos los equipos, jugadoras y entrenadores actuales seguirán disponibles en la nueva temporada. Podrás editarlos desde sus respectivas secciones.')}
+                    </p>
+                  </div>
+                </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleCreateSeason} disabled={creating}>
-                {creating ? 'Creando...' : 'Crear Temporada'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    {t('common.cancel', 'Cancelar')}
+                  </Button>
+                  <Button onClick={handleCreateSeason} disabled={creating}>
+                    {creating ? t('seasons.creating', 'Creando...') : t('seasons.create', 'Crear Temporada')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Import Players from Previous Seasons */}
+            <Button 
+              variant="outline" 
+              className="w-full gap-2" 
+              size="lg"
+              onClick={() => setIsImportDialogOpen(true)}
+            >
+              <UserPlus className="h-5 w-5" />
+              {t('seasons.importPlayers', 'Importar Jugadoras')}
+            </Button>
+
+            <ImportSeasonPlayersDialog
+              open={isImportDialogOpen}
+              onOpenChange={setIsImportDialogOpen}
+              onSuccess={() => refetchPlayers()}
+            />
+          </div>
+        )}
 
         {/* Season History */}
         <Card>
@@ -296,28 +321,30 @@ export default function SeasonManagement() {
                         </span>
                       </div>
 
-                      <div className="flex gap-2">
-                        {season.is_active ? (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="text-destructive border-destructive/50"
-                            onClick={() => openCloseDialog(season)}
-                          >
-                            <XCircle className="h-4 w-4 mr-1" />
-                            Cerrar Temporada
-                          </Button>
-                        ) : (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setAsActiveSeason(season.id)}
-                          >
-                            <Play className="h-4 w-4 mr-1" />
-                            Reactivar
-                          </Button>
-                        )}
-                      </div>
+                      {isDirector && (
+                        <div className="flex gap-2">
+                          {season.is_active ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="text-destructive border-destructive/50"
+                              onClick={() => openCloseDialog(season)}
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              {t('seasons.closeSeason', 'Cerrar Temporada')}
+                            </Button>
+                          ) : (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setAsActiveSeason(season.id)}
+                            >
+                              <Play className="h-4 w-4 mr-1" />
+                              {t('seasons.reactivate', 'Reactivar')}
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
