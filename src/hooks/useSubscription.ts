@@ -38,8 +38,8 @@ const PLAN_LIMITS: Record<SubscriptionStatus, SubscriptionLimits> = {
     canUseBusStops: true,
   },
   pro: {
-    maxTeams: 10,
-    maxCoaches: 10,
+    maxTeams: 20,
+    maxCoaches: 15,
     canExport: true,
     canViewCharts: true,
     canUseBusStops: true,

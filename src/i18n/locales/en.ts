@@ -430,8 +430,8 @@ export default {
     yearlySaveStarter: 'Save €20 with annual plan',
     // Pro plan
     proDesc: 'For growing clubs',
-    proFeature1: 'Up to 10 teams',
-    proFeature2: 'Up to 10 coaches',
+    proFeature1: 'Up to 20 teams',
+    proFeature2: 'Up to 15 coaches',
     proFeature3: 'All features included',
     yearlySavePro: 'Save €60 with annual plan',
     // Elite plan
@@ -589,8 +589,8 @@ export default {
         desc: 'For growing clubs',
         price_monthly: '15',
         price_yearly: '120',
-        feature1: 'Director + 10 coaches',
-        feature2: 'Up to 10 teams',
+        feature1: 'Director + 15 coaches',
+        feature2: 'Up to 20 teams',
         feature3: 'All features included',
         feature4: 'Bus stop management',
       },

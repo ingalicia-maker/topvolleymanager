@@ -430,8 +430,8 @@ export default {
     yearlySaveStarter: 'Ahorra 20€ con el plan anual',
     // Pro plan
     proDesc: 'Para clubes en crecimiento',
-    proFeature1: 'Hasta 10 equipos',
-    proFeature2: 'Hasta 10 entrenadores',
+    proFeature1: 'Hasta 20 equipos',
+    proFeature2: 'Hasta 15 entrenadores',
     proFeature3: 'Todas las funcionalidades',
     yearlySavePro: 'Ahorra 60€ con el plan anual',
     // Elite plan
@@ -589,8 +589,8 @@ export default {
         desc: 'Para clubes en crecimiento',
         price_monthly: '15',
         price_yearly: '120',
-        feature1: 'Director + 10 entrenadores',
-        feature2: 'Hasta 10 equipos',
+        feature1: 'Director + 15 entrenadores',
+        feature2: 'Hasta 20 equipos',
         feature3: 'Todas las funcionalidades',
         feature4: 'Gestión de paradas de bus',
       },
