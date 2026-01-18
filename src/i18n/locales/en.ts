@@ -692,5 +692,8 @@ export default {
     assignToTeams: 'Assign to teams',
     importing: 'Importing...',
     importSelected: 'Import {{count}} players',
+    filterBySeason: 'Season',
+    allSeasons: 'All seasons',
+    active: 'Active',
   },
 };

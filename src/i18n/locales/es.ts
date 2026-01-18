@@ -692,5 +692,8 @@ export default {
     assignToTeams: 'Asignar a equipos',
     importing: 'Importando...',
     importSelected: 'Importar {{count}} jugadoras',
+    filterBySeason: 'Temporada',
+    allSeasons: 'Todas las temporadas',
+    active: 'Activa',
   },
 };

@@ -11,14 +11,15 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams, DbTeam } from '@/hooks/useTeams';
 import { usePlayerRatings, RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useSeasons } from '@/hooks/useSeasons';
+import { useSeasons, Season } from '@/hooks/useSeasons';
 import { PlayerProgressChart } from '@/components/PlayerProgressChart';
 import { TeamProgressChart } from '@/components/TeamProgressChart';
 import { RatingInput } from '@/components/RatingInput';
 import { PlayerRatingsSummary } from '@/components/PlayerRatingsSummary';
 import { PlayerRanking } from '@/components/PlayerRanking';
 import { toast } from 'sonner';
-import { Star, User, Calendar, ChevronRight, Check, TrendingUp, Users, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Star, User, Calendar, ChevronRight, Check, TrendingUp, Users, Plus, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -31,11 +32,12 @@ const RATING_EMOJIS: Record<string, string> = {
 };
 
 export default function Ratings() {
+  const { t } = useTranslation();
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
   const { addRating, updateRating, ratings, getMonthlyEvolution, getPlayerTrends, getPositiveAlerts } = usePlayerRatings();
   const { assignedTeams, isDirector } = useUserRole();
-  const { activeSeason } = useSeasons();
+  const { seasons, activeSeason } = useSeasons();
 
   const [activeTab, setActiveTab] = useState<'add' | 'players' | 'team'>('add');
   const [step, setStep] = useState<'select-team' | 'select-player' | 'rate'>('select-team');
@@ -415,6 +417,8 @@ export default function Ratings() {
               players={players}
               visibleTeams={visibleTeams}
               ratings={ratings}
+              seasons={seasons}
+              activeSeason={activeSeason}
               getMonthlyEvolution={getMonthlyEvolution}
               getPlayerTrends={getPlayerTrends}
               getPositiveAlerts={getPositiveAlerts}
@@ -427,6 +431,8 @@ export default function Ratings() {
               players={players}
               visibleTeams={visibleTeams}
               ratings={ratings}
+              seasons={seasons}
+              activeSeason={activeSeason}
             />
           </TabsContent>
         </Tabs>
@@ -441,6 +447,8 @@ function PlayerProgressView({
   players,
   visibleTeams,
   ratings,
+  seasons,
+  activeSeason,
   getMonthlyEvolution,
   getPlayerTrends,
   getPositiveAlerts,
@@ -448,13 +456,23 @@ function PlayerProgressView({
   players: Array<{ id: string; name: string; number: number | null; teams: string[] | null }>;
   visibleTeams: DbTeam[];
   ratings: Array<any>;
+  seasons: Season[];
+  activeSeason: Season | null;
   getMonthlyEvolution: (playerId: string, teamId?: string) => Array<any>;
   getPlayerTrends: (playerId: string, teamId?: string) => string[];
   getPositiveAlerts: (playerId: string, teamId?: string) => string[];
 }) {
+  const { t } = useTranslation();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [rankingMonth, setRankingMonth] = useState(() => format(new Date(), 'yyyy-MM'));
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string | 'all'>(activeSeason?.id || 'all');
+
+  // Filter ratings by selected season
+  const filteredRatings = useMemo(() => {
+    if (selectedSeasonId === 'all') return ratings;
+    return ratings.filter(r => r.season_id === selectedSeasonId);
+  }, [ratings, selectedSeasonId]);
 
   // Generate month options (last 12 months)
   const monthOptions = useMemo(() => {
@@ -484,10 +502,42 @@ function PlayerProgressView({
   const player = players.find(p => p.id === selectedPlayer);
   const team = visibleTeams.find(t => t.id === selectedTeam);
 
+  // Custom evolution that filters by season
   const evolution = useMemo(() => {
     if (!selectedPlayer) return [];
-    return getMonthlyEvolution(selectedPlayer, selectedTeam || undefined);
-  }, [selectedPlayer, selectedTeam, getMonthlyEvolution]);
+    // Group filtered ratings by month
+    const playerRatings = filteredRatings.filter(
+      r => r.player_id === selectedPlayer && (!selectedTeam || r.team_id === selectedTeam)
+    );
+    
+    const byMonth: Record<string, typeof playerRatings> = {};
+    playerRatings.forEach(r => {
+      const monthKey = r.rating_date.substring(0, 7);
+      if (!byMonth[monthKey]) byMonth[monthKey] = [];
+      byMonth[monthKey].push(r);
+    });
+
+    return Object.entries(byMonth)
+      .map(([month, monthRatings]) => {
+        const effort_attitude = monthRatings.reduce((acc, r) => acc + r.effort_attitude, 0) / monthRatings.length;
+        const communication_cooperation = monthRatings.reduce((acc, r) => acc + r.communication_cooperation, 0) / monthRatings.length;
+        const technical_execution = monthRatings.reduce((acc, r) => acc + r.technical_execution, 0) / monthRatings.length;
+        const decision_making = monthRatings.reduce((acc, r) => acc + r.decision_making, 0) / monthRatings.length;
+        const leadership_initiative = monthRatings.reduce((acc, r) => acc + r.leadership_initiative, 0) / monthRatings.length;
+        const totalAvg = (effort_attitude + communication_cooperation + technical_execution + decision_making + leadership_initiative) / 5;
+        
+        return {
+          month,
+          effort_attitude,
+          communication_cooperation,
+          technical_execution,
+          decision_making,
+          leadership_initiative,
+          totalAvg,
+        };
+      })
+      .sort((a, b) => a.month.localeCompare(b.month));
+  }, [selectedPlayer, selectedTeam, filteredRatings]);
 
   const trends = useMemo(() => {
     if (!selectedPlayer) return [];
@@ -501,10 +551,28 @@ function PlayerProgressView({
 
   return (
     <div className="space-y-4">
+      {/* Season Filter */}
+      <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+        <History className="h-4 w-4 text-muted-foreground" />
+        <Label className="text-sm font-medium">{t('seasons.filterBySeason', 'Temporada')}:</Label>
+        <select
+          className="flex-1 h-8 rounded-md border border-input bg-background px-2 py-1 text-sm"
+          value={selectedSeasonId}
+          onChange={(e) => setSelectedSeasonId(e.target.value)}
+        >
+          <option value="all">{t('seasons.allSeasons', 'Todas las temporadas')}</option>
+          {seasons.map(season => (
+            <option key={season.id} value={season.id}>
+              {season.name} {season.is_active ? `(${t('seasons.active', 'Activa')})` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Team and Month selectors */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Equipo</Label>
+          <Label>{t('common.team', 'Equipo')}</Label>
           <select
             className={nativeSelectClassName}
             value={selectedTeam || ''}
@@ -513,14 +581,14 @@ function PlayerProgressView({
               setSelectedPlayer(null);
             }}
           >
-            <option value="">Selecciona equipo</option>
+            <option value="">{t('ratings.selectTeam', 'Selecciona equipo')}</option>
             {visibleTeams.map(t => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
         </div>
         <div className="space-y-2">
-          <Label>Mes ranking</Label>
+          <Label>{t('ratings.rankingMonth', 'Mes ranking')}</Label>
           <select
             className={nativeSelectClassName}
             value={rankingMonth}
@@ -539,7 +607,7 @@ function PlayerProgressView({
       {selectedTeam && !selectedPlayer && (
         <PlayerRanking
           players={teamPlayers}
-          ratings={ratings}
+          ratings={filteredRatings}
           teamId={selectedTeam}
           month={rankingMonth}
           onPlayerClick={setSelectedPlayer}
@@ -650,12 +718,24 @@ function TeamProgressView({
   players,
   visibleTeams,
   ratings,
+  seasons,
+  activeSeason,
 }: {
   players: Array<{ id: string; name: string; number: number | null; teams: string[] | null }>;
   visibleTeams: DbTeam[];
   ratings: Array<any>;
+  seasons: Season[];
+  activeSeason: Season | null;
 }) {
+  const { t } = useTranslation();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string | 'all'>(activeSeason?.id || 'all');
+
+  // Filter ratings by selected season
+  const filteredRatings = useMemo(() => {
+    if (selectedSeasonId === 'all') return ratings;
+    return ratings.filter(r => r.season_id === selectedSeasonId);
+  }, [ratings, selectedSeasonId]);
 
   const nativeSelectClassName =
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
@@ -666,7 +746,7 @@ function TeamProgressView({
   const teamEvolution = useMemo(() => {
     if (!selectedTeam) return [];
     
-    const teamRatings = ratings.filter(r => r.team_id === selectedTeam);
+    const teamRatings = filteredRatings.filter(r => r.team_id === selectedTeam);
     
     // Group by month
     const byMonth: Record<string, typeof teamRatings> = {};
@@ -697,18 +777,36 @@ function TeamProgressView({
         };
       })
       .sort((a, b) => a.month.localeCompare(b.month));
-  }, [selectedTeam, ratings]);
+  }, [selectedTeam, filteredRatings]);
 
   return (
     <div className="space-y-4">
+      {/* Season Filter */}
+      <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+        <History className="h-4 w-4 text-muted-foreground" />
+        <Label className="text-sm font-medium">{t('seasons.filterBySeason', 'Temporada')}:</Label>
+        <select
+          className="flex-1 h-8 rounded-md border border-input bg-background px-2 py-1 text-sm"
+          value={selectedSeasonId}
+          onChange={(e) => setSelectedSeasonId(e.target.value)}
+        >
+          <option value="all">{t('seasons.allSeasons', 'Todas las temporadas')}</option>
+          {seasons.map(season => (
+            <option key={season.id} value={season.id}>
+              {season.name} {season.is_active ? `(${t('seasons.active', 'Activa')})` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="space-y-2">
-        <Label>Equipo</Label>
+        <Label>{t('common.team', 'Equipo')}</Label>
         <select
           className={nativeSelectClassName}
           value={selectedTeam || ''}
           onChange={(e) => setSelectedTeam(e.target.value || null)}
         >
-          <option value="">Selecciona equipo</option>
+          <option value="">{t('ratings.selectTeam', 'Selecciona equipo')}</option>
           {visibleTeams.map(t => (
             <option key={t.id} value={t.id}>{t.name}</option>
           ))}
