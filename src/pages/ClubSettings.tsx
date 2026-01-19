@@ -66,7 +66,7 @@ export default function ClubSettings() {
   if (roleLoading || loading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Configuración del Club" showBack />
+        <Header title="Configuración del Club" showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -170,7 +170,7 @@ export default function ClubSettings() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Configuración del Club" showBack />
+      <Header title="Configuración del Club" showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
         <div className="flex items-center gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">

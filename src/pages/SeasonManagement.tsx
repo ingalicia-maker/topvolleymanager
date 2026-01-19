@@ -56,7 +56,7 @@ export default function SeasonManagement() {
   if (roleLoading || loading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Gestión de Temporadas" showBack />
+        <Header title="Gestión de Temporadas" showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -123,7 +123,7 @@ export default function SeasonManagement() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Gestión de Temporadas" showBack />
+      <Header title="Gestión de Temporadas" showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
         {/* Director Only Notice */}

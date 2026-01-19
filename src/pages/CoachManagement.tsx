@@ -308,7 +308,7 @@ export default function CoachManagement() {
   if (roleLoading || clubLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Gestión de Entrenadores" showBack />
+        <Header title="Gestión de Entrenadores" showBack backTo="/profile" />
         <div className="p-4 space-y-4">
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-32 w-full" />
@@ -343,7 +343,7 @@ export default function CoachManagement() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Gestión de Entrenadores" showBack />
+      <Header title="Gestión de Entrenadores" showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
         {/* Stats Card */}

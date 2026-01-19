@@ -130,7 +130,7 @@ export default function Subscription() {
   if (loading || checkingStripe) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title={t('subscription.title')} showBack />
+        <Header title={t('subscription.title')} showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -153,7 +153,7 @@ export default function Subscription() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title={t('subscription.title')} showBack />
+      <Header title={t('subscription.title')} showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
         {/* Grace Period Banner */}
