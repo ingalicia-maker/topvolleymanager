@@ -156,7 +156,7 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
                 className="h-8 text-xs px-2"
                 onClick={goToToday}
               >
-                Hoy
+                {t('common.today')}
               </Button>
             )}
             <Button

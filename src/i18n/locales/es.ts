@@ -30,6 +30,7 @@ export default {
     teamStats: 'Estadísticas de tus equipos',
     configure: 'Configurar',
     saving: 'Guardando...',
+    today: 'Hoy',
   },
 
   // Navigation
