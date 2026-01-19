@@ -108,7 +108,7 @@ export default function AdminPanel() {
   if (subLoading || loading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title={t('admin.title')} showBack />
+        <Header title={t('admin.title')} showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -124,7 +124,7 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title={t('admin.title')} showBack />
+      <Header title={t('admin.title')} showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
         <Card>

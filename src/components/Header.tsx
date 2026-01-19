@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
 import { useClubTheme } from './ClubThemeProvider';
 
@@ -8,17 +8,28 @@ interface HeaderProps {
   showBack?: boolean;
   rightAction?: React.ReactNode;
   onBack?: () => void;
+  backTo?: string;
 }
 
-export function Header({ title, showBack = false, rightAction, onBack }: HeaderProps) {
+export function Header({ title, showBack = false, rightAction, onBack, backTo }: HeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logoUrl } = useClubTheme();
 
   const handleBack = () => {
     if (onBack) {
       onBack();
+    } else if (backTo) {
+      navigate(backTo);
     } else {
-      navigate(-1);
+      // Check if we have history to go back to
+      // If referrer is same origin or we have state, use navigate(-1)
+      // Otherwise fallback to home
+      if (window.history.length > 2) {
+        navigate(-1);
+      } else {
+        navigate('/');
+      }
     }
   };
 

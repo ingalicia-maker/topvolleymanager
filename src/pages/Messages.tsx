@@ -213,7 +213,7 @@ export default function Messages() {
   if (!selectedConversationId) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Mensajes" showBack />
+        <Header title="Mensajes" showBack backTo="/" />
 
         <div className="p-4 space-y-4">
           <Button

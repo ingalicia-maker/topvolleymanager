@@ -21,7 +21,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX, CheckCircle, Phone } from 'lucide-react';
+import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX, CheckCircle, Phone, Calendar } from 'lucide-react';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -253,6 +253,19 @@ export default function Profile() {
                   >
                     <Users className="h-4 w-4" />
                     Gestión de Entrenadores
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate('/seasons');
+                    }}
+                    className="w-full gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Gestión de Temporadas
                   </Button>
                   <Button
                     type="button"
