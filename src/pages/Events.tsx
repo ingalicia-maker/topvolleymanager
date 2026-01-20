@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Plus, Filter, Bus, Calendar as CalendarIcon, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
@@ -7,49 +7,40 @@ import { EventCard } from '@/components/EventCard';
 import { EventCalendar } from '@/components/EventCalendar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TEAMS } from '@/types/volleyball';
 import { useEvents } from '@/hooks/useEvents';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useTeams } from '@/hooks/useTeams';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 type ViewMode = 'list' | 'calendar';
 
 export default function Events() {
   const { events, loading } = useEvents();
-  const { assignedTeams, isDirector } = useUserRole();
+  const { teams, loading: teamsLoading } = useTeams();
   const [teamFilter, setTeamFilter] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const today = new Date().toISOString().split('T')[0];
 
-  // Show only events from assigned teams (unless director)
-  // For displacements, check if any of coach's teams are in selected_teams
-  const visibleEvents = useMemo(() => {
-    if (isDirector) return events;
-    if (assignedTeams.length === 0) return events; // Show all if no teams assigned yet
-    return events.filter(e => {
-      // For displacement events, check if coach's teams are in selected_teams
-      if (e.type === 'displacement' && e.selected_teams?.length > 0) {
-        return e.selected_teams.some(t => assignedTeams.includes(t));
-      }
-      // For standard events, use team_id
-      return assignedTeams.includes(e.team_id);
-    });
-  }, [events, assignedTeams, isDirector]);
+  // Same visibility for coaches and directors: show all club events.
+  const filteredEvents = useMemo(() => {
+    if (teamFilter.length === 0) return events;
 
-  const filteredEvents = visibleEvents.filter(e =>
-    teamFilter.length === 0 || teamFilter.includes(e.team_id)
-  );
+    return events.filter(e => {
+      // For displacement events, allow filtering by any selected team.
+      if (e.type === 'displacement' && e.selected_teams?.length) {
+        return e.selected_teams.some(t => teamFilter.includes(t));
+      }
+
+      // For standard events, filter by team_id.
+      return teamFilter.includes(e.team_id);
+    });
+  }, [events, teamFilter]);
 
   const upcomingEvents = filteredEvents
     .filter(e => e.date >= today)
@@ -65,7 +56,7 @@ export default function Events() {
     );
   };
 
-  if (loading) {
+  if (loading || teamsLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <Header title="Eventos" />

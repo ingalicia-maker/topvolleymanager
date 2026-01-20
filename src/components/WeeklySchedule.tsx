@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday, addWeeks, subWeeks, isSameWeek } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS, it } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Plus, ChevronLeft, ChevronRight, AlertTriangle, CalendarOff, Megaphone } from 'lucide-react';
@@ -9,15 +9,28 @@ import { useTeams } from '@/hooks/useTeams';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WeeklyScheduleProps {
   events: DbEvent[];
 }
 
 export function WeeklySchedule({ events }: WeeklyScheduleProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isMobile = useIsMobile();
   const { teams } = useTeams();
   const navigate = useNavigate();
+
+  const getLocale = () => {
+    switch (i18n.language) {
+      case 'es':
+        return es;
+      case 'it':
+        return it;
+      default:
+        return enUS;
+    }
+  };
   
   const today = new Date();
   const [currentWeekStart, setCurrentWeekStart] = useState(() => 
@@ -62,9 +75,9 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
   }, [events, daysOfWeek]);
 
   const getTeamName = (teamId: string): string => {
-    if (teamId === 'all') return 'Todos';
+    if (teamId === 'all') return t('common.all');
     const team = teams.find(t => t.id === teamId);
-    return team?.name || 'Equipo';
+    return team?.name || t('teams.team');
   };
 
   const getTeamColor = (teamId: string): string => {
