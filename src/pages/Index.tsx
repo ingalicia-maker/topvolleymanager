@@ -217,7 +217,7 @@ export default function Index() {
       <MonthlyAbsenceSummary />
 
       {/* Weekly Schedule - Google Calendar style */}
-      <WeeklySchedule events={visibleEvents} />
+      <WeeklySchedule events={events} />
 
       {/* Player of the Week */}
       <PlayerOfTheWeek />
