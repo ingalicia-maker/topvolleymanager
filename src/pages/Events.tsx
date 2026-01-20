@@ -118,19 +118,25 @@ export default function Events() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {TEAMS.map(team => (
-                  <DropdownMenuCheckboxItem
-                    key={team.id}
-                    checked={teamFilter.includes(team.id)}
-                    onCheckedChange={() => toggleTeamFilter(team.id)}
-                  >
-                    <span
-                      className="w-2 h-2 rounded-full mr-2"
-                      style={{ backgroundColor: team.color }}
-                    />
-                    {team.name}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                {teams.length === 0 ? (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                    No hay equipos
+                  </div>
+                ) : (
+                  teams.map(team => (
+                    <DropdownMenuCheckboxItem
+                      key={team.id}
+                      checked={teamFilter.includes(team.id)}
+                      onCheckedChange={() => toggleTeamFilter(team.id)}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full mr-2"
+                        style={{ backgroundColor: team.color }}
+                      />
+                      {team.name}
+                    </DropdownMenuCheckboxItem>
+                  ))
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
             <Link to="/events/new">
