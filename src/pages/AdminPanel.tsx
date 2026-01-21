@@ -8,10 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es, enUS, it } from 'date-fns/locale';
 import {
@@ -68,6 +69,8 @@ interface UserRegistration {
 
 export default function AdminPanel() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { subscription, loading: subLoading } = useSubscription();
   const [vipUsers, setVipUsers] = useState<VipUser[]>([]);
   const [registrations, setRegistrations] = useState<UserRegistration[]>([]);
@@ -220,7 +223,43 @@ export default function AdminPanel() {
   }
 
   if (!subscription.isAdmin) {
-    return <Navigate to="/" replace />;
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <Header title={t('admin.title')} showBack backTo="/profile" />
+
+        <div className="p-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Acceso restringido</CardTitle>
+              <CardDescription>
+                Esta cuenta no tiene permisos de administrador global.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Email con el que has iniciado sesión</p>
+                <p className="text-sm font-medium break-all">{user?.email || '—'}</p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button variant="outline" onClick={() => navigate('/profile')} className="w-full">
+                  Volver a Perfil
+                </Button>
+                <Button onClick={() => window.location.reload()} className="w-full">
+                  Reintentar
+                </Button>
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                Si este email debería ser admin, dímelo y lo habilito en el backend.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <BottomNav />
+      </div>
+    );
   }
 
   return (
