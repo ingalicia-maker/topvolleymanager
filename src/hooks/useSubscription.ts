@@ -80,13 +80,39 @@ export function useSubscription() {
       }
 
       try {
+        const email = (user.email || '').toLowerCase();
+
         // Check if user is admin
-        const { data: isAdminData } = await supabase
-          .rpc('is_app_admin', { _email: user.email || '' });
+        const { data: isAdminData, error: isAdminError } = await supabase
+          .rpc('is_app_admin', { _email: email });
+
+        // Fallback: rely on RLS-protected table read (returns a row only for admins)
+        // This makes the admin detection more resilient if the RPC fails for any reason.
+        let isAdmin = Boolean(isAdminData);
+        if (!isAdmin && isAdminError) {
+          console.warn('[useSubscription] is_app_admin RPC failed:', isAdminError);
+        }
+        if (!isAdmin) {
+          const { data: adminRow, error: adminSelectError } = await supabase
+            .from('app_admins')
+            .select('id')
+            .limit(1)
+            .maybeSingle();
+
+          if (adminSelectError) {
+            console.warn('[useSubscription] app_admins fallback select failed:', adminSelectError);
+          } else if (adminRow) {
+            isAdmin = true;
+          }
+        }
 
         // Check if user is VIP
-        const { data: isVipData } = await supabase
-          .rpc('is_vip_user', { _email: user.email || '' });
+        const { data: isVipData, error: isVipError } = await supabase
+          .rpc('is_vip_user', { _email: email });
+
+        if (isVipError) {
+          console.warn('[useSubscription] is_vip_user RPC failed:', isVipError);
+        }
 
         // Get subscription status
         const { data: subData } = await supabase
@@ -116,7 +142,6 @@ export function useSubscription() {
           }
         }
         
-        const isAdmin = isAdminData || false;
         const isVip = isVipData || false;
         
         // VIPs and admins have unlimited credits (show 999)
