@@ -7,6 +7,29 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiting
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(userId: string, maxRequests = 5, windowMs = 60000): boolean {
+  const now = Date.now();
+  const entry = rateLimitStore.get(userId);
+
+  // Clean old entries
+  if (rateLimitStore.size > 1000) {
+    for (const [k, v] of rateLimitStore.entries()) {
+      if (now > v.resetTime) rateLimitStore.delete(k);
+    }
+  }
+
+  if (!entry || now > entry.resetTime) {
+    rateLimitStore.set(userId, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+
+  entry.count++;
+  return entry.count <= maxRequests;
+}
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
@@ -41,15 +64,39 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { plan } = await req.json();
-    logStep("Request body parsed", { plan });
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // Rate limiting: max 5 checkout attempts per minute per user
+    if (!checkRateLimit(user.id)) {
+      console.warn(`[SECURITY] Rate limit exceeded for checkout: ${user.id}`);
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" } }
+      );
+    }
+
+    const { plan } = await req.json();
+    logStep("Request body parsed", { plan });
+
+    // Validate plan
+    if (!plan || typeof plan !== 'string' || !PRICES[plan as keyof typeof PRICES]) {
+      return new Response(
+        JSON.stringify({ error: "Invalid plan" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,18 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
 import { InvitationRegistrationForm } from '@/components/InvitationRegistrationForm';
+import { 
+  checkRateLimit, 
+  resetRateLimit, 
+  isHoneypotFilled, 
+  isSubmittedTooQuickly,
+  containsSuspiciousPatterns,
+  logSecurityEvent 
+} from '@/lib/security';
 
-const emailSchema = z.string().email('Email inválido');
-const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres');
+const emailSchema = z.string().email('Email inválido').max(255);
+const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').max(128);
+const nameSchema = z.string().min(1).max(100);
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -36,6 +45,10 @@ export default function Auth() {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
+  
+  // Security: Honeypot and timing
+  const [honeypot, setHoneypot] = useState('');
+  const formLoadTime = useRef(Date.now());
   
   // Short code invitation state
   const [invitationCode, setInvitationCode] = useState('');
@@ -211,11 +224,25 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Security checks
+    if (isHoneypotFilled(honeypot)) {
+      logSecurityEvent('honeypot_triggered', { action: 'signin' });
+      toast.error('Error de validación');
+      return;
+    }
+    
+    const rateLimit = checkRateLimit('auth_signin', 5, 60000, 300000);
+    if (!rateLimit.allowed) {
+      toast.error(`Demasiados intentos. Espera ${Math.ceil(rateLimit.retryAfterMs / 1000)} segundos.`);
+      return;
+    }
+    
     if (!validateInputs(false)) return;
 
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email: email.trim().toLowerCase(),
       password,
     });
 
@@ -231,6 +258,10 @@ export default function Auth() {
       return;
     }
 
+    // Reset rate limit on successful login
+    resetRateLimit('auth_signin');
+
+    // If coming from an invitation link, auto-join the club
     // If coming from an invitation link, auto-join the club
     if (isInvitationFlow && inviteToken) {
       try {
@@ -685,6 +716,18 @@ export default function Auth() {
 
             <TabsContent value="login" className="mt-4">
               <form onSubmit={handleSignIn} className="space-y-4">
+                {/* Honeypot field - hidden from users, bots will fill it */}
+                <div className="absolute -left-[9999px]" aria-hidden="true">
+                  <input
+                    type="text"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={e => setHoneypot(e.target.value)}
+                  />
+                </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="login-email">{t('auth.email')}</Label>
                   <Input
@@ -694,6 +737,7 @@ export default function Auth() {
                     onChange={e => setEmail(e.target.value)}
                     placeholder="tu@email.com"
                     disabled={loading}
+                    maxLength={255}
                   />
                   {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>

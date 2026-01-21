@@ -11,6 +11,35 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiting
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(email: string, maxRequests = 3, windowMs = 300000): boolean {
+  const now = Date.now();
+  const key = email.toLowerCase();
+  const entry = rateLimitStore.get(key);
+
+  // Clean old entries
+  if (rateLimitStore.size > 1000) {
+    for (const [k, v] of rateLimitStore.entries()) {
+      if (now > v.resetTime) rateLimitStore.delete(k);
+    }
+  }
+
+  if (!entry || now > entry.resetTime) {
+    rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+
+  entry.count++;
+  return entry.count <= maxRequests;
+}
+
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
+
 interface SendVerificationRequest {
   email: string;
   name: string;
@@ -24,10 +53,12 @@ function generateVerificationCode(): string {
 
 // Email content by language
 function getEmailContent(name: string, code: string, language: string) {
+  const safeName = name.slice(0, 100).replace(/[<>]/g, ''); // Sanitize
+  
   const translations: Record<string, { subject: string; greeting: string; intro: string; codeLabel: string; expiry: string; footer: string }> = {
     es: {
       subject: "Confirma tu cuenta - Top Volley Manager",
-      greeting: `¡Hola ${name}!`,
+      greeting: `¡Hola ${safeName}!`,
       intro: "Gracias por registrarte en Top Volley Manager. Para completar tu registro, introduce el siguiente código de verificación:",
       codeLabel: "Tu código de verificación:",
       expiry: "Este código expira en 1 hora.",
@@ -35,7 +66,7 @@ function getEmailContent(name: string, code: string, language: string) {
     },
     en: {
       subject: "Confirm your account - Top Volley Manager",
-      greeting: `Hello ${name}!`,
+      greeting: `Hello ${safeName}!`,
       intro: "Thank you for signing up for Top Volley Manager. To complete your registration, enter the following verification code:",
       codeLabel: "Your verification code:",
       expiry: "This code expires in 1 hour.",
@@ -43,7 +74,7 @@ function getEmailContent(name: string, code: string, language: string) {
     },
     it: {
       subject: "Conferma il tuo account - Top Volley Manager",
-      greeting: `Ciao ${name}!`,
+      greeting: `Ciao ${safeName}!`,
       intro: "Grazie per esserti registrato su Top Volley Manager. Per completare la registrazione, inserisci il seguente codice di verifica:",
       codeLabel: "Il tuo codice di verifica:",
       expiry: "Questo codice scade tra 1 ora.",
@@ -97,6 +128,30 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { email, name, language }: SendVerificationRequest = await req.json();
+
+    // Input validation
+    if (!email || !isValidEmail(email)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid email address" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (!name || name.length < 1 || name.length > 100) {
+      return new Response(
+        JSON.stringify({ error: "Invalid name" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Rate limiting: max 3 emails per 5 minutes per email address
+    if (!checkRateLimit(email)) {
+      console.warn(`[SECURITY] Rate limit exceeded for ${email}`);
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
+        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders, "Retry-After": "300" } }
+      );
+    }
 
     console.log(`Sending verification email to ${email} in language ${language}`);
 
