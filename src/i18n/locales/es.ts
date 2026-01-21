@@ -45,6 +45,7 @@ export default {
     absences: 'Ausencias',
     ratings: 'Valoraciones',
     messages: 'Mensajes',
+    admin: 'Admin',
   },
 
   // Auth

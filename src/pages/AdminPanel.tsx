@@ -27,6 +27,7 @@ import {
   Clock,
   TrendingUp,
   RefreshCw,
+  BarChart3,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -46,6 +47,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { RegistrationChart } from '@/components/admin/RegistrationChart';
+import { GoogleAnalyticsCard } from '@/components/admin/GoogleAnalyticsCard';
 
 interface VipUser {
   id: string;
@@ -267,8 +270,12 @@ export default function AdminPanel() {
       <Header title={t('admin.title')} showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
-        <Tabs defaultValue="registrations" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="analytics" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="analytics" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Analíticas
+            </TabsTrigger>
             <TabsTrigger value="registrations" className="gap-2">
               <Users className="h-4 w-4" />
               Registros
@@ -278,6 +285,46 @@ export default function AdminPanel() {
               VIP
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="analytics" className="space-y-4">
+            {/* Registration Charts */}
+            <RegistrationChart registrations={registrations} />
+            
+            {/* Google Analytics Card */}
+            <GoogleAnalyticsCard />
+
+            {/* Quick Stats Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
+                  <p className="text-2xl font-bold">{stats.total}</p>
+                  <p className="text-xs text-muted-foreground">Total usuarios</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Building2 className="h-6 w-6 mx-auto mb-2 text-primary" />
+                  <p className="text-2xl font-bold">{stats.directors}</p>
+                  <p className="text-xs text-muted-foreground">Directores</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
+                  <p className="text-2xl font-bold">{stats.coaches}</p>
+                  <p className="text-xs text-muted-foreground">Entrenadores</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <TrendingUp className="h-6 w-6 mx-auto mb-2 text-primary" />
+                  <p className="text-2xl font-bold">{stats.thisWeek}</p>
+                  <p className="text-xs text-muted-foreground">Esta semana</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="registrations" className="space-y-4">
             {/* Stats Cards */}

@@ -1,23 +1,26 @@
-import { Home, Calendar, UserCircle, AlertTriangle, Star, MessageSquare } from 'lucide-react';
+import { Home, Calendar, UserCircle, AlertTriangle, Star, MessageSquare, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from './NavLink';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useConversations } from '@/hooks/useConversations';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export function BottomNav() {
   const { t } = useTranslation();
   const { unreadCount } = useNotifications();
   const { isDirector } = useUserRole();
   const { totalUnread: messageUnread } = useConversations();
+  const { subscription } = useSubscription();
 
-  // Base nav items - Players only shown for directors
+  // Base nav items - Players only shown for directors, Admin only for app admins
   const navItems = [
     { to: '/', icon: Home, labelKey: 'nav.home', tourId: 'home' },
     { to: '/events', icon: Calendar, labelKey: 'nav.events', showBadge: true, badgeCount: unreadCount, tourId: 'events' },
     { to: '/messages', icon: MessageSquare, labelKey: 'nav.messages', showBadge: true, badgeCount: messageUnread, tourId: 'messages' },
     ...(isDirector ? [{ to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' }] : []),
     { to: '/ratings', icon: Star, labelKey: 'nav.ratings', tourId: 'ratings' },
+    ...(subscription.isAdmin ? [{ to: '/admin', icon: Shield, labelKey: 'nav.admin', tourId: 'admin' }] : []),
     { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences', tourId: 'absences' },
   ];
 
