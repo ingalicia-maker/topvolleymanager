@@ -213,12 +213,15 @@ export default function AdminPanel() {
     }).length,
   };
 
-  if (subLoading || loading) {
+  // Show loading while subscription is being fetched OR data is loading
+  // This prevents the "restricted access" flash while admin status is being determined
+  if (subLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <Header title={t('admin.title')} showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-3 text-muted-foreground">Verificando permisos...</span>
         </div>
         <BottomNav />
       </div>

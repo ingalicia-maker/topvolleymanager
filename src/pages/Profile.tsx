@@ -76,9 +76,14 @@ export default function Profile() {
     }
   };
 
+  // Sync assigned teams on initial load only
+  const assignedTeamsKey = assignedTeams.slice().sort().join(',');
   useEffect(() => {
-    setSelectedTeams(assignedTeams);
-  }, [assignedTeams]);
+    if (assignedTeams.length > 0) {
+      setSelectedTeams(assignedTeams);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignedTeamsKey]);
 
   const toggleTeam = (teamId: string) => {
     setSelectedTeams(prev =>
