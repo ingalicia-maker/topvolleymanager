@@ -498,6 +498,7 @@ export default {
       subtitle: 'The complete tool for coaches and sports directors. Organize events, track absences, rate players, and coordinate transportation.',
       cta: 'Start now',
       demo: 'Watch demo',
+      howItWorks: 'How it works',
       noCard: 'No credit card required • 5 free daily credits',
     },
     demo: {
@@ -670,6 +671,7 @@ export default {
   seasons: {
     title: 'Season Management',
     newSeason: 'New Season',
+    startNewSeason: 'Start new season',
     createSeason: 'Create New Season',
     createDescription: 'When creating a new season, you can reuse existing players, teams, and coaches. Previous ratings will remain associated with their original season.',
     seasonName: 'Season Name',
@@ -679,7 +681,12 @@ export default {
     creating: 'Creating...',
     create: 'Create Season',
     closeSeason: 'Close Season',
+    closeThisSeason: 'Close this season',
     reactivate: 'Reactivate',
+    currentStatus: 'Current Status',
+    since: 'Since',
+    noActiveSeason: 'No active season',
+    createToStart: 'Create a new season to get started',
     importPlayers: 'Import Players',
     importDescription: 'Select players from previous seasons and assign them to current teams',
     selectPlayersToImport: 'Select at least one player',

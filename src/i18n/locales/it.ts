@@ -498,6 +498,7 @@ export default {
       subtitle: 'Lo strumento completo per allenatori e direttori sportivi. Organizza eventi, monitora assenze, valuta giocatrici e coordina trasporti.',
       cta: 'Inizia ora',
       demo: 'Guarda demo',
+      howItWorks: 'Come funziona',
       noCard: 'Nessuna carta di credito • 5 crediti giornalieri gratuiti',
     },
     demo: {
@@ -670,6 +671,7 @@ export default {
   seasons: {
     title: 'Gestione Stagioni',
     newSeason: 'Nuova Stagione',
+    startNewSeason: 'Inizia nuova stagione',
     createSeason: 'Crea Nuova Stagione',
     createDescription: 'Creando una nuova stagione, potrai riutilizzare giocatrici, squadre e allenatori esistenti. Le valutazioni precedenti rimarranno associate alla loro stagione originale.',
     seasonName: 'Nome della Stagione',
@@ -679,7 +681,12 @@ export default {
     creating: 'Creazione in corso...',
     create: 'Crea Stagione',
     closeSeason: 'Chiudi Stagione',
+    closeThisSeason: 'Chiudi questa stagione',
     reactivate: 'Riattiva',
+    currentStatus: 'Stato Attuale',
+    since: 'Dal',
+    noActiveSeason: 'Nessuna stagione attiva',
+    createToStart: 'Crea una nuova stagione per iniziare',
     importPlayers: 'Importa Giocatrici',
     importDescription: 'Seleziona giocatrici delle stagioni precedenti e assegnale alle squadre attuali',
     selectPlayersToImport: 'Seleziona almeno una giocatrice',

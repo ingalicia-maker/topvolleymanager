@@ -105,12 +105,13 @@ export default function Landing() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Volleyball className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl">Top Volley Manager</span>
+            <span className="font-bold text-xl hidden sm:inline">Top Volley Manager</span>
+            <span className="font-bold text-lg sm:hidden">TVM</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <LanguageSelector />
             <Link to="/auth">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="hidden sm:inline-flex">
                 {t('auth.login')}
               </Button>
             </Link>
@@ -124,17 +125,17 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4">
         <div className="container mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent leading-tight">
             {t('landing.hero.title')}
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
             {t('landing.hero.subtitle')}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
             <Link to="/auth">
-              <Button size="lg" className="text-lg px-8">
+              <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto">
                 {t('landing.hero.cta')}
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
@@ -142,10 +143,10 @@ export default function Landing() {
             <Button 
               variant="outline" 
               size="lg" 
-              className="text-lg px-8"
+              className="text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto"
               onClick={() => document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              {t('landing.hero.demo')}
+              {t('landing.hero.howItWorks')}
             </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">

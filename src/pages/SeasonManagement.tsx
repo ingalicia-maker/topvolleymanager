@@ -137,41 +137,55 @@ export default function SeasonManagement() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Sparkles className="h-5 w-5 text-primary" />
-              Estado Actual
+              {t('seasons.currentStatus', 'Estado Actual')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {activeSeason ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-lg">{activeSeason.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      Desde {formatDate(activeSeason.start_date)}
+                      {t('seasons.since', 'Desde')} {formatDate(activeSeason.start_date)}
                     </p>
                   </div>
-                  <Badge className="bg-green-500">Activa</Badge>
+                  <Badge className="bg-green-500">{t('seasons.active', 'Activa')}</Badge>
                 </div>
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t">
+                <div className="grid grid-cols-3 gap-2 pt-3 border-t">
                   <div className="text-center">
                     <p className="text-2xl font-bold text-primary">{teams.length}</p>
-                    <p className="text-xs text-muted-foreground">Equipos</p>
+                    <p className="text-xs text-muted-foreground">{t('nav.teams', 'Equipos')}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-primary">{players.length}</p>
-                    <p className="text-xs text-muted-foreground">Jugadoras</p>
+                    <p className="text-xs text-muted-foreground">{t('nav.players', 'Jugadoras')}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-primary">{ratings.length}</p>
-                    <p className="text-xs text-muted-foreground">Valoraciones</p>
+                    <p className="text-xs text-muted-foreground">{t('nav.ratings', 'Valoraciones')}</p>
                   </div>
                 </div>
+                
+                {/* Action buttons for active season */}
+                {isDirector && (
+                  <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 text-destructive border-destructive/50 hover:bg-destructive/10"
+                      onClick={() => openCloseDialog(activeSeason)}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      {t('seasons.closeThisSeason', 'Cerrar esta temporada')}
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-4">
                 <Calendar className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-muted-foreground">No hay temporada activa</p>
-                <p className="text-sm text-muted-foreground">Crea una nueva temporada para empezar</p>
+                <p className="text-muted-foreground">{t('seasons.noActiveSeason', 'No hay temporada activa')}</p>
+                <p className="text-sm text-muted-foreground">{t('seasons.createToStart', 'Crea una nueva temporada para empezar')}</p>
               </div>
             )}
           </CardContent>
@@ -183,9 +197,9 @@ export default function SeasonManagement() {
             {/* Create New Season */}
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="w-full gap-2" size="lg">
+                <Button className="w-full gap-2" size="lg" variant={activeSeason ? "outline" : "default"}>
                   <Plus className="h-5 w-5" />
-                  {t('seasons.newSeason', 'Nueva Temporada')}
+                  {t('seasons.startNewSeason', 'Iniciar nueva temporada')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
