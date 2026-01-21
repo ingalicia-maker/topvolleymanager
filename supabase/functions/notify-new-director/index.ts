@@ -1,7 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +16,7 @@ interface NotifyNewDirectorRequest {
   directorName: string;
   directorEmail: string;
   clubName: string;
+  userId?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,7 +25,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { directorName, directorEmail, clubName }: NotifyNewDirectorRequest = await req.json();
+    const { directorName, directorEmail, clubName, userId }: NotifyNewDirectorRequest = await req.json();
+
+    // Register the user in user_registrations table
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { error: regError } = await supabase
+      .from('user_registrations')
+      .insert({
+        user_id: userId || null,
+        email: directorEmail,
+        name: directorName,
+        profile_type: 'director',
+        club_name: clubName,
+      });
+
+    if (regError) {
+      console.error("Error registering user:", regError);
+    } else {
+      console.log("User registration recorded for:", directorEmail);
+    }
 
     const emailResponse = await resend.emails.send({
       from: "Top Volley Manager <onboarding@resend.dev>",

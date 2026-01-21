@@ -168,6 +168,7 @@ export function useClub() {
             directorName: profile?.name || user.email || 'Desconocido',
             directorEmail: profile?.email || user.email || '',
             clubName: name,
+            userId: user.id,
           },
         }).catch(err => console.error('Error notifying admin:', err));
       }
