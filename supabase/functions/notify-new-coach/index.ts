@@ -14,6 +14,8 @@ const corsHeaders = {
 interface NotifyNewCoachRequest {
   coachName: string;
   coachEmail: string;
+  userId?: string;
+  clubName?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,10 +24,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { coachName, coachEmail }: NotifyNewCoachRequest = await req.json();
+    const { coachName, coachEmail, userId, clubName }: NotifyNewCoachRequest = await req.json();
 
-    // Get all directors from database
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Register the coach in user_registrations table
+    const { error: regError } = await supabase
+      .from('user_registrations')
+      .insert({
+        user_id: userId || null,
+        email: coachEmail,
+        name: coachName,
+        profile_type: 'coach',
+        club_name: clubName || null,
+      });
+
+    if (regError) {
+      console.error("Error registering coach:", regError);
+    } else {
+      console.log("Coach registration recorded for:", coachEmail);
+    }
     
     const { data: directorRoles, error: rolesError } = await supabase
       .from('user_roles')
@@ -65,6 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 0; font-size: 18px; font-weight: 600; color: #111827;">${coachName}</p>
               <p style="margin: 4px 0 0; font-size: 14px; color: #6b7280;">${coachEmail}</p>
+              ${clubName ? `<p style="margin: 4px 0 0; font-size: 14px; color: #6b7280;">Club: ${clubName}</p>` : ''}
             </div>
             <p style="font-size: 16px; color: #374151;">
               Puedes revisar y aprobar este entrenador desde el panel de 

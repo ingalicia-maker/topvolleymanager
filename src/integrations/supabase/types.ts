@@ -913,6 +913,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_registrations: {
+        Row: {
+          club_name: string | null
+          email: string
+          email_sent_at: string | null
+          id: string
+          last_activity_at: string | null
+          name: string | null
+          notes: string | null
+          profile_type: string
+          registered_at: string
+          user_id: string | null
+        }
+        Insert: {
+          club_name?: string | null
+          email: string
+          email_sent_at?: string | null
+          id?: string
+          last_activity_at?: string | null
+          name?: string | null
+          notes?: string | null
+          profile_type: string
+          registered_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          club_name?: string | null
+          email?: string
+          email_sent_at?: string | null
+          id?: string
+          last_activity_at?: string | null
+          name?: string | null
+          notes?: string | null
+          profile_type?: string
+          registered_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
