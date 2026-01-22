@@ -415,6 +415,14 @@ export default function EventDetail() {
               <MapPin className="h-4 w-4 text-muted-foreground" />
               {isDisplacement ? event.destination : event.location}
             </div>
+            {/* Show opponent for matches */}
+            {event.type === 'match' && event.opponent && (
+              <div className="flex items-center gap-2 text-foreground">
+                <Trophy className="h-4 w-4 text-muted-foreground" />
+                <span>vs</span>
+                <span className="font-medium">{event.opponent}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 text-foreground">
               <Users className="h-4 w-4 text-muted-foreground" />
               {isDisplacement ? (

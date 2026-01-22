@@ -143,13 +143,21 @@ export function EventCard({ event }: EventCardProps) {
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5" />
-              <span className="truncate max-w-[150px]">
+            <div className="flex items-center gap-1 text-muted-foreground flex-1 min-w-0">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">
                 {event.type === 'displacement' ? event.destination : event.location}
               </span>
+              {/* Show opponent for matches */}
+              {event.type === 'match' && event.opponent && (
+                <>
+                  <span className="mx-1">•</span>
+                  <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                  <span className="truncate font-medium text-foreground">vs {event.opponent}</span>
+                </>
+              )}
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0 ml-2">
               <Users className="h-3.5 w-3.5 text-muted-foreground" />
               {event.type === 'displacement' ? (
                 <span className="font-medium text-blue-600">{event.total_passengers || invitedCount}</span>
