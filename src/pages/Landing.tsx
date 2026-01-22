@@ -125,6 +125,17 @@ export default function Landing() {
             <span className="font-bold text-xl hidden sm:inline">Top Volley Manager</span>
             <span className="font-bold text-lg sm:hidden">TVM</span>
           </div>
+          
+          {/* Navigation Links - Content Website */}
+          <nav className="hidden md:flex items-center gap-6">
+            <Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+              Blog
+            </Link>
+            <Link to="/resources" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+              {t('resources.title')}
+            </Link>
+          </nav>
+          
           <div className="flex items-center gap-2 sm:gap-4">
             <LanguageSelector />
             <Link to="/auth">
@@ -136,6 +147,18 @@ export default function Landing() {
               <Button size="sm">
                 {t('landing.getStarted')}
               </Button>
+            </Link>
+          </div>
+        </div>
+        
+        {/* Mobile Navigation */}
+        <div className="md:hidden border-t bg-background/95">
+          <div className="container mx-auto px-4 py-2 flex justify-center gap-6">
+            <Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+              Blog
+            </Link>
+            <Link to="/resources" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+              {t('resources.title')}
             </Link>
           </div>
         </div>
@@ -410,22 +433,75 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-12 px-4 border-t">
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Volleyball className="h-6 w-6 text-primary" />
-              <span className="font-bold">Top Volley Manager</span>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div className="md:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <Volleyball className="h-6 w-6 text-primary" />
+                <span className="font-bold">Top Volley Manager</span>
+              </div>
+              <p className="text-muted-foreground text-sm">
+                {t('landing.hero.subtitle')}
+              </p>
             </div>
+            
+            {/* Content Links */}
+            <div>
+              <h4 className="font-semibold mb-4">{t('landing.footer.content')}</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/blog" className="text-muted-foreground hover:text-foreground text-sm">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/resources" className="text-muted-foreground hover:text-foreground text-sm">
+                    {t('resources.title')}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Product Links */}
+            <div>
+              <h4 className="font-semibold mb-4">{t('landing.footer.product')}</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#demo" className="text-muted-foreground hover:text-foreground text-sm">
+                    {t('landing.hero.howItWorks')}
+                  </a>
+                </li>
+                <li>
+                  <Link to="/auth" className="text-muted-foreground hover:text-foreground text-sm">
+                    {t('landing.getStarted')}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Legal Links */}
+            <div>
+              <h4 className="font-semibold mb-4">{t('landing.footer.legal')}</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/privacy" className="text-muted-foreground hover:text-foreground text-sm">
+                    {t('landing.footer.privacy')}
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="text-muted-foreground hover:text-foreground text-sm">
+                    {t('landing.footer.terms')}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Copyright */}
+          <div className="border-t pt-8 text-center">
             <p className="text-muted-foreground text-sm">
               © {new Date().getFullYear()} Top Volley Manager. {t('landing.footer.rights')}
             </p>
-            <div className="flex gap-4">
-              <Link to="/privacy" className="text-muted-foreground hover:text-foreground text-sm">
-                {t('landing.footer.privacy')}
-              </Link>
-              <Link to="/terms" className="text-muted-foreground hover:text-foreground text-sm">
-                {t('landing.footer.terms')}
-              </Link>
-            </div>
           </div>
         </div>
       </footer>
