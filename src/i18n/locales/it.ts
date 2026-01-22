@@ -615,6 +615,9 @@ export default {
       rights: 'Tutti i diritti riservati.',
       privacy: 'Privacy',
       terms: 'Termini',
+      content: 'Contenuti',
+      product: 'Prodotto',
+      legal: 'Legale',
     },
   },
 
