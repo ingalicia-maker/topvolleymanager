@@ -2,6 +2,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ClubThemeProvider } from "@/components/ClubThemeProvider";
 import Auth from "./pages/Auth";
@@ -41,12 +42,13 @@ import BlogAdmin from "./pages/BlogAdmin";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ClubThemeProvider>
-        <Sonner />
-        <BrowserRouter>
-        <Routes>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ClubThemeProvider>
+          <Sonner />
+          <BrowserRouter>
+          <Routes>
           <Route path="/landing" element={<Landing />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogArticle />} />
@@ -251,10 +253,11 @@ const App = () => (
           />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-      </ClubThemeProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+        </BrowserRouter>
+        </ClubThemeProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
