@@ -2,11 +2,30 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useClub } from '@/hooks/useClub';
+import i18n from '@/i18n';
 
 interface AuthGuardProps {
   children: React.ReactNode;
   requireClub?: boolean;
   unauthenticatedRedirect?: string;
+}
+
+const SUPPORTED_LANGUAGES = ['es', 'en', 'it'];
+
+function getPreferredLanguage(): string {
+  let preferredLang = i18n.language;
+  
+  // Normalize language code (e.g., 'en-US' -> 'en')
+  if (preferredLang.includes('-')) {
+    preferredLang = preferredLang.split('-')[0];
+  }
+  
+  // Default to 'es' if not supported
+  if (!SUPPORTED_LANGUAGES.includes(preferredLang)) {
+    preferredLang = 'es';
+  }
+  
+  return preferredLang;
 }
 
 export function AuthGuard({ children, requireClub = true, unauthenticatedRedirect = '/auth' }: AuthGuardProps) {
@@ -25,6 +44,13 @@ export function AuthGuard({ children, requireClub = true, unauthenticatedRedirec
     const redirectTarget = `${location.pathname}${location.search}${location.hash || ''}`;
 
     if (!user) {
+      // Special case: redirect to language-prefixed landing page
+      if (unauthenticatedRedirect === '/__lang_redirect__') {
+        const lang = getPreferredLanguage();
+        navigate(`/${lang}`, { replace: true });
+        return;
+      }
+      
       const params = new URLSearchParams();
       params.set('redirect', redirectTarget);
       navigate(`${unauthenticatedRedirect}?${params.toString()}`, { replace: true });

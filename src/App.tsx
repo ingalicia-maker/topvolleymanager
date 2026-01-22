@@ -1,10 +1,11 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ClubThemeProvider } from "@/components/ClubThemeProvider";
+import { LanguageRedirect } from "@/components/LanguageRedirect";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Teams from "./pages/Teams";
@@ -28,7 +29,7 @@ import ClubOnboarding from "./pages/ClubOnboarding";
 import ClubManagement from "./pages/ClubManagement";
 import AdminPanel from "./pages/AdminPanel";
 import Subscription from "./pages/Subscription";
-import Landing from "./pages/Landing";
+import LandingWrapper from "./pages/LandingWrapper";
 import ResetPassword from "./pages/ResetPassword";
 import SeasonManagement from "./pages/SeasonManagement";
 import Privacy from "./pages/Privacy";
@@ -50,7 +51,13 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <Routes>
-          <Route path="/landing" element={<Landing />} />
+          {/* Language-prefixed landing pages */}
+          <Route path="/:lang" element={<LandingWrapper />} />
+          
+          {/* Legacy /landing redirect to language-prefixed version */}
+          <Route path="/landing" element={<LanguageRedirect />} />
+          
+          {/* Other public pages */}
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route path="/resources" element={<Resources />} />
@@ -58,10 +65,12 @@ const App = () => (
           <Route path="/terms" element={<Terms />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* Root: redirect unauthenticated to language-prefixed landing */}
           <Route
             path="/"
             element={
-              <AuthGuard unauthenticatedRedirect="/landing">
+              <AuthGuard unauthenticatedRedirect="/__lang_redirect__">
                 <Index />
               </AuthGuard>
             }

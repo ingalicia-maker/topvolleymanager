@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Select,
   SelectContent,
@@ -14,11 +15,21 @@ const LANGUAGES = [
   { code: 'it', name: 'Italiano', flag: '🇮🇹' },
 ];
 
+const SUPPORTED_LANG_PATHS = ['es', 'en', 'it'];
+
 export function LanguageSelector() {
   const { i18n } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (value: string) => {
     i18n.changeLanguage(value);
+    
+    // If we're on a language-prefixed route (landing page), navigate to the new language
+    const pathParts = location.pathname.split('/');
+    if (pathParts.length >= 2 && SUPPORTED_LANG_PATHS.includes(pathParts[1])) {
+      navigate(`/${value}`, { replace: true });
+    }
   };
 
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];

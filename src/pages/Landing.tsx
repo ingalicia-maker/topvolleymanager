@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -25,7 +26,8 @@ import demoDesplazamiento from '@/assets/demo-desplazamiento-real.png';
 import demoEquipos from '@/assets/demo-equipos-real.png';
 
 export default function Landing() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language.split('-')[0] || 'es';
 
   const features = [
     { icon: Users, titleKey: 'landing.features.players.title', descKey: 'landing.features.players.desc' },
@@ -99,7 +101,22 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <>
+      <Helmet>
+        <title>{t('landing.hero.title')} | Top Volley Manager</title>
+        <meta name="description" content={t('landing.hero.subtitle')} />
+        <link rel="canonical" href={`https://topvolleymanager.com/${currentLang}`} />
+        <link rel="alternate" hrefLang="es" href="https://topvolleymanager.com/es" />
+        <link rel="alternate" hrefLang="en" href="https://topvolleymanager.com/en" />
+        <link rel="alternate" hrefLang="it" href="https://topvolleymanager.com/it" />
+        <link rel="alternate" hrefLang="x-default" href="https://topvolleymanager.com/es" />
+        <meta property="og:title" content={`${t('landing.hero.title')} | Top Volley Manager`} />
+        <meta property="og:description" content={t('landing.hero.subtitle')} />
+        <meta property="og:url" content={`https://topvolleymanager.com/${currentLang}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content={currentLang === 'en' ? 'en_US' : currentLang === 'it' ? 'it_IT' : 'es_ES'} />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -415,6 +432,7 @@ export default function Landing() {
 
       {/* Cookie Banner */}
       <CookieBanner />
-    </div>
+      </div>
+    </>
   );
 }
