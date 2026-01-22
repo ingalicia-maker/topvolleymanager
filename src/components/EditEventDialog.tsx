@@ -36,11 +36,13 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
   const [time, setTime] = useState(event.time);
   const [location, setLocation] = useState(event.location);
   const [destination, setDestination] = useState(event.destination || '');
+  const [opponent, setOpponent] = useState(event.opponent || '');
   const [notes, setNotes] = useState(event.notes || '');
   const [keepForever, setKeepForever] = useState(event.keep_forever ?? false);
   const [saving, setSaving] = useState(false);
 
   const isDisplacement = event.type === 'displacement';
+  const isMatch = event.type === 'match';
 
   // Generate time options in 15-minute increments
   const timeOptions: string[] = [];
@@ -80,6 +82,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
       time,
       location: isDisplacement ? destination.trim() : location.trim(),
       destination: isDisplacement ? destination.trim() : null,
+      opponent: isMatch && opponent.trim() ? opponent.trim() : null,
       notes: notes.trim() || null,
       keep_forever: keepForever,
     };
@@ -156,6 +159,20 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                disabled={saving}
+              />
+            </div>
+          )}
+
+          {/* Opponent field - only for matches */}
+          {isMatch && (
+            <div className="space-y-2">
+              <Label htmlFor="opponent">Adversario (opcional)</Label>
+              <Input
+                id="opponent"
+                value={opponent}
+                onChange={(e) => setOpponent(e.target.value)}
+                placeholder="Nombre del equipo rival..."
                 disabled={saving}
               />
             </div>

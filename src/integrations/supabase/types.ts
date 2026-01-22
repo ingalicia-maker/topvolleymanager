@@ -369,6 +369,7 @@ export type Database = {
           keep_forever: boolean | null
           location: string
           notes: string | null
+          opponent: string | null
           parent_event_id: string | null
           player_returns: Json | null
           player_stops: Json | null
@@ -399,6 +400,7 @@ export type Database = {
           keep_forever?: boolean | null
           location: string
           notes?: string | null
+          opponent?: string | null
           parent_event_id?: string | null
           player_returns?: Json | null
           player_stops?: Json | null
@@ -429,6 +431,7 @@ export type Database = {
           keep_forever?: boolean | null
           location?: string
           notes?: string | null
+          opponent?: string | null
           parent_event_id?: string | null
           player_returns?: Json | null
           player_stops?: Json | null

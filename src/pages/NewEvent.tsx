@@ -47,6 +47,9 @@ export default function NewEvent() {
   const [loading, setLoading] = useState(false);
   const [expandedOtherTeams, setExpandedOtherTeams] = useState<string[]>([]);
 
+  // Match-specific state
+  const [opponent, setOpponent] = useState('');
+
   // Displacement-specific state
   const [destination, setDestination] = useState('');
   const [departureTime, setDepartureTime] = useState('');
@@ -289,6 +292,7 @@ export default function NewEvent() {
       recurring_pattern: isRecurring ? recurringPattern : null,
       recurring_end_date: isRecurring && recurringEndDate ? recurringEndDate : null,
       parent_event_id: null,
+      opponent: type === 'match' && opponent.trim() ? opponent.trim() : null,
     });
 
     if (result) {
@@ -794,6 +798,20 @@ export default function NewEvent() {
                 disabled={loading}
               />
             </div>
+
+            {/* Opponent field - only for matches */}
+            {type === 'match' && (
+              <div className="space-y-2">
+                <Label htmlFor="opponent">Adversario (opcional)</Label>
+                <Input
+                  id="opponent"
+                  value={opponent}
+                  onChange={e => setOpponent(e.target.value)}
+                  placeholder="Nombre del equipo rival..."
+                  disabled={loading}
+                />
+              </div>
+            )}
           </>
         )}
 

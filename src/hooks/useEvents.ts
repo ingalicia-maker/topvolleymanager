@@ -26,6 +26,8 @@ export interface DbEvent {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // Match-specific fields
+  opponent: string | null;
   // Displacement-specific fields
   destination: string | null;
   departure_time: string | null;
@@ -61,6 +63,7 @@ export function useEvents() {
     } else {
       const parsed = (data || []).map(e => ({
         ...e,
+        opponent: (e as any).opponent ?? null,
         stops: Array.isArray(e.stops) ? e.stops : [],
         player_stops: typeof e.player_stops === 'object' && e.player_stops !== null ? e.player_stops : {},
         player_returns: typeof e.player_returns === 'object' && e.player_returns !== null ? e.player_returns : {},
@@ -104,6 +107,7 @@ export function useEvents() {
     
     const parsed = {
       ...data,
+      opponent: (data as any).opponent ?? null,
       stops: Array.isArray(data.stops) ? data.stops : [],
       player_stops: typeof data.player_stops === 'object' && data.player_stops !== null ? data.player_stops : {},
       player_returns: typeof data.player_returns === 'object' && data.player_returns !== null ? data.player_returns : {},
@@ -147,6 +151,7 @@ export function useEvents() {
         declined_players: [],
         notes: parentEvent.notes,
         created_by: parentEvent.created_by,
+        opponent: parentEvent.opponent,
         destination: parentEvent.destination,
         departure_time: parentEvent.departure_time,
         stops: parentEvent.stops,
@@ -190,6 +195,7 @@ export function useEvents() {
     // Parse and add to state
     const parsedEvents = (data || []).map(e => ({
       ...e,
+      opponent: (e as any).opponent ?? null,
       stops: Array.isArray(e.stops) ? e.stops : [],
       player_stops: typeof e.player_stops === 'object' && e.player_stops !== null ? e.player_stops : {},
       player_returns: typeof e.player_returns === 'object' && e.player_returns !== null ? e.player_returns : {},
