@@ -177,7 +177,9 @@ export default function Landing() {
                   <img 
                     src={screen.image} 
                     alt={t(screen.titleKey)} 
-                    className="relative rounded-2xl shadow-2xl max-h-[500px] w-auto object-contain border border-border/50"
+                    loading="lazy"
+                    decoding="async"
+                    className="relative rounded-2xl shadow-2xl max-h-[400px] md:max-h-[500px] w-auto object-contain border border-border/50"
                   />
                 </div>
                 <div className="text-center md:text-left max-w-sm">
