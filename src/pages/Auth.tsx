@@ -15,6 +15,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
 import { InvitationRegistrationForm } from '@/components/InvitationRegistrationForm';
+import { TurnstileWidget, useTurnstile } from '@/components/TurnstileWidget';
 import { 
   checkRateLimit, 
   resetRateLimit, 
@@ -58,6 +59,9 @@ export default function Auth() {
   // Registration mode: 'select' | 'director' | 'coach'
   const [registrationMode, setRegistrationMode] = useState<'select' | 'director' | 'coach'>('select');
   const [responsibilityCodeAccepted, setResponsibilityCodeAccepted] = useState(false);
+  
+  // Turnstile bot protection
+  const turnstile = useTurnstile();
 
   const redirectTo = searchParams.get('redirect') || '/';
 
@@ -406,6 +410,23 @@ export default function Auth() {
     }
   }, [invitationCode]);
 
+  // Verify Turnstile token with backend
+  const verifyTurnstileToken = async (token: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-turnstile', {
+        body: { token }
+      });
+      if (error || !data?.success) {
+        console.error('Turnstile verification failed:', error || data);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error('Error verifying Turnstile:', err);
+      return false;
+    }
+  };
+
   // Sign up for coaches with invitation code
   const handleCoachSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -426,10 +447,25 @@ export default function Auth() {
       return;
     }
 
-    localStorage.setItem('pending_signup_role', 'coach');
-    localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
+    // Verify Turnstile token
+    const turnstileToken = turnstile.getToken();
+    if (!turnstileToken) {
+      toast.error('Por favor espera a que se complete la verificación de seguridad');
+      return;
+    }
 
     setLoading(true);
+    
+    const isHuman = await verifyTurnstileToken(turnstileToken);
+    if (!isHuman) {
+      toast.error('Verificación de seguridad fallida. Por favor, recarga la página e inténtalo de nuevo.');
+      turnstile.clearToken();
+      setLoading(false);
+      return;
+    }
+
+    localStorage.setItem('pending_signup_role', 'coach');
+    localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
     const redirectUrl = `${window.location.origin}/auth?redirect=/`;
 
     const { error, data } = await supabase.auth.signUp({
@@ -500,9 +536,25 @@ export default function Auth() {
       return;
     }
 
-    localStorage.setItem('pending_signup_role', 'director');
+    // Verify Turnstile token
+    const turnstileToken = turnstile.getToken();
+    if (!turnstileToken) {
+      toast.error('Por favor espera a que se complete la verificación de seguridad');
+      return;
+    }
 
     setLoading(true);
+    
+    const isHuman = await verifyTurnstileToken(turnstileToken);
+    if (!isHuman) {
+      toast.error('Verificación de seguridad fallida. Por favor, recarga la página e inténtalo de nuevo.');
+      turnstile.clearToken();
+      setLoading(false);
+      return;
+    }
+
+    localStorage.setItem('pending_signup_role', 'director');
+
     const redirectUrl = `${window.location.origin}/auth?redirect=/`;
 
     const { error, data } = await supabase.auth.signUp({
@@ -962,6 +1014,14 @@ export default function Auth() {
                     </div>
                   </div>
 
+                  {/* Turnstile invisible widget */}
+                  <TurnstileWidget
+                    onVerify={turnstile.setToken}
+                    onError={turnstile.clearToken}
+                    onExpire={turnstile.clearToken}
+                    invisible
+                  />
+
                   <Button 
                     type="submit" 
                     className="w-full" 
@@ -1154,6 +1214,14 @@ export default function Auth() {
                           </span>
                         </p>
                       </div>
+
+                      {/* Turnstile invisible widget */}
+                      <TurnstileWidget
+                        onVerify={turnstile.setToken}
+                        onError={turnstile.clearToken}
+                        onExpire={turnstile.clearToken}
+                        invisible
+                      />
 
                       <Button 
                         type="submit" 
