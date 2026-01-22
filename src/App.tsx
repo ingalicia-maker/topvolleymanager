@@ -34,6 +34,9 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Invitation from "./pages/Invitation";
 import NotFound from "./pages/NotFound";
+import Blog from "./pages/Blog";
+import BlogArticle from "./pages/BlogArticle";
+import BlogAdmin from "./pages/BlogAdmin";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +48,8 @@ const App = () => (
         <BrowserRouter>
         <Routes>
           <Route path="/landing" element={<Landing />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/auth" element={<Auth />} />
@@ -225,6 +230,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <Subscription />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/blog-admin"
+            element={
+              <AuthGuard>
+                <BlogAdmin />
               </AuthGuard>
             }
           />
