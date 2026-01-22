@@ -1,13 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://topvolleymanager.com/</loc>
+    <loc>https://topvolleymanager.com/es</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/en"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/it"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://topvolleymanager.com/es"/>
     <lastmod>2026-01-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/landing</loc>
+    <loc>https://topvolleymanager.com/en</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/en"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/it"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://topvolleymanager.com/es"/>
+    <lastmod>2026-01-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://topvolleymanager.com/it</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/en"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/it"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://topvolleymanager.com/es"/>
     <lastmod>2026-01-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
