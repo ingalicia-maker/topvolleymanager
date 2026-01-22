@@ -705,4 +705,57 @@ export default {
     allSeasons: 'Todas las temporadas',
     active: 'Activa',
   },
+
+  // Resources Page
+  resources: {
+    pageTitle: 'Recursos Gratuitos para Entrenadores de Voleibol',
+    metaDescription: 'Descarga guías gratuitas en PDF sobre gestión de equipos de voleibol, planificación de entrenamientos, evaluación de jugadores y más.',
+    header: 'Recursos',
+    heroTitle: 'Recursos Gratuitos para Entrenadores',
+    heroSubtitle: 'Descarga guías profesionales en PDF para mejorar la gestión de tu equipo de voleibol. Contenido creado por expertos.',
+    availableGuides: 'Guías Disponibles',
+    download: 'Descargar',
+    unlockFirst: 'Desbloquea primero',
+    downloadError: 'Introduce tu email para descargar las guías',
+    ctaTitle: '¿Listo para profesionalizar tu gestión?',
+    ctaSubtitle: 'Usa Top Volley Manager para aplicar todo lo que has aprendido en estas guías.',
+    form: {
+      title: 'Accede a todos los recursos',
+      subtitle: 'Introduce tu email para desbloquear las descargas gratuitas',
+      namePlaceholder: 'Tu nombre',
+      emailPlaceholder: 'tu@email.com',
+      submit: 'Desbloquear recursos',
+      privacy: 'Respetamos tu privacidad. No compartiremos tu email.',
+      requiredFields: 'Nombre y email son obligatorios',
+      successMessage: '¡Recursos desbloqueados! Ya puedes descargar las guías.',
+      successTitle: '¡Recursos Desbloqueados!',
+      successSubtitle: 'Haz clic en cualquier guía para descargarla.',
+    },
+    guides: {
+      teamManagement: {
+        title: 'Guía de Gestión de Equipos',
+        description: 'Aprende a organizar tu equipo, gestionar convocatorias y comunicarte eficazmente con jugadoras y padres.',
+      },
+      trainingPlanning: {
+        title: 'Planificación de Entrenamientos',
+        description: 'Estructura tus sesiones de entrenamiento con ejercicios progresivos y objetivos claros.',
+      },
+      playerEvaluation: {
+        title: 'Evaluación de Jugadoras',
+        description: 'Sistema de valoración objetiva para hacer seguimiento del progreso y potencial de cada jugadora.',
+      },
+      seasonPlanning: {
+        title: 'Planificación de Temporada',
+        description: 'Organiza toda la temporada: pretemporada, competición, descansos y evaluación final.',
+      },
+      parentCommunication: {
+        title: 'Comunicación con Padres',
+        description: 'Estrategias para mantener una comunicación efectiva y constructiva con las familias.',
+      },
+      attendanceTemplate: {
+        title: 'Plantilla de Control de Asistencia',
+        description: 'Plantilla lista para usar en el control de asistencia a entrenamientos y partidos.',
+      },
+    },
+  },
 };
