@@ -138,22 +138,83 @@ export default function BlogArticle() {
         )}
         <meta property="article:published_time" content={article.published_at || ""} />
 
-        {/* JSON-LD for Article */}
+        {/* JSON-LD for BlogPosting with enhanced Schema.org markup */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "Article",
+            "@type": "BlogPosting",
+            "@id": `https://topvolleymanager.com/blog/${article.slug}#article`,
             headline: article.title,
+            name: article.title,
             description: article.meta_description || article.excerpt,
             datePublished: article.published_at,
             dateModified: article.updated_at,
+            dateCreated: article.created_at,
             url: `https://topvolleymanager.com/blog/${article.slug}`,
-            image: article.featured_image || undefined,
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://topvolleymanager.com/blog/${article.slug}`
+            },
+            image: article.featured_image ? {
+              "@type": "ImageObject",
+              url: article.featured_image,
+              width: 1200,
+              height: 630
+            } : undefined,
+            author: {
+              "@type": "Organization",
+              name: "Top Volley Manager",
+              url: "https://topvolleymanager.com"
+            },
             publisher: {
               "@type": "Organization",
               name: "Top Volley Manager",
               url: "https://topvolleymanager.com",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://topvolleymanager.com/favicon.png",
+                width: 512,
+                height: 512
+              }
             },
+            articleSection: article.category?.name || "Voleibol",
+            keywords: article.tags?.join(", ") || "voleibol, gestión deportiva",
+            inLanguage: i18n.language === "en" ? "en-US" : i18n.language === "it" ? "it-IT" : "es-ES",
+            isAccessibleForFree: true,
+            isPartOf: {
+              "@type": "Blog",
+              "@id": "https://topvolleymanager.com/blog",
+              name: "Blog de Top Volley Manager",
+              url: "https://topvolleymanager.com/blog"
+            }
+          })}
+        </script>
+        
+        {/* BreadcrumbList Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Inicio",
+                item: "https://topvolleymanager.com"
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Blog",
+                item: "https://topvolleymanager.com/blog"
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: article.title,
+                item: `https://topvolleymanager.com/blog/${article.slug}`
+              }
+            ]
           })}
         </script>
       </Helmet>

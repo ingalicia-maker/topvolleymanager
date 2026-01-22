@@ -705,4 +705,57 @@ export default {
     allSeasons: 'All seasons',
     active: 'Active',
   },
+
+  // Resources Page
+  resources: {
+    pageTitle: 'Free Resources for Volleyball Coaches',
+    metaDescription: 'Download free PDF guides on volleyball team management, training planning, player evaluation and more.',
+    header: 'Resources',
+    heroTitle: 'Free Resources for Coaches',
+    heroSubtitle: 'Download professional PDF guides to improve your volleyball team management. Content created by experts.',
+    availableGuides: 'Available Guides',
+    download: 'Download',
+    unlockFirst: 'Unlock first',
+    downloadError: 'Enter your email to download the guides',
+    ctaTitle: 'Ready to professionalize your management?',
+    ctaSubtitle: 'Use Top Volley Manager to apply everything you learned in these guides.',
+    form: {
+      title: 'Access all resources',
+      subtitle: 'Enter your email to unlock free downloads',
+      namePlaceholder: 'Your name',
+      emailPlaceholder: 'your@email.com',
+      submit: 'Unlock resources',
+      privacy: 'We respect your privacy. We won\'t share your email.',
+      requiredFields: 'Name and email are required',
+      successMessage: 'Resources unlocked! You can now download the guides.',
+      successTitle: 'Resources Unlocked!',
+      successSubtitle: 'Click on any guide to download it.',
+    },
+    guides: {
+      teamManagement: {
+        title: 'Team Management Guide',
+        description: 'Learn how to organize your team, manage rosters, and communicate effectively with players and parents.',
+      },
+      trainingPlanning: {
+        title: 'Training Planning',
+        description: 'Structure your training sessions with progressive exercises and clear objectives.',
+      },
+      playerEvaluation: {
+        title: 'Player Evaluation',
+        description: 'Objective rating system to track the progress and potential of each player.',
+      },
+      seasonPlanning: {
+        title: 'Season Planning',
+        description: 'Organize the entire season: preseason, competition, breaks, and final evaluation.',
+      },
+      parentCommunication: {
+        title: 'Parent Communication',
+        description: 'Strategies to maintain effective and constructive communication with families.',
+      },
+      attendanceTemplate: {
+        title: 'Attendance Control Template',
+        description: 'Ready-to-use template for tracking attendance at trainings and matches.',
+      },
+    },
+  },
 };
