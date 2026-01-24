@@ -760,5 +760,6 @@ export default {
         description: 'Plantilla lista para usar en el control de asistencia a entrenamientos y partidos.',
       },
     },
+    noResources: 'No hay recursos disponibles en este momento.',
   },
 };
