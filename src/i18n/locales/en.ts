@@ -760,5 +760,6 @@ export default {
         description: 'Ready-to-use template for tracking attendance at trainings and matches.',
       },
     },
+    noResources: 'No resources available at this time.',
   },
 };

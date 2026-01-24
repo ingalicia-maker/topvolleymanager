@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CookieBanner } from "@/components/CookieBanner";
 import { Helmet } from "react-helmet-async";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Download, 
   FileText, 
@@ -17,76 +18,34 @@ import {
   TrendingUp,
   CheckCircle,
   ArrowRight,
-  BookOpen
+  BookOpen,
+  ClipboardList,
+  Trophy
 } from "lucide-react";
 import { toast } from "sonner";
+import { usePublishedResources, getResourcePublicUrl, useIncrementDownload, Resource } from "@/hooks/useResources";
 
-interface Resource {
-  id: string;
-  titleKey: string;
-  descriptionKey: string;
-  icon: React.ElementType;
-  downloadUrl: string;
-  category: string;
-}
-
-const resources: Resource[] = [
-  {
-    id: "team-management-guide",
-    titleKey: "resources.guides.teamManagement.title",
-    descriptionKey: "resources.guides.teamManagement.description",
-    icon: Users,
-    downloadUrl: "/guides/guia-gestion-equipos-voleibol.pdf",
-    category: "management"
-  },
-  {
-    id: "training-planning",
-    titleKey: "resources.guides.trainingPlanning.title",
-    descriptionKey: "resources.guides.trainingPlanning.description",
-    icon: Calendar,
-    downloadUrl: "/guides/planificacion-entrenamientos.pdf",
-    category: "training"
-  },
-  {
-    id: "player-evaluation",
-    titleKey: "resources.guides.playerEvaluation.title",
-    descriptionKey: "resources.guides.playerEvaluation.description",
-    icon: Target,
-    downloadUrl: "/guides/evaluacion-jugadores.pdf",
-    category: "evaluation"
-  },
-  {
-    id: "season-planning",
-    titleKey: "resources.guides.seasonPlanning.title",
-    descriptionKey: "resources.guides.seasonPlanning.description",
-    icon: TrendingUp,
-    downloadUrl: "/guides/planificacion-temporada.pdf",
-    category: "planning"
-  },
-  {
-    id: "communication-parents",
-    titleKey: "resources.guides.parentCommunication.title",
-    descriptionKey: "resources.guides.parentCommunication.description",
-    icon: BookOpen,
-    downloadUrl: "/guides/comunicacion-padres.pdf",
-    category: "communication"
-  },
-  {
-    id: "attendance-template",
-    titleKey: "resources.guides.attendanceTemplate.title",
-    descriptionKey: "resources.guides.attendanceTemplate.description",
-    icon: FileText,
-    downloadUrl: "/guides/plantilla-asistencia.pdf",
-    category: "templates"
-  }
-];
+// Map icon names to components
+const iconMap: Record<string, React.ElementType> = {
+  FileText,
+  Users,
+  Calendar,
+  Target,
+  TrendingUp,
+  BookOpen,
+  ClipboardList,
+  Trophy,
+};
 
 export default function Resources() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  
+  const { data: resources, isLoading } = usePublishedResources();
+  const incrementDownload = useIncrementDownload();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,8 +69,11 @@ export default function Resources() {
       toast.error(t("resources.downloadError"));
       return;
     }
-    // In production, this would track downloads
-    window.open(resource.downloadUrl, "_blank");
+    // Track download
+    incrementDownload.mutate(resource.id);
+    // Open the file
+    const url = getResourcePublicUrl(resource.file_path);
+    window.open(url, "_blank");
   };
 
   const schemaData = {
@@ -127,18 +89,22 @@ export default function Resources() {
     },
     mainEntity: {
       "@type": "ItemList",
-      itemListElement: resources.map((resource, index) => ({
+      itemListElement: (resources || []).map((resource, index) => ({
         "@type": "ListItem",
         position: index + 1,
         item: {
           "@type": "DigitalDocument",
-          name: t(resource.titleKey),
-          description: t(resource.descriptionKey),
-          url: `https://topvolleymanager.com${resource.downloadUrl}`,
+          name: resource.title,
+          description: resource.description || "",
+          url: getResourcePublicUrl(resource.file_path),
           fileFormat: "application/pdf"
         }
       }))
     }
+  };
+
+  const getIcon = (iconName: string | null) => {
+    return iconMap[iconName || 'FileText'] || FileText;
   };
 
   return (
@@ -248,54 +214,81 @@ export default function Resources() {
           {/* Resources Grid */}
           <section className="mb-16">
             <h2 className="text-2xl font-bold text-center mb-8">{t("resources.availableGuides")}</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {resources.map((resource) => {
-                const Icon = resource.icon;
-                return (
-                  <Card 
-                    key={resource.id} 
-                    className={`transition-all duration-200 ${
-                      isSubscribed 
-                        ? "hover:shadow-lg hover:border-primary/50 cursor-pointer" 
-                        : "opacity-75"
-                    }`}
-                    onClick={() => isSubscribed && handleDownload(resource)}
-                  >
+            
+            {isLoading ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i}>
                     <CardHeader>
                       <div className="flex items-start gap-4">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <Icon className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <CardTitle className="text-lg">{t(resource.titleKey)}</CardTitle>
-                          <CardDescription className="mt-1">
-                            {t(resource.descriptionKey)}
-                          </CardDescription>
+                        <Skeleton className="h-10 w-10 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-5 w-3/4" />
+                          <Skeleton className="h-4 w-full" />
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground flex items-center gap-1">
-                          <FileText className="h-4 w-4" />
-                          PDF
-                        </span>
-                        {isSubscribed ? (
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4 mr-1" />
-                            {t("resources.download")}
-                          </Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            {t("resources.unlockFirst")}
-                          </span>
-                        )}
-                      </div>
+                      <Skeleton className="h-8 w-full" />
                     </CardContent>
                   </Card>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            ) : resources && resources.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {resources.map((resource) => {
+                  const Icon = getIcon(resource.icon);
+                  return (
+                    <Card 
+                      key={resource.id} 
+                      className={`transition-all duration-200 ${
+                        isSubscribed 
+                          ? "hover:shadow-lg hover:border-primary/50 cursor-pointer" 
+                          : "opacity-75"
+                      }`}
+                      onClick={() => isSubscribed && handleDownload(resource)}
+                    >
+                      <CardHeader>
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <Icon className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <CardTitle className="text-lg">{resource.title}</CardTitle>
+                            <CardDescription className="mt-1">
+                              {resource.description}
+                            </CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <FileText className="h-4 w-4" />
+                            {resource.file_name?.split('.').pop()?.toUpperCase() || 'PDF'}
+                          </span>
+                          {isSubscribed ? (
+                            <Button variant="ghost" size="sm">
+                              <Download className="h-4 w-4 mr-1" />
+                              {t("resources.download")}
+                            </Button>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              {t("resources.unlockFirst")}
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>{t("resources.noResources")}</p>
+              </div>
+            )}
           </section>
 
           {/* CTA Section */}
