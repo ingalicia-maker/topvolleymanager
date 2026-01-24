@@ -40,7 +40,7 @@ import Blog from "./pages/Blog";
 import BlogArticle from "./pages/BlogArticle";
 import BlogAdmin from "./pages/BlogAdmin";
 import Resources from "./pages/Resources";
-
+import ResourcesAdmin from "./pages/ResourcesAdmin";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -251,6 +251,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <BlogAdmin />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/resources-admin"
+            element={
+              <AuthGuard>
+                <ResourcesAdmin />
               </AuthGuard>
             }
           />
