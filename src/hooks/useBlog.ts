@@ -1,31 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
-export interface BlogCategory {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  created_at: string;
-}
+export type BlogCategory = Tables<"blog_categories">;
 
-export interface BlogArticle {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  content: string;
-  category_id: string | null;
-  category?: BlogCategory;
-  tags: string[] | null;
-  featured_image: string | null;
-  meta_description: string | null;
-  is_published: boolean;
-  published_at: string | null;
-  author_id: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type BlogArticle = Tables<"blog_articles"> & {
+  category?: BlogCategory | null;
+};
 
 export interface CreateArticleData {
   title: string;
@@ -43,20 +24,17 @@ export interface UpdateArticleData extends Partial<CreateArticleData> {
   id: string;
 }
 
-// Note: These tables are new and not yet in the generated types
-// Using raw SQL queries until types are regenerated
-
 export function useBlogCategories() {
   return useQuery({
     queryKey: ["blog-categories"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("blog_categories" as unknown as "clubs")
+        .from("blog_categories")
         .select("*")
         .order("name");
 
       if (error) throw error;
-      return (data as unknown) as BlogCategory[];
+      return data as BlogCategory[];
     },
   });
 }
@@ -66,28 +44,22 @@ export function useBlogArticles(options?: { publishedOnly?: boolean }) {
     queryKey: ["blog-articles", options?.publishedOnly],
     queryFn: async () => {
       let query = supabase
-        .from("blog_articles" as unknown as "clubs")
+        .from("blog_articles")
         .select(`
           *,
-          category:category_id(*)
+          category:blog_categories(*)
         `)
-        .order("created_at", { ascending: false });
+        .order("published_at", { ascending: false, nullsFirst: false });
 
       if (options?.publishedOnly) {
-        query = query.eq("is_published" as never, true as never);
+        query = query.eq("is_published", true);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
       
-      // Map category relation
-      const articles = (data as unknown as Array<Record<string, unknown>>)?.map((item) => ({
-        ...item,
-        category: item.category as BlogCategory | null,
-      }));
-      
-      return articles as BlogArticle[];
+      return data as BlogArticle[];
     },
   });
 }
@@ -97,21 +69,17 @@ export function useBlogArticle(slug: string) {
     queryKey: ["blog-article", slug],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("blog_articles" as unknown as "clubs")
+        .from("blog_articles")
         .select(`
           *,
-          category:category_id(*)
+          category:blog_categories(*)
         `)
-        .eq("slug" as never, slug as never)
+        .eq("slug", slug)
         .single();
 
       if (error) throw error;
       
-      const article = data as unknown as Record<string, unknown>;
-      return {
-        ...article,
-        category: article.category as BlogCategory | null,
-      } as BlogArticle;
+      return data as BlogArticle;
     },
     enabled: !!slug,
   });
@@ -125,12 +93,12 @@ export function useCreateArticle() {
       const { data: user } = await supabase.auth.getUser();
       
       const { data: article, error } = await supabase
-        .from("blog_articles" as unknown as "clubs")
+        .from("blog_articles")
         .insert({
           ...data,
           author_id: user.user?.id,
           published_at: data.is_published ? new Date().toISOString() : null,
-        } as never)
+        })
         .select()
         .single();
 
@@ -153,21 +121,20 @@ export function useUpdateArticle() {
       // Set published_at when publishing for the first time
       if (data.is_published) {
         const { data: existing } = await supabase
-          .from("blog_articles" as unknown as "clubs")
+          .from("blog_articles")
           .select("published_at")
-          .eq("id" as never, id as never)
+          .eq("id", id)
           .single();
         
-        const existingArticle = existing as unknown as { published_at?: string } | null;
-        if (!existingArticle?.published_at) {
+        if (!existing?.published_at) {
           updateData.published_at = new Date().toISOString();
         }
       }
 
       const { data: article, error } = await supabase
-        .from("blog_articles" as unknown as "clubs")
-        .update(updateData as never)
-        .eq("id" as never, id as never)
+        .from("blog_articles")
+        .update(updateData)
+        .eq("id", id)
         .select()
         .single();
 
@@ -187,9 +154,9 @@ export function useDeleteArticle() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("blog_articles" as unknown as "clubs")
+        .from("blog_articles")
         .delete()
-        .eq("id" as never, id as never);
+        .eq("id", id);
 
       if (error) throw error;
     },

@@ -606,6 +606,11 @@ export default {
         feature4: 'Configurazione personalizzata',
       },
     },
+    blog: {
+      title: 'Ultimi articoli del blog',
+      subtitle: 'Consigli, esercizi e riflessioni per allenatori di pallavolo',
+      viewAll: 'Vedi tutti gli articoli',
+    },
     cta: {
       title: 'Pronto a trasformare il tuo club?',
       subtitle: 'Unisciti a centinaia di allenatori che già gestiscono le loro squadre professionalmente.',
