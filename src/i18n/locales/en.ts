@@ -606,6 +606,11 @@ export default {
         feature4: 'Custom configuration',
       },
     },
+    blog: {
+      title: 'Latest blog articles',
+      subtitle: 'Tips, drills and insights for volleyball coaches',
+      viewAll: 'View all articles',
+    },
     cta: {
       title: 'Ready to transform your club?',
       subtitle: 'Join hundreds of coaches who already manage their teams professionally.',

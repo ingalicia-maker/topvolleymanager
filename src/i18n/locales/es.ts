@@ -606,6 +606,11 @@ export default {
         feature4: 'Configuración personalizada',
       },
     },
+    blog: {
+      title: 'Últimos artículos del blog',
+      subtitle: 'Consejos, ejercicios y reflexiones para entrenadores de voleibol',
+      viewAll: 'Ver todos los artículos',
+    },
     cta: {
       title: '¿Listo para transformar tu club?',
       subtitle: 'Únete a cientos de entrenadores que ya gestionan sus equipos de forma profesional.',
