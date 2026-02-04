@@ -41,6 +41,7 @@ import BlogArticle from "./pages/BlogArticle";
 import BlogAdmin from "./pages/BlogAdmin";
 import Resources from "./pages/Resources";
 import ResourcesAdmin from "./pages/ResourcesAdmin";
+import Exercises from "./pages/Exercises";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -61,6 +62,7 @@ const App = () => (
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/exercises" element={<Exercises />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/auth" element={<Auth />} />
