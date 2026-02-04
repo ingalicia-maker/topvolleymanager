@@ -546,6 +546,201 @@ export type Database = {
           },
         ]
       }
+      exercise_categories: {
+        Row: {
+          created_at: string
+          description_en: string | null
+          description_es: string | null
+          description_it: string | null
+          icon: string | null
+          id: string
+          name_en: string
+          name_es: string
+          name_it: string
+          order_index: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          description_it?: string | null
+          icon?: string | null
+          id?: string
+          name_en: string
+          name_es: string
+          name_it: string
+          order_index?: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          description_it?: string | null
+          icon?: string | null
+          id?: string
+          name_en?: string
+          name_es?: string
+          name_it?: string
+          order_index?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      exercise_scopes: {
+        Row: {
+          created_at: string
+          description_en: string | null
+          description_es: string | null
+          description_it: string | null
+          id: string
+          name_en: string
+          name_es: string
+          name_it: string
+          order_index: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          description_it?: string | null
+          id?: string
+          name_en: string
+          name_es: string
+          name_it: string
+          order_index?: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          description_it?: string | null
+          id?: string
+          name_en?: string
+          name_es?: string
+          name_it?: string
+          order_index?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      exercises: {
+        Row: {
+          category_id: string
+          created_at: string
+          diagram_url: string | null
+          difficulty: number
+          how_it_works_en: string | null
+          how_it_works_es: string | null
+          how_it_works_it: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          max_players: number | null
+          min_players: number | null
+          order_index: number
+          purpose_en: string | null
+          purpose_es: string | null
+          purpose_it: string | null
+          requirements_en: string | null
+          requirements_es: string | null
+          requirements_it: string | null
+          scope_id: string
+          slug: string
+          title_en: string
+          title_es: string
+          title_it: string
+          updated_at: string
+          variations_en: string | null
+          variations_es: string | null
+          variations_it: string | null
+          video_url: string | null
+          view_count: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          diagram_url?: string | null
+          difficulty?: number
+          how_it_works_en?: string | null
+          how_it_works_es?: string | null
+          how_it_works_it?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          max_players?: number | null
+          min_players?: number | null
+          order_index?: number
+          purpose_en?: string | null
+          purpose_es?: string | null
+          purpose_it?: string | null
+          requirements_en?: string | null
+          requirements_es?: string | null
+          requirements_it?: string | null
+          scope_id: string
+          slug: string
+          title_en: string
+          title_es: string
+          title_it: string
+          updated_at?: string
+          variations_en?: string | null
+          variations_es?: string | null
+          variations_it?: string | null
+          video_url?: string | null
+          view_count?: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          diagram_url?: string | null
+          difficulty?: number
+          how_it_works_en?: string | null
+          how_it_works_es?: string | null
+          how_it_works_it?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          max_players?: number | null
+          min_players?: number | null
+          order_index?: number
+          purpose_en?: string | null
+          purpose_es?: string | null
+          purpose_it?: string | null
+          requirements_en?: string | null
+          requirements_es?: string | null
+          requirements_it?: string | null
+          scope_id?: string
+          slug?: string
+          title_en?: string
+          title_es?: string
+          title_it?: string
+          updated_at?: string
+          variations_en?: string | null
+          variations_es?: string | null
+          variations_it?: string | null
+          video_url?: string | null
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercises_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercises_scope_id_fkey"
+            columns: ["scope_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_scopes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string

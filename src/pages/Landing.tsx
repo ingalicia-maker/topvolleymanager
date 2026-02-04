@@ -463,6 +463,11 @@ export default function Landing() {
                     {t('resources.title')}
                   </Link>
                 </li>
+                <li>
+                  <Link to="/exercises" className="text-muted-foreground hover:text-foreground text-sm">
+                    {t('exercises.title')}
+                  </Link>
+                </li>
               </ul>
             </div>
             
