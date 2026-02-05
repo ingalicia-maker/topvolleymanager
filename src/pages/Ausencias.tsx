@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, X, AlertTriangle, History, BarChart3, CheckCircle } from 'lucide-react';
@@ -7,6 +7,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { AbsenceChart } from '@/components/AbsenceChart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -44,6 +45,7 @@ export default function Ausencias() {
   const [activeTab, setActiveTab] = useState<'registrar' | 'historial' | 'estadisticas'>('registrar');
   const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
   const [absenceTypeInputs, setAbsenceTypeInputs] = useState<Record<string, AbsenceType>>({});
+  const [editingReasons, setEditingReasons] = useState<Record<string, string>>({});
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
   const formattedDate = format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es });
@@ -96,8 +98,20 @@ export default function Ausencias() {
   };
 
   const handleUpdateReason = async (ausenciaId: string, reason: string) => {
-    await updateAusencia(ausenciaId, { reason: reason.trim() || null });
+    setEditingReasons(prev => ({ ...prev, [ausenciaId]: reason }));
   };
+
+  const commitReasonUpdate = useCallback(async (ausenciaId: string) => {
+    const reason = editingReasons[ausenciaId];
+    if (reason !== undefined) {
+      await updateAusencia(ausenciaId, { reason: reason.trim() || null });
+      setEditingReasons(prev => {
+        const newState = { ...prev };
+        delete newState[ausenciaId];
+        return newState;
+      });
+    }
+  }, [editingReasons, updateAusencia]);
 
   const handleUpdateAbsenceType = async (ausenciaId: string, absenceType: AbsenceType) => {
     await updateAusencia(ausenciaId, { absence_type: absenceType });
@@ -413,11 +427,13 @@ export default function Ausencias() {
                                   No justificada
                                 </Button>
                               </div>
-                              <Input
+                              <Textarea
                                 placeholder="Motivo (opcional)..."
-                                value={ausencia.reason || ''}
+                                value={editingReasons[ausencia.id] ?? ausencia.reason ?? ''}
                                 onChange={(e) => handleUpdateReason(ausencia.id, e.target.value)}
-                                className="h-8 text-sm"
+                                onBlur={() => commitReasonUpdate(ausencia.id)}
+                                className="min-h-[60px] text-sm resize-none"
+                                rows={2}
                               />
                             </div>
                           )}
