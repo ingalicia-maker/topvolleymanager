@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
+import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -80,7 +81,7 @@ export default function Exercises() {
   };
 
   return (
-    <>
+    <AuthGuard>
       <Helmet>
         <title>{t("exercises.pageTitle")} | Top Volley Manager</title>
         <meta name="description" content={t("exercises.pageDescription")} />
@@ -242,6 +243,6 @@ export default function Exercises() {
           onOpenChange={setDialogOpen}
         />
       </div>
-    </>
+    </AuthGuard>
   );
 }
