@@ -1,9 +1,10 @@
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CookieBanner } from "@/components/CookieBanner";
+import { AuthGuard } from "@/components/AuthGuard";
 import { useBlogArticle } from "@/hooks/useBlog";
 import { format } from "date-fns";
 import { es, enUS, it } from "date-fns/locale";
@@ -12,8 +13,7 @@ import { Helmet } from "react-helmet-async";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const { data: article, isLoading, error } = useBlogArticle(slug || "");
 
   const getDateLocale = () => {
@@ -118,7 +118,7 @@ export default function BlogArticle() {
   }
 
   return (
-    <>
+    <AuthGuard>
       <Helmet>
         <title>{article.title} - Blog | Top Volley Manager</title>
         <meta
@@ -333,6 +333,6 @@ export default function BlogArticle() {
 
         <CookieBanner />
       </div>
-    </>
+    </AuthGuard>
   );
 }
