@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CookieBanner } from "@/components/CookieBanner";
+import { AuthGuard } from "@/components/AuthGuard";
 import { useBlogArticles, useBlogCategories } from "@/hooks/useBlog";
 import { format } from "date-fns";
 import { es, enUS, it } from "date-fns/locale";
@@ -27,8 +28,14 @@ export default function Blog() {
     }
   };
 
+  // Filter articles to only show those with published_at <= today
+  const visibleArticles = articles?.filter((article) => {
+    if (!article.published_at) return false;
+    return new Date(article.published_at) <= new Date();
+  });
+
   return (
-    <>
+    <AuthGuard>
       <Helmet>
         <title>Blog - Top Volley Manager | Artículos sobre voleibol</title>
         <meta
@@ -82,7 +89,7 @@ export default function Blog() {
             <div className="flex justify-center py-12">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>
-          ) : articles?.length === 0 ? (
+          ) : visibleArticles?.length === 0 ? (
             <Card className="max-w-md mx-auto">
               <CardContent className="p-8 text-center">
                 <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -96,7 +103,7 @@ export default function Blog() {
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {articles?.map((article) => (
+              {visibleArticles?.map((article) => (
                 <Link key={article.id} to={`/blog/${article.slug}`}>
                   <Card className="h-full hover:shadow-lg transition-shadow">
                     {article.featured_image && (
@@ -176,6 +183,6 @@ export default function Blog() {
 
         <CookieBanner />
       </div>
-    </>
+    </AuthGuard>
   );
 }

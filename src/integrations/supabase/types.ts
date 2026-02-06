@@ -93,6 +93,7 @@ export type Database = {
           featured_image: string | null
           id: string
           is_published: boolean
+          language: string | null
           meta_description: string | null
           published_at: string | null
           slug: string
@@ -109,6 +110,7 @@ export type Database = {
           featured_image?: string | null
           id?: string
           is_published?: boolean
+          language?: string | null
           meta_description?: string | null
           published_at?: string | null
           slug: string
@@ -125,6 +127,7 @@ export type Database = {
           featured_image?: string | null
           id?: string
           is_published?: boolean
+          language?: string | null
           meta_description?: string | null
           published_at?: string | null
           slug?: string
