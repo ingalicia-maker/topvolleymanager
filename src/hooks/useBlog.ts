@@ -39,9 +39,9 @@ export function useBlogCategories() {
   });
 }
 
-export function useBlogArticles(options?: { publishedOnly?: boolean }) {
+export function useBlogArticles(options?: { publishedOnly?: boolean; language?: string }) {
   return useQuery({
-    queryKey: ["blog-articles", options?.publishedOnly],
+    queryKey: ["blog-articles", options?.publishedOnly, options?.language],
     queryFn: async () => {
       let query = supabase
         .from("blog_articles")
@@ -53,6 +53,10 @@ export function useBlogArticles(options?: { publishedOnly?: boolean }) {
 
       if (options?.publishedOnly) {
         query = query.eq("is_published", true);
+      }
+
+      if (options?.language) {
+        query = query.eq("language", options.language);
       }
 
       const { data, error } = await query;
@@ -75,6 +79,7 @@ export function useBlogArticle(slug: string) {
           category:blog_categories(*)
         `)
         .eq("slug", slug)
+        .eq("is_published", true)
         .single();
 
       if (error) throw error;

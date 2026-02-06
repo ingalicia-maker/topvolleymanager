@@ -12,8 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function BlogCarousel() {
   const { t, i18n } = useTranslation();
-  const { data: articles, isLoading } = useBlogArticles({ publishedOnly: true });
-  const currentLang = i18n.language.split('-')[0] || 'es';
+  const currentLang = i18n.language.startsWith('en') ? 'en' : i18n.language.startsWith('it') ? 'it' : 'es';
+  const { data: articles, isLoading } = useBlogArticles({ publishedOnly: true, language: currentLang });
 
   const getLocale = () => {
     switch (currentLang) {
@@ -23,8 +23,12 @@ export function BlogCarousel() {
     }
   };
 
-  // Get latest 6 articles
-  const latestArticles = articles?.slice(0, 6) || [];
+  // Filter to show only articles with published_at <= today, then get latest 6
+  const visibleArticles = articles?.filter((article) => {
+    if (!article.published_at) return false;
+    return new Date(article.published_at) <= new Date();
+  });
+  const latestArticles = visibleArticles?.slice(0, 6) || [];
 
   if (isLoading) {
     return (
