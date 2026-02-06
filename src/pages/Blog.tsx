@@ -14,7 +14,8 @@ import { Helmet } from "react-helmet-async";
 
 export default function Blog() {
   const { t, i18n } = useTranslation();
-  const { data: articles, isLoading } = useBlogArticles({ publishedOnly: true });
+  const currentLang = i18n.language.startsWith('en') ? 'en' : i18n.language.startsWith('it') ? 'it' : 'es';
+  const { data: articles, isLoading } = useBlogArticles({ publishedOnly: true, language: currentLang });
   const { data: categories } = useBlogCategories();
 
   const getDateLocale = () => {
