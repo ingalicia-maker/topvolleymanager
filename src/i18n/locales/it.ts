@@ -714,6 +714,7 @@ export default {
     active: 'Attiva',
   },
   resources: {
+    title: 'Risorse per Allenatori',
     pageTitle: 'Risorse Gratuite',
     metaDescription: 'Scarica guide e modelli gratuiti per allenatori di pallavolo. Pianificazione della stagione, valutazione dei giocatori e altro.',
     header: 'Risorse',
