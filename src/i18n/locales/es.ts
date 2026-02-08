@@ -716,6 +716,7 @@ export default {
 
   // Resources Page
   resources: {
+    title: 'Recursos para Entrenadores',
     pageTitle: 'Recursos Gratuitos para Entrenadores de Voleibol',
     metaDescription: 'Descarga guías gratuitas en PDF sobre gestión de equipos de voleibol, planificación de entrenamientos, evaluación de jugadores y más.',
     header: 'Recursos',

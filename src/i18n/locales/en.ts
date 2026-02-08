@@ -716,6 +716,7 @@ export default {
 
   // Resources Page
   resources: {
+    title: 'Coach Resources',
     pageTitle: 'Free Resources for Volleyball Coaches',
     metaDescription: 'Download free PDF guides on volleyball team management, training planning, player evaluation and more.',
     header: 'Resources',
