@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { useBlogArticles } from '@/hooks/useBlog';
+import { useBlogArticles, getCategoryName } from '@/hooks/useBlog';
 import { format } from 'date-fns';
 import { es, enUS, it } from 'date-fns/locale';
 import { Calendar, ArrowRight } from 'lucide-react';
@@ -81,7 +81,7 @@ export function BlogCarousel() {
                       <CardContent className="p-6 flex flex-col h-full">
                         {article.category && (
                           <Badge variant="secondary" className="self-start mb-3">
-                            {article.category.name}
+                            {getCategoryName(article.category, currentLang)}
                           </Badge>
                         )}
                         <h3 className="font-semibold text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors">
@@ -117,7 +117,7 @@ export function BlogCarousel() {
                     <div className="flex-1">
                       {article.category && (
                         <Badge variant="secondary" className="mb-2 text-xs">
-                          {article.category.name}
+                          {getCategoryName(article.category, currentLang)}
                         </Badge>
                       )}
                       <h3 className="font-semibold text-sm line-clamp-2 mb-1">

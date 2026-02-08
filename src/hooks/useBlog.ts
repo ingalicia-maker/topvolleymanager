@@ -171,6 +171,13 @@ export function useDeleteArticle() {
   });
 }
 
+// Helper to get translated category name
+export function getCategoryName(category: BlogCategory, lang: string): string {
+  if (lang === 'en' && (category as any).name_en) return (category as any).name_en;
+  if (lang === 'it' && (category as any).name_it) return (category as any).name_it;
+  return category.name;
+}
+
 // Helper to generate slug from title
 export function generateSlug(title: string): string {
   return title

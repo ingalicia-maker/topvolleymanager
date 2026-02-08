@@ -151,6 +151,8 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          name_en: string | null
+          name_it: string | null
           slug: string
         }
         Insert: {
@@ -158,6 +160,8 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          name_en?: string | null
+          name_it?: string | null
           slug: string
         }
         Update: {
@@ -165,6 +169,8 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          name_en?: string | null
+          name_it?: string | null
           slug?: string
         }
         Relationships: []
