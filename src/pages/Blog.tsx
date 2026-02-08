@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CookieBanner } from "@/components/CookieBanner";
 import { AuthGuard } from "@/components/AuthGuard";
-import { useBlogArticles, useBlogCategories } from "@/hooks/useBlog";
+import { useBlogArticles, useBlogCategories, getCategoryName } from "@/hooks/useBlog";
 import { format } from "date-fns";
 import { es, enUS, it } from "date-fns/locale";
 import { Calendar, ArrowRight, FileText } from "lucide-react";
@@ -38,11 +38,8 @@ export default function Blog() {
   return (
     <AuthGuard>
       <Helmet>
-        <title>Blog - Top Volley Manager | Artículos sobre voleibol</title>
-        <meta
-          name="description"
-          content="Artículos, consejos y recursos sobre gestión de equipos de voleibol, entrenamientos, tácticas y más."
-        />
+        <title>{t('blog.pageTitle')}</title>
+        <meta name="description" content={t('blog.metaDescription')} />
         <link rel="canonical" href="https://topvolleymanager.com/blog" />
       </Helmet>
 
@@ -58,7 +55,7 @@ export default function Blog() {
               <LanguageSelector />
               <Link to="/landing">
                 <Button variant="outline" size="sm">
-                  Comenzar
+                  {t('blog.cta')}
                 </Button>
               </Link>
             </div>
@@ -68,9 +65,9 @@ export default function Blog() {
         <main className="container mx-auto px-4 py-8">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Blog de Voleibol</h1>
+            <h1 className="text-4xl font-bold mb-4">{t('blog.heroTitle')}</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Consejos, técnicas y recursos para entrenadores y directores deportivos de voleibol
+              {t('blog.heroSubtitle')}
             </p>
           </div>
 
@@ -79,7 +76,7 @@ export default function Blog() {
             <div className="flex flex-wrap gap-2 justify-center mb-8">
               {categories.map((category) => (
                 <Badge key={category.id} variant="outline" className="text-sm">
-                  {category.name}
+                  {getCategoryName(category, currentLang)}
                 </Badge>
               ))}
             </div>
@@ -93,12 +90,12 @@ export default function Blog() {
           ) : visibleArticles?.length === 0 ? (
             <Card className="max-w-md mx-auto">
               <CardContent className="p-8 text-center">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+               <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">
-                  Próximamente publicaremos artículos sobre voleibol
+                  {t('blog.noArticles')}
                 </p>
                 <Link to="/landing">
-                  <Button className="mt-4">Conoce nuestra app</Button>
+                  <Button className="mt-4">{t('blog.discoverApp')}</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -120,7 +117,7 @@ export default function Blog() {
                     <CardHeader>
                       {article.category && (
                         <Badge variant="secondary" className="w-fit mb-2">
-                          {article.category.name}
+                          {getCategoryName(article.category, currentLang)}
                         </Badge>
                       )}
                       <CardTitle className="line-clamp-2">{article.title}</CardTitle>
@@ -140,7 +137,7 @@ export default function Blog() {
                             })}
                         </div>
                         <span className="flex items-center gap-1 text-primary">
-                          Leer más <ArrowRight className="h-4 w-4" />
+                          {t('blog.readMore')} <ArrowRight className="h-4 w-4" />
                         </span>
                       </div>
                     </CardContent>
@@ -153,14 +150,14 @@ export default function Blog() {
           {/* CTA Section */}
           <div className="mt-16 text-center bg-primary/5 rounded-2xl p-8">
             <h2 className="text-2xl font-bold mb-4">
-              ¿Listo para gestionar tu equipo como un profesional?
+              {t('blog.ctaTitle')}
             </h2>
             <p className="text-muted-foreground mb-6">
-              Top Volley Manager te ayuda a organizar convocatorias, controlar ausencias y mucho más.
+              {t('blog.ctaSubtitle')}
             </p>
             <Link to="/landing">
               <Button size="lg">
-                Comenzar gratis
+                {t('blog.ctaButton')}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -170,13 +167,13 @@ export default function Blog() {
         {/* Footer */}
         <footer className="border-t mt-16 py-8">
           <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} Top Volley Manager. Todos los derechos reservados.</p>
+            <p>© {new Date().getFullYear()} Top Volley Manager. {t('blog.allRightsReserved')}</p>
             <div className="flex justify-center gap-4 mt-4">
               <Link to="/privacy" className="hover:text-primary">
-                Política de Privacidad
+                {t('blog.privacy')}
               </Link>
               <Link to="/terms" className="hover:text-primary">
-                Términos de Uso
+                {t('blog.terms')}
               </Link>
             </div>
           </div>
