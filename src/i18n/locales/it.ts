@@ -765,6 +765,13 @@ export default {
     video: 'Video',
     exploreExercises: 'Esplora Esercizi',
     exploreExercisesDesc: 'Libreria di +25 esercizi per tutti i livelli',
+    createExercise: 'Crea Esercizio',
+    exerciseCreated: 'Esercizio creato con successo',
+    exerciseTitle: "Titolo dell'esercizio",
+    selectScope: 'Seleziona un livello',
+    minPlayers: 'Min. giocatori',
+    maxPlayers: 'Max. giocatori',
+    favorites: 'Preferiti',
   },
   blog: {
     pageTitle: 'Blog - Top Volley Manager | Articoli sulla pallavolo',

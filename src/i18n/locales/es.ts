@@ -792,6 +792,13 @@ export default {
     video: 'Video',
     exploreExercises: 'Explorar Ejercicios',
     exploreExercisesDesc: 'Biblioteca de +25 ejercicios para todos los niveles',
+    createExercise: 'Crear Ejercicio',
+    exerciseCreated: 'Ejercicio creado correctamente',
+    exerciseTitle: 'Título del ejercicio',
+    selectScope: 'Selecciona un nivel',
+    minPlayers: 'Mín. jugadores',
+    maxPlayers: 'Máx. jugadores',
+    favorites: 'Favoritos',
   },
   blog: {
     pageTitle: 'Blog - Top Volley Manager | Artículos sobre voleibol',

@@ -792,6 +792,13 @@ export default {
     video: 'Video',
     exploreExercises: 'Explore Drills',
     exploreExercisesDesc: 'Library of 25+ drills for all levels',
+    createExercise: 'Create Drill',
+    exerciseCreated: 'Drill created successfully',
+    exerciseTitle: 'Drill title',
+    selectScope: 'Select a level',
+    minPlayers: 'Min. players',
+    maxPlayers: 'Max. players',
+    favorites: 'Favorites',
   },
   blog: {
     pageTitle: 'Blog - Top Volley Manager | Volleyball Articles',
