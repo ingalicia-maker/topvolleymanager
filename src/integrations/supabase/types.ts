@@ -597,6 +597,35 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_favorites: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_favorites_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_scopes: {
         Row: {
           created_at: string
@@ -640,6 +669,7 @@ export type Database = {
         Row: {
           category_id: string
           created_at: string
+          created_by: string | null
           diagram_url: string | null
           difficulty: number
           how_it_works_en: string | null
@@ -672,6 +702,7 @@ export type Database = {
         Insert: {
           category_id: string
           created_at?: string
+          created_by?: string | null
           diagram_url?: string | null
           difficulty?: number
           how_it_works_en?: string | null
@@ -704,6 +735,7 @@ export type Database = {
         Update: {
           category_id?: string
           created_at?: string
+          created_by?: string | null
           diagram_url?: string | null
           difficulty?: number
           how_it_works_en?: string | null

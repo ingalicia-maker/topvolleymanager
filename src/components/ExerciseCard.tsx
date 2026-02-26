@@ -2,16 +2,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
 import type { Exercise } from "@/hooks/useExercises";
-import { Users, Star } from "lucide-react";
+import { Users, Star, Heart } from "lucide-react";
+import { useToggleFavorite } from "@/hooks/useExerciseFavorites";
 
 interface ExerciseCardProps {
   exercise: Exercise;
   onClick: () => void;
+  isFavorite?: boolean;
 }
 
-export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, onClick, isFavorite = false }: ExerciseCardProps) {
   const { i18n } = useTranslation();
   const lang = i18n.language.split("-")[0] as "es" | "en" | "it";
+  const toggleFavorite = useToggleFavorite();
 
   const getLocalizedField = (field: string) => {
     const key = `${field}_${lang}` as keyof typeof exercise;
@@ -39,11 +42,29 @@ export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
     ));
   };
 
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavorite.mutate({ exerciseId: exercise.id, isFavorite });
+  };
+
   return (
-    <Card 
-      className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] h-full flex flex-col"
+    <Card
+      className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] h-full flex flex-col relative"
       onClick={onClick}
     >
+      {/* Favorite heart */}
+      <button
+        onClick={handleFavoriteClick}
+        className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+        aria-label="Toggle favorite"
+      >
+        <Heart
+          className={`h-5 w-5 transition-colors ${
+            isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-400"
+          }`}
+        />
+      </button>
+
       {exercise.image_url && (
         <div className="aspect-video w-full overflow-hidden rounded-t-lg">
           <img

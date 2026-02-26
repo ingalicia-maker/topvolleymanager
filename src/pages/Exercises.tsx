@@ -9,8 +9,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExercises, useExerciseCategories, useExerciseScopes } from "@/hooks/useExercises";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ExerciseDetailDialog } from "@/components/ExerciseDetailDialog";
+import { CreateExerciseDialog } from "@/components/CreateExerciseDialog";
+import { useExerciseFavorites } from "@/hooks/useExerciseFavorites";
 import type { Exercise } from "@/hooks/useExercises";
-import { Search, Filter, Dumbbell, ArrowLeft } from "lucide-react";
+import { Search, Filter, Dumbbell, ArrowLeft, Plus, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Select,
@@ -30,6 +32,10 @@ export default function Exercises() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  const { favorites } = useExerciseFavorites();
 
   const { data: categories, isLoading: categoriesLoading } = useExerciseCategories();
   const { data: scopes, isLoading: scopesLoading } = useExerciseScopes();
@@ -68,6 +74,7 @@ export default function Exercises() {
   };
 
   const filteredExercises = exercises?.filter((exercise) => {
+    if (showFavorites && !favorites.includes(exercise.id)) return false;
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     const title = (exercise[`title_${lang}` as keyof typeof exercise] as string || exercise.title_es || "").toLowerCase();
@@ -99,9 +106,27 @@ export default function Exercises() {
               <Dumbbell className="h-10 w-10" />
               <h1 className="text-3xl md:text-4xl font-bold">{t("exercises.title")}</h1>
             </div>
-            <p className="text-lg text-primary-foreground/80 max-w-2xl">
+            <p className="text-lg text-primary-foreground/80 max-w-2xl mb-4">
               {t("exercises.subtitle")}
             </p>
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => setCreateDialogOpen(true)}
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                {t("exercises.createExercise")}
+              </Button>
+              <Button
+                variant={showFavorites ? "default" : "outline"}
+                onClick={() => setShowFavorites(!showFavorites)}
+                className={`gap-2 ${!showFavorites ? "bg-primary-foreground/20 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/30" : "bg-primary-foreground text-primary"}`}
+              >
+                <Heart className={`h-4 w-4 ${showFavorites ? "fill-current" : ""}`} />
+                {t("exercises.favorites")}
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -224,6 +249,7 @@ export default function Exercises() {
                   key={exercise.id}
                   exercise={exercise}
                   onClick={() => handleExerciseClick(exercise)}
+                  isFavorite={favorites.includes(exercise.id)}
                 />
               ))}
             </div>
@@ -241,6 +267,12 @@ export default function Exercises() {
           exercise={selectedExercise}
           open={dialogOpen}
           onOpenChange={setDialogOpen}
+        />
+
+        {/* Create Exercise Dialog */}
+        <CreateExerciseDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
         />
       </div>
     </AuthGuard>
