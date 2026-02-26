@@ -222,6 +222,24 @@ export default function Index() {
       {/* Player of the Week */}
       <PlayerOfTheWeek />
       
+      {/* Exercises Link */}
+      <Link to="/exercises">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center">
+                <Dumbbell className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">{t('exercises.title')}</p>
+                <p className="text-xs text-muted-foreground">{t('exercises.subtitle')}</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </Link>
+
       {/* Weekly Summary Link */}
       <Link to="/weekly-summary">
         <Card className="shadow-lg hover:shadow-xl transition-shadow">
