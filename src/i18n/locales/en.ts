@@ -815,5 +815,11 @@ export default {
     allRightsReserved: 'All rights reserved.',
     privacy: 'Privacy Policy',
     terms: 'Terms of Use',
+    backToBlog: 'Back to blog',
+    articleNotFound: 'Article not found',
+    articleNotFoundDesc: 'The article you are looking for does not exist or is not available.',
+    likedArticle: 'Did you enjoy this article?',
+    likedArticleDesc: 'Try Top Volley Manager and manage your team like a pro.',
+    startFree: 'Start for free',
   },
 };
