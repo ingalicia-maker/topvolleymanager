@@ -55,9 +55,11 @@ export default function Players() {
     XLSX.writeFile(wb, 'jugadoras.xlsx');
   };
 
-  const filteredPlayers = players.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredPlayers = players.filter(p => {
+    const q = search.toLowerCase();
+    const fullName = [p.name, p.surname1, p.surname2].filter(Boolean).join(' ').toLowerCase();
+    return fullName.includes(q) || p.name.toLowerCase().includes(q);
+  });
 
   const togglePlayer = (id: string) => {
     setSelectedPlayers(prev =>

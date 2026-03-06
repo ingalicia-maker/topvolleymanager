@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Bus, Users, Trophy, MessageSquare } from 'lucide-react';
+import { Bell, Bus, Users, Trophy, MessageSquare, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -31,8 +31,9 @@ export function NotificationBell() {
     markAsRead(notification.id);
     setOpen(false);
     
-    // Navigate to the related event if available
-    if (notification.related_event_id) {
+    if (notification.type === 'monthly_reminder') {
+      navigate('/ratings');
+    } else if (notification.related_event_id) {
       navigate(`/events/${notification.related_event_id}`);
     }
   };
@@ -43,6 +44,8 @@ export function NotificationBell() {
         return <Bus className="h-4 w-4 text-blue-500" />;
       case 'player_summoned':
         return <Users className="h-4 w-4 text-amber-500" />;
+      case 'monthly_reminder':
+        return <ClipboardCheck className="h-4 w-4 text-green-500" />;
       default:
         return <Trophy className="h-4 w-4 text-primary" />;
     }
@@ -104,6 +107,11 @@ export function NotificationBell() {
                             locale: es 
                           })}
                         </p>
+                        {notification.type === 'monthly_reminder' && (
+                          <span className="text-[10px] text-primary font-medium">
+                            Ir a puntuaciones →
+                          </span>
+                        )}
                         {notification.related_event_id && (
                           <span className="text-[10px] text-primary font-medium">
                             Ver evento →
