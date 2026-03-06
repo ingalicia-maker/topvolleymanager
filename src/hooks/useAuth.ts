@@ -18,9 +18,17 @@ export function useAuth() {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        // Stale/invalid refresh token – clear the broken session
+        console.warn('[useAuth] getSession error, signing out:', error.message);
+        supabase.auth.signOut().catch(() => {});
+        setSession(null);
+        setUser(null);
+      } else {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
       setLoading(false);
     });
 
