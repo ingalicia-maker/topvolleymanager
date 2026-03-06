@@ -788,5 +788,11 @@ export default {
     allRightsReserved: 'Tutti i diritti riservati.',
     privacy: 'Informativa sulla Privacy',
     terms: 'Termini di Utilizzo',
+    backToBlog: 'Torna al blog',
+    articleNotFound: 'Articolo non trovato',
+    articleNotFoundDesc: "L'articolo che cerchi non esiste o non è disponibile.",
+    likedArticle: 'Ti è piaciuto questo articolo?',
+    likedArticleDesc: 'Prova Top Volley Manager e gestisci la tua squadra come un professionista.',
+    startFree: 'Inizia gratis',
   },
 };
