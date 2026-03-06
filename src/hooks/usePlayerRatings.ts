@@ -96,8 +96,8 @@ export function usePlayerRatings() {
       .single();
 
     if (error) {
+      console.error('Error saving rating:', error);
       toast.error('Error al guardar puntuación');
-      return null;
     }
 
     setAllRatings(prev => [data, ...prev]);
