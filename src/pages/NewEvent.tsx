@@ -467,7 +467,7 @@ export default function NewEvent() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Bus className="h-4 w-4" />
-                  Paradas del bus *
+                  Paradas del bus (opcional)
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
