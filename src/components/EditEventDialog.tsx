@@ -200,9 +200,66 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
               />
             </div>
           )}
+          {/* Teams selection for displacement */}
+          {isDisplacement && (
+            <div className="space-y-2">
+              <Label>Equipos</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {teams.map(tm => (
+                  <label
+                    key={tm.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedTeams.includes(tm.id) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                    }`}
+                  >
+                    <Checkbox
+                      checked={selectedTeams.includes(tm.id)}
+                      onCheckedChange={() => toggleTeam(tm.id)}
+                      disabled={saving}
+                    />
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: tm.color }}
+                      />
+                      <span className="text-sm font-medium">{tm.name}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Stops selection for displacement */}
+          {isDisplacement && (
+            <div className="space-y-2">
+              <Label>Paradas del bus (opcional)</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {availableStops.map(stop => (
+                  <label
+                    key={stop.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedStops.includes(stop.name) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                    }`}
+                  >
+                    <Checkbox
+                      checked={selectedStops.includes(stop.name)}
+                      onCheckedChange={() => toggleStop(stop.name)}
+                      disabled={saving}
+                    />
+                    <span className="text-sm">{stop.name}</span>
+                  </label>
+                ))}
+                {availableStops.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    No hay paradas configuradas
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notas</Label>
             <Textarea
               id="notes"
               value={notes}
