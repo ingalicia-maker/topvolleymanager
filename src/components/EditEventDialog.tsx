@@ -39,10 +39,24 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
   const [opponent, setOpponent] = useState(event.opponent || '');
   const [notes, setNotes] = useState(event.notes || '');
   const [keepForever, setKeepForever] = useState(event.keep_forever ?? false);
+  const [selectedStops, setSelectedStops] = useState<string[]>((event.stops as string[]) || []);
+  const [selectedTeams, setSelectedTeams] = useState<string[]>(event.selected_teams || []);
   const [saving, setSaving] = useState(false);
 
   const isDisplacement = event.type === 'displacement';
   const isMatch = event.type === 'match';
+
+  const toggleStop = (stop: string) => {
+    setSelectedStops(prev =>
+      prev.includes(stop) ? prev.filter(s => s !== stop) : [...prev, stop]
+    );
+  };
+
+  const toggleTeam = (teamId: string) => {
+    setSelectedTeams(prev =>
+      prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId]
+    );
+  };
 
   // Generate time options in 15-minute increments
   const timeOptions: string[] = [];
