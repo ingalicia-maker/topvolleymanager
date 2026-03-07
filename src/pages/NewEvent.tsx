@@ -211,10 +211,6 @@ export default function NewEvent() {
         toast.error('Selecciona al menos un equipo');
         return;
       }
-      if (selectedStops.length === 0) {
-        toast.error('Selecciona al menos una parada');
-        return;
-      }
     } else if (isNotificationType) {
       // Notification types: incident, holiday, communication
       if (!affectsAllTeams && affectedTeams.length === 0) {
