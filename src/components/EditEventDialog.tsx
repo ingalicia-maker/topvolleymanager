@@ -101,6 +101,15 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
       keep_forever: keepForever,
     };
 
+    if (isDisplacement) {
+      updates.stops = selectedStops;
+      updates.selected_teams = selectedTeams;
+      // Set team_id to first selected team if available
+      if (selectedTeams.length > 0 && !selectedTeams.includes(event.team_id)) {
+        updates.team_id = selectedTeams[0];
+      }
+    }
+
     const success = await onSave(updates);
     setSaving(false);
 
