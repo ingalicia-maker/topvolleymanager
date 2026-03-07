@@ -39,10 +39,24 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
   const [opponent, setOpponent] = useState(event.opponent || '');
   const [notes, setNotes] = useState(event.notes || '');
   const [keepForever, setKeepForever] = useState(event.keep_forever ?? false);
+  const [selectedStops, setSelectedStops] = useState<string[]>((event.stops as string[]) || []);
+  const [selectedTeams, setSelectedTeams] = useState<string[]>(event.selected_teams || []);
   const [saving, setSaving] = useState(false);
 
   const isDisplacement = event.type === 'displacement';
   const isMatch = event.type === 'match';
+
+  const toggleStop = (stop: string) => {
+    setSelectedStops(prev =>
+      prev.includes(stop) ? prev.filter(s => s !== stop) : [...prev, stop]
+    );
+  };
+
+  const toggleTeam = (teamId: string) => {
+    setSelectedTeams(prev =>
+      prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId]
+    );
+  };
 
   // Generate time options in 15-minute increments
   const timeOptions: string[] = [];
@@ -86,6 +100,15 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
       notes: notes.trim() || null,
       keep_forever: keepForever,
     };
+
+    if (isDisplacement) {
+      updates.stops = selectedStops;
+      updates.selected_teams = selectedTeams;
+      // Set team_id to first selected team if available
+      if (selectedTeams.length > 0 && !selectedTeams.includes(event.team_id)) {
+        updates.team_id = selectedTeams[0];
+      }
+    }
 
     const success = await onSave(updates);
     setSaving(false);
@@ -177,9 +200,66 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
               />
             </div>
           )}
+          {/* Teams selection for displacement */}
+          {isDisplacement && (
+            <div className="space-y-2">
+              <Label>Equipos</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {teams.map(tm => (
+                  <label
+                    key={tm.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedTeams.includes(tm.id) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                    }`}
+                  >
+                    <Checkbox
+                      checked={selectedTeams.includes(tm.id)}
+                      onCheckedChange={() => toggleTeam(tm.id)}
+                      disabled={saving}
+                    />
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: tm.color }}
+                      />
+                      <span className="text-sm font-medium">{tm.name}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Stops selection for displacement */}
+          {isDisplacement && (
+            <div className="space-y-2">
+              <Label>Paradas del bus (opcional)</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {availableStops.map(stop => (
+                  <label
+                    key={stop.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedStops.includes(stop.name) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                    }`}
+                  >
+                    <Checkbox
+                      checked={selectedStops.includes(stop.name)}
+                      onCheckedChange={() => toggleStop(stop.name)}
+                      disabled={saving}
+                    />
+                    <span className="text-sm">{stop.name}</span>
+                  </label>
+                ))}
+                {availableStops.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    No hay paradas configuradas
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notas</Label>
             <Textarea
               id="notes"
               value={notes}
