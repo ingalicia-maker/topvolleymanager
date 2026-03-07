@@ -211,10 +211,6 @@ export default function NewEvent() {
         toast.error('Selecciona al menos un equipo');
         return;
       }
-      if (selectedStops.length === 0) {
-        toast.error('Selecciona al menos una parada');
-        return;
-      }
     } else if (isNotificationType) {
       // Notification types: incident, holiday, communication
       if (!affectsAllTeams && affectedTeams.length === 0) {
@@ -471,7 +467,7 @@ export default function NewEvent() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Bus className="h-4 w-4" />
-                  Paradas del bus *
+                  Paradas del bus (opcional)
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
