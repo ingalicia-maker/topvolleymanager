@@ -512,7 +512,7 @@ export default function EventDetail() {
         )}
 
         {/* Coach view: Add players from my teams */}
-        {isDisplacement && myTeamsInEvent.length > 0 && !isDirector && (
+        {isDisplacement && myTeamsInEvent.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
