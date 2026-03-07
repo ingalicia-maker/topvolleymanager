@@ -53,7 +53,10 @@ export default function EventDetail() {
   // Get coach's teams
   const coachTeams = profile?.assigned_teams || [];
   const eventTeams = event?.selected_teams || [];
-  const myTeamsInEvent = eventTeams.filter(t => coachTeams.includes(t) || isDirector);
+  // Directors can manage all event teams; coaches only their assigned teams
+  const myTeamsInEvent = isDirector 
+    ? eventTeams 
+    : eventTeams.filter(t => coachTeams.includes(t));
 
   // Initialize local state when event loads
   useEffect(() => {
