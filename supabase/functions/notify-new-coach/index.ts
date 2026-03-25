@@ -5,6 +5,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,6 +25,28 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // --- Auth check ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    // --- End auth check ---
+
     const { coachName, coachEmail, userId, clubName }: NotifyNewCoachRequest = await req.json();
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -60,7 +83,6 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Get director emails from profiles
     const directorIds = directorRoles.map(r => r.user_id);
     const { data: directorProfiles, error: profilesError } = await supabase
       .from('profiles')
@@ -69,7 +91,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (profilesError) throw profilesError;
 
-    // Send email to each director
     const emailPromises = directorProfiles?.map(director => 
       resend.emails.send({
         from: "Top Volley Manager <onboarding@resend.dev>",
