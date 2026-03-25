@@ -168,7 +168,7 @@ export function validateFormToken(formId: string, token: string): boolean {
  */
 export function logSecurityEvent(event: string, details?: Record<string, unknown>): void {
   // In production, this could send to a logging service
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.warn(`[SECURITY] ${event}`, details);
   }
 }
