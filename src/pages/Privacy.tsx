@@ -182,7 +182,7 @@ function PrivacyEN() {
       <h2>1. Data Controller Information</h2>
       <p>
         <strong>Company Name:</strong> Top Volley Manager SL<br />
-        <strong>Registered Address:</strong> Madrid, Spain<br />
+        <strong>Registered Address:</strong> Plaza Pontevedra 10, 2B, 15003 A Coruña, Spain<br />
         <strong>Contact Email:</strong> info@topvolleymanager.com
       </p>
 
