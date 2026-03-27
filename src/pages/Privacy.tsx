@@ -419,7 +419,7 @@ function PrivacyIT() {
       <p>
         Per qualsiasi domanda relativa alla privacy dei tuoi dati:<br />
         <strong>Email:</strong> info@topvolleymanager.com<br />
-        <strong>Indirizzo:</strong> Top Volley Manager SL, Madrid, Spagna
+        <strong>Indirizzo:</strong> Top Volley Manager SL, Plaza Pontevedra 10, 2B, 15003 A Coruña, Spagna
       </p>
     </>
   );
