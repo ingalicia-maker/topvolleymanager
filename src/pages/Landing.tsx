@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { CookieBanner } from '@/components/CookieBanner';
 import { BlogCarousel } from '@/components/BlogCarousel';
+import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { 
   Users, 
   Calendar, 
