@@ -274,6 +274,26 @@ export default function AdminPanel() {
       <Header title={t('admin.title')} showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 gap-3">
+          <a href="/blog-admin">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Mail className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <p className="text-sm font-medium">Blog Admin</p>
+              </CardContent>
+            </Card>
+          </a>
+          <a href="/newsletter-admin">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Mail className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <p className="text-sm font-medium">Newsletter</p>
+              </CardContent>
+            </Card>
+          </a>
+        </div>
+
         <Tabs defaultValue="analytics" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="analytics" className="gap-2">
