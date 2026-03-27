@@ -795,4 +795,23 @@ export default {
     likedArticleDesc: 'Prova Top Volley Manager e gestisci la tua squadra come un professionista.',
     startFree: 'Inizia gratis',
   },
+  newsletter: {
+    title: '📬 Iscriviti alla nostra newsletter',
+    subtitle: 'Ricevi ogni mese i migliori articoli su pallavolo, coaching e allenamento.',
+    emailPlaceholder: 'La tua email',
+    subscribe: 'Iscriviti',
+    privacyAccept: 'Accetto la',
+    privacyLink: 'politica sulla privacy e cookies',
+    success: 'Iscrizione avvenuta con successo!',
+    error: "Errore durante l'iscrizione. Riprova.",
+    alreadySubscribed: 'Questa email è già iscritta.',
+    thankYou: 'Grazie per esserti iscritto!',
+    confirmMessage: 'Riceverai la nostra newsletter mensile con i migliori articoli.',
+  },
+  home: {
+    blog: {
+      title: 'Ultimi articoli',
+      viewMore: 'Vedi altri articoli',
+    },
+  },
 };

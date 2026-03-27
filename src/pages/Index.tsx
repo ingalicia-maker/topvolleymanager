@@ -406,6 +406,9 @@ export default function Index() {
             </div>
           )}
         </div>
+
+        {/* Blog Section */}
+        <HomeBlogSection />
       </div>
       <BottomNav />
       <OnboardingTour />

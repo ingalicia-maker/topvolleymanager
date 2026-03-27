@@ -417,6 +417,9 @@ export default function Landing() {
       {/* Blog Carousel Section */}
       <BlogCarousel />
 
+      {/* Newsletter Signup */}
+      <NewsletterSignup />
+
       {/* CTA Section */}
       <section className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto text-center">

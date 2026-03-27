@@ -266,6 +266,14 @@ const App = () => (
             }
           />
           <Route
+            path="/newsletter-admin"
+            element={
+              <AuthGuard>
+                <NewsletterAdmin />
+              </AuthGuard>
+            }
+          />
+          <Route
             path="/seasons"
             element={
               <AuthGuard>
