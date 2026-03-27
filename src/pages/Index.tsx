@@ -11,6 +11,7 @@ import { CoachWelcomeDialog } from '@/components/CoachWelcomeDialog';
 import { MonthlyAbsenceSummary } from '@/components/MonthlyAbsenceSummary';
 import { ResponsibilityCodeBanner } from '@/components/ResponsibilityCodeBanner';
 import { CoachTeamSelector } from '@/components/CoachTeamSelector';
+import { HomeBlogSection } from '@/components/HomeBlogSection';
 import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
