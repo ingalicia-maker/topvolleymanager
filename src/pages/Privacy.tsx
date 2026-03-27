@@ -56,7 +56,7 @@ function PrivacyES() {
       <h2>1. Información del Responsable del Tratamiento</h2>
       <p>
         <strong>Razón Social:</strong> Top Volley Manager SL<br />
-        <strong>Domicilio Social:</strong> Madrid, España<br />
+        <strong>Domicilio Social:</strong> Plaza Pontevedra 10, 2B, 15003 A Coruña, España<br />
         <strong>Email de contacto:</strong> info@topvolleymanager.com
       </p>
 
