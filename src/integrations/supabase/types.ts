@@ -814,6 +814,81 @@ export type Database = {
           },
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          language: string
+          privacy_accepted_at: string
+          source: string
+          subscribed_at: string
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          privacy_accepted_at?: string
+          source?: string
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          privacy_accepted_at?: string
+          source?: string
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+        }
+        Relationships: []
+      }
+      newsletters: {
+        Row: {
+          article_ids: string[] | null
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          recipient_count: number | null
+          sent_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          article_ids?: string[] | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          recipient_count?: number | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          article_ids?: string[] | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          recipient_count?: number | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
