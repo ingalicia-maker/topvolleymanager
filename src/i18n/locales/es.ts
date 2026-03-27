@@ -822,4 +822,23 @@ export default {
     likedArticleDesc: 'Prueba Top Volley Manager y gestiona tu equipo como un profesional.',
     startFree: 'Comenzar gratis',
   },
+  newsletter: {
+    title: '📬 Suscríbete a nuestra newsletter',
+    subtitle: 'Recibe cada mes los mejores artículos sobre voleibol, coaching y entrenamiento.',
+    emailPlaceholder: 'Tu email',
+    subscribe: 'Suscribirse',
+    privacyAccept: 'Acepto la',
+    privacyLink: 'política de privacidad y cookies',
+    success: '¡Te has suscrito correctamente!',
+    error: 'Error al suscribirse. Inténtalo de nuevo.',
+    alreadySubscribed: 'Este email ya está suscrito.',
+    thankYou: '¡Gracias por suscribirte!',
+    confirmMessage: 'Recibirás nuestro boletín mensual con los mejores artículos.',
+  },
+  home: {
+    blog: {
+      title: 'Últimos artículos',
+      viewMore: 'Ver más artículos',
+    },
+  },
 };

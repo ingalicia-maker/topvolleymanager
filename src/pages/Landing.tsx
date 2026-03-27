@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { CookieBanner } from '@/components/CookieBanner';
 import { BlogCarousel } from '@/components/BlogCarousel';
+import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { 
   Users, 
   Calendar, 
@@ -415,6 +416,9 @@ export default function Landing() {
 
       {/* Blog Carousel Section */}
       <BlogCarousel />
+
+      {/* Newsletter Signup */}
+      <NewsletterSignup />
 
       {/* CTA Section */}
       <section className="py-20 px-4 bg-muted/30">

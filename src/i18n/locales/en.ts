@@ -822,4 +822,23 @@ export default {
     likedArticleDesc: 'Try Top Volley Manager and manage your team like a pro.',
     startFree: 'Start for free',
   },
+  newsletter: {
+    title: '📬 Subscribe to our newsletter',
+    subtitle: 'Get the best volleyball coaching and training articles delivered monthly.',
+    emailPlaceholder: 'Your email',
+    subscribe: 'Subscribe',
+    privacyAccept: 'I accept the',
+    privacyLink: 'privacy policy and cookies',
+    success: 'Successfully subscribed!',
+    error: 'Error subscribing. Please try again.',
+    alreadySubscribed: 'This email is already subscribed.',
+    thankYou: 'Thank you for subscribing!',
+    confirmMessage: 'You will receive our monthly newsletter with the best articles.',
+  },
+  home: {
+    blog: {
+      title: 'Latest articles',
+      viewMore: 'View more articles',
+    },
+  },
 };

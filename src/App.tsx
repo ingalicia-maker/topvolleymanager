@@ -42,6 +42,7 @@ import BlogAdmin from "./pages/BlogAdmin";
 import Resources from "./pages/Resources";
 import ResourcesAdmin from "./pages/ResourcesAdmin";
 import Exercises from "./pages/Exercises";
+import NewsletterAdmin from "./pages/NewsletterAdmin";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -261,6 +262,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <ResourcesAdmin />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/newsletter-admin"
+            element={
+              <AuthGuard>
+                <NewsletterAdmin />
               </AuthGuard>
             }
           />
