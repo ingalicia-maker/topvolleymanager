@@ -293,7 +293,7 @@ function PrivacyEN() {
       <p>
         For any privacy-related inquiries:<br />
         <strong>Email:</strong> info@topvolleymanager.com<br />
-        <strong>Address:</strong> Top Volley Manager SL, Madrid, Spain
+        <strong>Address:</strong> Top Volley Manager SL, Plaza Pontevedra 10, 2B, 15003 A Coruña, Spain
       </p>
     </>
   );
