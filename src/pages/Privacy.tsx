@@ -308,7 +308,7 @@ function PrivacyIT() {
       <h2>1. Informazioni sul Titolare del Trattamento</h2>
       <p>
         <strong>Ragione Sociale:</strong> Top Volley Manager SL<br />
-        <strong>Sede Legale:</strong> Madrid, Spagna<br />
+        <strong>Sede Legale:</strong> Plaza Pontevedra 10, 2B, 15003 A Coruña, Spagna<br />
         <strong>Email di contatto:</strong> info@topvolleymanager.com
       </p>
 
