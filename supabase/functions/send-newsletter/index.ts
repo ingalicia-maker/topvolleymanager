@@ -110,6 +110,16 @@ serve(async (req) => {
       .single();
     if (nlError || !newsletter) throw new Error("Newsletter not found");
 
+    // Parse content - support new JSON format with sections
+    let emailHtml = newsletter.content;
+    try {
+      const parsed = JSON.parse(newsletter.content);
+      if (parsed.html) {
+        emailHtml = parsed.html;
+      }
+    } catch {
+      // Legacy HTML content, use as-is
+    }
     // Get active subscribers
     const { data: subscribers } = await supabase
       .from("newsletter_subscribers")
