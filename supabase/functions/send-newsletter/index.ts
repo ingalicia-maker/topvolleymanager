@@ -156,7 +156,7 @@ serve(async (req) => {
                 from: "Top Volley Manager <noreply@topvolleymanager.com>",
                 to: [email],
                 subject: newsletter.subject,
-                html: newsletter.content,
+                html: emailHtml,
               }),
             });
 
