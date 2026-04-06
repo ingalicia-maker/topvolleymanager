@@ -497,6 +497,10 @@ export default function Auth() {
     if (data.user && !data.session) {
       setShowEmailConfirmation(true);
       toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
+      // Send welcome email
+      supabase.functions.invoke('send-welcome-email', {
+        body: { email: email.trim(), name: name.trim(), language: i18n.language },
+      }).catch(console.error);
       setLoading(false);
       return;
     }
@@ -586,6 +590,10 @@ export default function Auth() {
     if (data.user && !data.session) {
       setShowEmailConfirmation(true);
       toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
+      // Send welcome email
+      supabase.functions.invoke('send-welcome-email', {
+        body: { email: email.trim(), name: name.trim(), language: i18n.language },
+      }).catch(console.error);
       setLoading(false);
       return;
     }
