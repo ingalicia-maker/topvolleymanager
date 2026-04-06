@@ -9,6 +9,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting store
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(identifier: string, maxRequests = 10, windowMs = 900000): boolean {
+  const now = Date.now();
+  const key = identifier.toLowerCase();
+  const entry = rateLimitStore.get(key);
+
+  if (rateLimitStore.size > 1000) {
+    for (const [k, v] of rateLimitStore.entries()) {
+      if (now > v.resetTime) rateLimitStore.delete(k);
+    }
+  }
+
+  if (!entry || now > entry.resetTime) {
+    rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+
+  entry.count++;
+  return entry.count <= maxRequests;
+}
+
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
+
 interface VerifyCodeRequest {
   email: string;
   code: string;
@@ -21,6 +49,30 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { email, code }: VerifyCodeRequest = await req.json();
+
+    // Input validation
+    if (!email || !isValidEmail(email)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid email" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (!code || typeof code !== "string" || code.length !== 6 || !/^\d{6}$/.test(code)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid code format" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Rate limiting: max 10 attempts per email per 15 minutes
+    if (!checkRateLimit(email)) {
+      console.warn(`[SECURITY] Rate limit exceeded for verify-email-code: ${email}`);
+      return new Response(
+        JSON.stringify({ error: "Too many attempts. Please wait before trying again." }),
+        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders, "Retry-After": "900" } }
+      );
+    }
 
     console.log(`Verifying code for ${email}`);
 
@@ -37,7 +89,6 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (tokenError || !token) {
-      console.log("Invalid or expired token:", tokenError);
       return new Response(
         JSON.stringify({ success: false, error: "invalid_code" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -81,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in verify-email-code:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An error occurred" }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
