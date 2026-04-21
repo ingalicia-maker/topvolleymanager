@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useExercises, useExerciseCategories, useExerciseScopes } from "@/hooks/useExercises";
+import { useExercises, useExerciseCategories, useExerciseScopes, useExercisesCount } from "@/hooks/useExercises";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ExerciseDetailDialog } from "@/components/ExerciseDetailDialog";
 import { CreateExerciseDialog } from "@/components/CreateExerciseDialog";
@@ -43,6 +43,7 @@ export default function Exercises() {
     selectedCategory !== "all" ? selectedCategory : undefined,
     selectedScope !== "all" ? selectedScope : undefined
   );
+  const { data: totalCount } = useExercisesCount();
 
   const getCategoryName = (category: typeof categories extends (infer T)[] ? T : never) => {
     const key = `name_${lang}` as keyof typeof category;
@@ -102,9 +103,19 @@ export default function Exercises() {
               <ArrowLeft className="h-4 w-4" />
               {t("common.back")}
             </Link>
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-4">
               <Dumbbell className="h-10 w-10" />
               <h1 className="text-3xl md:text-4xl font-bold">{t("exercises.title")}</h1>
+              <span
+                key={totalCount ?? 0}
+                className="inline-flex items-baseline gap-1.5 rounded-full bg-primary-foreground/15 backdrop-blur px-3 py-1 text-sm font-semibold ring-1 ring-primary-foreground/25 animate-fade-in"
+                aria-live="polite"
+              >
+                <span className="text-base md:text-lg tabular-nums">{totalCount ?? "…"}</span>
+                <span className="text-xs uppercase tracking-wide text-primary-foreground/80">
+                  {t("exercises.totalLabel", "ejercicios")}
+                </span>
+              </span>
             </div>
             <p className="text-lg text-primary-foreground/80 max-w-2xl mb-4">
               {t("exercises.subtitle")}
