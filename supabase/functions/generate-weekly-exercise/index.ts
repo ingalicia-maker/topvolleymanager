@@ -27,6 +27,41 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Weekly deduplication: skip if any exercise was already created this ISO week (Mon 00:00 UTC -> next Mon 00:00 UTC)
+    const now = new Date();
+    const weekStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const dayOfWeek = weekStart.getUTCDay(); // 0 Sun .. 6 Sat
+    const daysFromMonday = (dayOfWeek + 6) % 7;
+    weekStart.setUTCDate(weekStart.getUTCDate() - daysFromMonday);
+    weekStart.setUTCHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setUTCDate(weekEnd.getUTCDate() + 7);
+
+    const { count: weeklyCount, error: weeklyCountError } = await supabase
+      .from("exercises")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", weekStart.toISOString())
+      .lt("created_at", weekEnd.toISOString());
+
+    if (weeklyCountError) {
+      console.error("Weekly count error:", weeklyCountError);
+    }
+
+    if ((weeklyCount ?? 0) > 0) {
+      console.log(`Skipping: ${weeklyCount} exercise(s) already generated this week (${weekStart.toISOString()} - ${weekEnd.toISOString()})`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          skipped: true,
+          reason: "already_generated_this_week",
+          existing_this_week: weeklyCount,
+          week_start: weekStart.toISOString(),
+          week_end: weekEnd.toISOString(),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Load all categories and scopes (with slugs and names) so the AI can pick from a closed list
     const [{ data: categories }, { data: scopes }] = await Promise.all([
       supabase.from("exercise_categories").select("id, slug, name_en"),
