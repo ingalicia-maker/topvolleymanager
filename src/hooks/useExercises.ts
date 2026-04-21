@@ -43,6 +43,44 @@ export function useExercises(categorySlug?: string, scopeSlug?: string) {
   return useQuery({
     queryKey: ["exercises", categorySlug, scopeSlug],
     queryFn: async () => {
+      let categoryFilterId: string | null = null;
+      let scopeFilterId: string | null = null;
+
+      if (categorySlug) {
+        const { data: category } = await supabase
+          .from("exercise_categories")
+          .select("id")
+          .eq("slug", categorySlug)
+          .maybeSingle();
+        if (category) categoryFilterId = category.id;
+      }
+
+      if (scopeSlug) {
+        const { data: scope } = await supabase
+          .from("exercise_scopes")
+          .select("id")
+          .eq("slug", scopeSlug)
+          .maybeSingle();
+        if (scope) scopeFilterId = scope.id;
+      }
+
+      let allowedIds: string[] | null = null;
+      if (categoryFilterId) {
+        const { data: links } = await supabase
+          .from("exercise_category_links" as any)
+          .select("exercise_id")
+          .eq("category_id", categoryFilterId);
+        allowedIds = (links as any[] | null)?.map((l) => l.exercise_id) ?? [];
+      }
+      if (scopeFilterId) {
+        const { data: links } = await supabase
+          .from("exercise_scope_links" as any)
+          .select("exercise_id")
+          .eq("scope_id", scopeFilterId);
+        const scopeIds = (links as any[] | null)?.map((l) => l.exercise_id) ?? [];
+        allowedIds = allowedIds === null ? scopeIds : allowedIds.filter((id) => scopeIds.includes(id));
+      }
+
       let query = supabase
         .from("exercises")
         .select(`
@@ -53,28 +91,9 @@ export function useExercises(categorySlug?: string, scopeSlug?: string) {
         .eq("is_published", true)
         .order("order_index");
 
-      if (categorySlug) {
-        const { data: category } = await supabase
-          .from("exercise_categories")
-          .select("id")
-          .eq("slug", categorySlug)
-          .single();
-        
-        if (category) {
-          query = query.eq("category_id", category.id);
-        }
-      }
-
-      if (scopeSlug) {
-        const { data: scope } = await supabase
-          .from("exercise_scopes")
-          .select("id")
-          .eq("slug", scopeSlug)
-          .single();
-        
-        if (scope) {
-          query = query.eq("scope_id", scope.id);
-        }
+      if (allowedIds !== null) {
+        if (allowedIds.length === 0) return [];
+        query = query.in("id", allowedIds);
       }
 
       const { data, error } = await query;
