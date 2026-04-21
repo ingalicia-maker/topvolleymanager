@@ -41,7 +41,9 @@ export function useExerciseScopes() {
 
 export function useExercises(categorySlug?: string, scopeSlug?: string) {
   return useQuery({
-    queryKey: ["exercises", categorySlug, scopeSlug],
+    queryKey: ["exercises", "v2-pivot", categorySlug, scopeSlug],
+    staleTime: 0,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       let categoryFilterId: string | null = null;
       let scopeFilterId: string | null = null;
