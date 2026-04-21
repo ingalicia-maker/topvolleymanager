@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useExercises, useExerciseCategories, useExerciseScopes } from "@/hooks/useExercises";
+import { useExercises, useExerciseCategories, useExerciseScopes, useExercisesCount } from "@/hooks/useExercises";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ExerciseDetailDialog } from "@/components/ExerciseDetailDialog";
 import { CreateExerciseDialog } from "@/components/CreateExerciseDialog";
