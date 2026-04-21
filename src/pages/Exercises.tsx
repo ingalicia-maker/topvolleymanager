@@ -43,6 +43,7 @@ export default function Exercises() {
     selectedCategory !== "all" ? selectedCategory : undefined,
     selectedScope !== "all" ? selectedScope : undefined
   );
+  const { data: totalCount } = useExercisesCount();
 
   const getCategoryName = (category: typeof categories extends (infer T)[] ? T : never) => {
     const key = `name_${lang}` as keyof typeof category;
