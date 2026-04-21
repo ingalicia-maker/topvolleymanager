@@ -597,6 +597,36 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_category_links: {
+        Row: {
+          category_id: string
+          exercise_id: string
+        }
+        Insert: {
+          category_id: string
+          exercise_id: string
+        }
+        Update: {
+          category_id?: string
+          exercise_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_category_links_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_category_links_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_favorites: {
         Row: {
           created_at: string
@@ -622,6 +652,36 @@ export type Database = {
             columns: ["exercise_id"]
             isOneToOne: false
             referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercise_scope_links: {
+        Row: {
+          exercise_id: string
+          scope_id: string
+        }
+        Insert: {
+          exercise_id: string
+          scope_id: string
+        }
+        Update: {
+          exercise_id?: string
+          scope_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_scope_links_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_scope_links_scope_id_fkey"
+            columns: ["scope_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_scopes"
             referencedColumns: ["id"]
           },
         ]
