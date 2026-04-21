@@ -104,6 +104,22 @@ export function useExercises(categorySlug?: string, scopeSlug?: string) {
   });
 }
 
+export function useExercisesCount() {
+  return useQuery({
+    queryKey: ["exercises-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("exercises")
+        .select("*", { count: "exact", head: true })
+        .eq("is_published", true);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
 export function useExercise(slug: string) {
   return useQuery({
     queryKey: ["exercise", slug],
