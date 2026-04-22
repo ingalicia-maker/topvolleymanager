@@ -130,8 +130,8 @@ export function useExercise(slug: string) {
         .from("exercises")
         .select(`
           *,
-          category:exercise_categories(*),
-          scope:exercise_scopes(*)
+          category:exercise_categories!exercises_category_id_fkey(*),
+          scope:exercise_scopes!exercises_scope_id_fkey(*)
         `)
         .eq("slug", slug)
         .single();
