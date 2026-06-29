@@ -41,6 +41,38 @@ export default function Blog() {
         <title>{t('blog.pageTitle')}</title>
         <meta name="description" content={t('blog.metaDescription')} />
         <link rel="canonical" href="https://topvolleymanager.com/blog" />
+        <link rel="alternate" hrefLang="es" href="https://topvolleymanager.com/blog" />
+        <link rel="alternate" hrefLang="en" href="https://topvolleymanager.com/blog" />
+        <link rel="alternate" hrefLang="it" href="https://topvolleymanager.com/blog" />
+        <link rel="alternate" hrefLang="x-default" href="https://topvolleymanager.com/blog" />
+        <meta property="og:title" content={t('blog.pageTitle')} />
+        <meta property="og:description" content={t('blog.metaDescription')} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://topvolleymanager.com/blog" />
+        <meta property="og:image" content="https://topvolleymanager.com/og-image.png" />
+        <meta property="og:locale" content="es_ES" />
+        <meta property="og:locale:alternate" content="en_US" />
+        <meta property="og:locale:alternate" content="it_IT" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={t('blog.pageTitle')} />
+        <meta name="twitter:description" content={t('blog.metaDescription')} />
+        <meta name="twitter:image" content="https://topvolleymanager.com/og-image.png" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "Top Volley Manager Blog",
+            url: "https://topvolleymanager.com/blog",
+            description: t('blog.metaDescription'),
+            inLanguage: ["es-ES", "en-US", "it-IT"],
+            publisher: {
+              "@type": "Organization",
+              name: "Top Volley Manager",
+              url: "https://topvolleymanager.com",
+              logo: { "@type": "ImageObject", url: "https://topvolleymanager.com/favicon.png" }
+            }
+          })}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
