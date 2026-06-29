@@ -118,7 +118,7 @@ export default function Landing() {
         <meta property="og:url" content={`https://topvolleymanager.com/${currentLang}`} />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content={currentLang === 'en' ? 'en_US' : currentLang === 'it' ? 'it_IT' : 'es_ES'} />
-        <link rel="preload" as="image" href={demoDashboard} fetchpriority="high" />
+        <link rel="preload" as="image" href={demoDashboard} fetchPriority="high" />
       </Helmet>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       {/* Header */}
