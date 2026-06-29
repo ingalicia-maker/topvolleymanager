@@ -26,6 +26,7 @@ import * as LucideIcons from "lucide-react";
 export default function Exercises() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language.split("-")[0] as "es" | "en" | "it";
+  const ogLocale = lang === "en" ? "en_US" : lang === "it" ? "it_IT" : "es_ES";
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedScope, setSelectedScope] = useState<string>("all");
@@ -89,8 +90,10 @@ export default function Exercises() {
   };
 
   return (
-    <AuthGuard>
+    <>
+      {/* Helmet OUTSIDE AuthGuard so SEO meta is rendered for crawlers without a session */}
       <Helmet>
+        <html lang={lang} />
         <title>{t("exercises.pageTitle")} | Top Volley Manager</title>
         <meta name="description" content={t("exercises.pageDescription")} />
         <link rel="canonical" href="https://topvolleymanager.com/exercises" />
@@ -103,9 +106,7 @@ export default function Exercises() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://topvolleymanager.com/exercises" />
         <meta property="og:image" content="https://topvolleymanager.com/og-image.png" />
-        <meta property="og:locale" content="es_ES" />
-        <meta property="og:locale:alternate" content="en_US" />
-        <meta property="og:locale:alternate" content="it_IT" />
+        <meta property="og:locale" content={ogLocale} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={t("exercises.pageTitle")} />
         <meta name="twitter:description" content={t("exercises.pageDescription")} />
@@ -127,6 +128,7 @@ export default function Exercises() {
         </script>
       </Helmet>
 
+      <AuthGuard>
       <div className="min-h-screen bg-background">
         {/* Header */}
         <header className="bg-primary text-primary-foreground py-12">
@@ -318,6 +320,7 @@ export default function Exercises() {
           onOpenChange={setCreateDialogOpen}
         />
       </div>
-    </AuthGuard>
+      </AuthGuard>
+    </>
   );
 }
