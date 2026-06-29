@@ -15,6 +15,7 @@ import { Helmet } from "react-helmet-async";
 export default function Blog() {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language.startsWith('en') ? 'en' : i18n.language.startsWith('it') ? 'it' : 'es';
+  const ogLocale = currentLang === 'en' ? 'en_US' : currentLang === 'it' ? 'it_IT' : 'es_ES';
   const { data: articles, isLoading } = useBlogArticles({ publishedOnly: true, language: currentLang });
   const { data: categories } = useBlogCategories();
 
@@ -36,8 +37,10 @@ export default function Blog() {
   });
 
   return (
-    <AuthGuard>
+    <>
+      {/* Helmet OUTSIDE AuthGuard so SEO meta is rendered even for non-authenticated crawlers */}
       <Helmet>
+        <html lang={currentLang} />
         <title>{t('blog.pageTitle')}</title>
         <meta name="description" content={t('blog.metaDescription')} />
         <link rel="canonical" href="https://topvolleymanager.com/blog" />
@@ -50,9 +53,7 @@ export default function Blog() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://topvolleymanager.com/blog" />
         <meta property="og:image" content="https://topvolleymanager.com/og-image.png" />
-        <meta property="og:locale" content="es_ES" />
-        <meta property="og:locale:alternate" content="en_US" />
-        <meta property="og:locale:alternate" content="it_IT" />
+        <meta property="og:locale" content={ogLocale} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={t('blog.pageTitle')} />
         <meta name="twitter:description" content={t('blog.metaDescription')} />
@@ -75,6 +76,7 @@ export default function Blog() {
         </script>
       </Helmet>
 
+      <AuthGuard>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
         {/* Header */}
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -213,6 +215,7 @@ export default function Blog() {
 
         <CookieBanner />
       </div>
-    </AuthGuard>
+      </AuthGuard>
+    </>
   );
 }
