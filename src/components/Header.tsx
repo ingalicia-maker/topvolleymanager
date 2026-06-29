@@ -41,9 +41,10 @@ export function Header({ title, showBack = false, rightAction, onBack, backTo }:
             variant="ghost"
             size="icon"
             onClick={handleBack}
-            className="shrink-0"
+            className="shrink-0 min-h-11 min-w-11"
+            aria-label="Volver"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </Button>
         )}
         {logoUrl && !showBack && (
