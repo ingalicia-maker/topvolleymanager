@@ -1,8 +1,59 @@
+# Top Volley Manager - robots.txt
+# Public marketing & content pages indexable; private app routes excluded.
+
 User-agent: Googlebot
 Allow: /
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /invitation
+Disallow: /inv/
+Disallow: /admin
+Disallow: /club-onboarding
+Disallow: /club-settings
+Disallow: /club-management
+Disallow: /coach-management
+Disallow: /newsletter-admin
+Disallow: /blog-admin
+Disallow: /resources-admin
+Disallow: /teams
+Disallow: /players
+Disallow: /events
+Disallow: /ausencias
+Disallow: /profile
+Disallow: /ratings
+Disallow: /displacements
+Disallow: /pending-tasks
+Disallow: /weekly-summary
+Disallow: /messages
+Disallow: /subscription
+Disallow: /seasons
 
 User-agent: Bingbot
 Allow: /
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /invitation
+Disallow: /inv/
+Disallow: /admin
+Disallow: /club-onboarding
+Disallow: /club-settings
+Disallow: /club-management
+Disallow: /coach-management
+Disallow: /newsletter-admin
+Disallow: /blog-admin
+Disallow: /resources-admin
+Disallow: /teams
+Disallow: /players
+Disallow: /events
+Disallow: /ausencias
+Disallow: /profile
+Disallow: /ratings
+Disallow: /displacements
+Disallow: /pending-tasks
+Disallow: /weekly-summary
+Disallow: /messages
+Disallow: /subscription
+Disallow: /seasons
 
 User-agent: Twitterbot
 Allow: /
@@ -12,5 +63,18 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /invitation
+Disallow: /inv/
+Disallow: /admin
+Disallow: /club-onboarding
+Disallow: /club-settings
+Disallow: /club-management
+Disallow: /coach-management
+Disallow: /newsletter-admin
+Disallow: /blog-admin
+Disallow: /resources-admin
 
 Sitemap: https://topvolleymanager.com/sitemap.xml
+Host: https://topvolleymanager.com

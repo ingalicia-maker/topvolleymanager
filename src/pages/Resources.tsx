@@ -113,10 +113,22 @@ export default function Resources() {
         <title>{t("resources.pageTitle")} | Top Volley Manager</title>
         <meta name="description" content={t("resources.metaDescription")} />
         <link rel="canonical" href="https://topvolleymanager.com/resources" />
+        <link rel="alternate" hrefLang="es" href="https://topvolleymanager.com/resources" />
+        <link rel="alternate" hrefLang="en" href="https://topvolleymanager.com/resources" />
+        <link rel="alternate" hrefLang="it" href="https://topvolleymanager.com/resources" />
+        <link rel="alternate" hrefLang="x-default" href="https://topvolleymanager.com/resources" />
         <meta property="og:title" content={t("resources.pageTitle")} />
         <meta property="og:description" content={t("resources.metaDescription")} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://topvolleymanager.com/resources" />
+        <meta property="og:image" content="https://topvolleymanager.com/og-image.png" />
+        <meta property="og:locale" content="es_ES" />
+        <meta property="og:locale:alternate" content="en_US" />
+        <meta property="og:locale:alternate" content="it_IT" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={t("resources.pageTitle")} />
+        <meta name="twitter:description" content={t("resources.metaDescription")} />
+        <meta name="twitter:image" content="https://topvolleymanager.com/og-image.png" />
         <script type="application/ld+json">
           {JSON.stringify(schemaData)}
         </script>
