@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CookieBanner } from "@/components/CookieBanner";
-import { AuthGuard } from "@/components/AuthGuard";
 import { useBlogArticles, useBlogCategories, getCategoryName } from "@/hooks/useBlog";
 import { format } from "date-fns";
 import { es, enUS, it } from "date-fns/locale";
@@ -76,7 +75,7 @@ export default function Blog() {
         </script>
       </Helmet>
 
-      <AuthGuard>
+      {/* Public content page — no AuthGuard so crawlers can index it */}
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
         {/* Header */}
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -215,7 +214,6 @@ export default function Blog() {
 
         <CookieBanner />
       </div>
-      </AuthGuard>
     </>
   );
 }
