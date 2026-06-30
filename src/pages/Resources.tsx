@@ -38,7 +38,9 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export default function Resources() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = (i18n.language.split('-')[0] || 'es') as 'es' | 'en' | 'it';
+  const ogLocale = lang === 'en' ? 'en_US' : lang === 'it' ? 'it_IT' : 'es_ES';
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -110,6 +112,7 @@ export default function Resources() {
   return (
     <>
       <Helmet>
+        <html lang={lang} />
         <title>{t("resources.pageTitle")} | Top Volley Manager</title>
         <meta name="description" content={t("resources.metaDescription")} />
         <link rel="canonical" href="https://topvolleymanager.com/resources" />
@@ -122,9 +125,7 @@ export default function Resources() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://topvolleymanager.com/resources" />
         <meta property="og:image" content="https://topvolleymanager.com/og-image.png" />
-        <meta property="og:locale" content="es_ES" />
-        <meta property="og:locale:alternate" content="en_US" />
-        <meta property="og:locale:alternate" content="it_IT" />
+        <meta property="og:locale" content={ogLocale} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={t("resources.pageTitle")} />
         <meta name="twitter:description" content={t("resources.metaDescription")} />
