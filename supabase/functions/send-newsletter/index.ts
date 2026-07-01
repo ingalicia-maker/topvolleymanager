@@ -57,7 +57,7 @@ serve(async (req) => {
         .map(
           (a: any) =>
             `<div style="margin-bottom:20px;padding:15px;border:1px solid #e5e7eb;border-radius:8px;">
-              <h3 style="margin:0 0 8px;"><a href="https://topvolleymanager.com/blog/${a.slug}" style="color:#2563eb;text-decoration:none;">${a.title}</a></h3>
+              <h3 style="margin:0 0 8px;"><a href="https://www.topvolleymanager.com/blog/${a.slug}" style="color:#2563eb;text-decoration:none;">${a.title}</a></h3>
               <p style="margin:0;color:#6b7280;font-size:14px;">${a.excerpt || ""}</p>
             </div>`
         )
@@ -73,7 +73,7 @@ serve(async (req) => {
             <h2>This Month's Best Articles</h2>
             ${articleListHtml}
             <div style="text-align:center;margin-top:30px;">
-              <a href="https://topvolleymanager.com/blog" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">Read More on Our Blog</a>
+              <a href="https://www.topvolleymanager.com/blog" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">Read More on Our Blog</a>
             </div>
           </div>
           <div style="padding:15px;text-align:center;color:#9ca3af;font-size:12px;border-top:1px solid #e5e7eb;">
