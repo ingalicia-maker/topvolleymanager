@@ -79,5 +79,5 @@ Disallow: /blog-admin
 Disallow: /resources-admin
 Disallow: /exercises
 
-Sitemap: https://topvolleymanager.com/sitemap.xml
-Host: https://topvolleymanager.com
+Sitemap: https://www.topvolleymanager.com/sitemap.xml
+Host: https://www.topvolleymanager.com

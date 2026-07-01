@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://topvolleymanager.com/es</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/es"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/en"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/it"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://topvolleymanager.com/es"/>
+    <loc>https://www.topvolleymanager.com/es</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/en"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/it"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.topvolleymanager.com/es"/>
     <lastmod>2026-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/en</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/es"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/en"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/it"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://topvolleymanager.com/es"/>
+    <loc>https://www.topvolleymanager.com/en</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/en"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/it"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.topvolleymanager.com/es"/>
     <lastmod>2026-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/it</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/es"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/en"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/it"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://topvolleymanager.com/es"/>
+    <loc>https://www.topvolleymanager.com/it</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/en"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/it"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.topvolleymanager.com/es"/>
     <lastmod>2026-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog</loc>
+    <loc>https://www.topvolleymanager.com/blog</loc>
     <lastmod>2026-03-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/resources</loc>
+    <loc>https://www.topvolleymanager.com/resources</loc>
     <lastmod>2026-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- /exercises is gated behind authentication and intentionally excluded from sitemap -->
   <url>
-    <loc>https://topvolleymanager.com/auth</loc>
+    <loc>https://www.topvolleymanager.com/auth</loc>
     <lastmod>2026-03-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/privacy</loc>
+    <loc>https://www.topvolleymanager.com/privacy</loc>
     <lastmod>2026-03-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/terms</loc>
+    <loc>https://www.topvolleymanager.com/terms</loc>
     <lastmod>2026-03-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -64,91 +64,91 @@
 
   <!-- Blog Articles - Spanish -->
   <url>
-    <loc>https://topvolleymanager.com/blog/como-gestionar-tiempos-muertos-5-errores-evitar</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/como-gestionar-tiempos-muertos-5-errores-evitar"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-manage-timeouts-5-mistakes-to-avoid"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-gestire-i-timeout-5-errori-da-evitare"/>
+    <loc>https://www.topvolleymanager.com/blog/como-gestionar-tiempos-muertos-5-errores-evitar</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/como-gestionar-tiempos-muertos-5-errores-evitar"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-manage-timeouts-5-mistakes-to-avoid"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-gestire-i-timeout-5-errori-da-evitare"/>
     <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/error-entrenador-arruinar-jugadoras</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/error-entrenador-arruinar-jugadoras"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/the-mistake-every-coach-makes"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/errore-che-ogni-allenatore-commette"/>
+    <loc>https://www.topvolleymanager.com/blog/error-entrenador-arruinar-jugadoras</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/error-entrenador-arruinar-jugadoras"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/the-mistake-every-coach-makes"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/errore-che-ogni-allenatore-commette"/>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/10-ejercicios-ataque-voleibol</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/10-ejercicios-ataque-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/10-attack-exercises-volleyball"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/10-esercizi-attacco-pallavolo"/>
+    <loc>https://www.topvolleymanager.com/blog/10-ejercicios-ataque-voleibol</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/10-ejercicios-ataque-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/10-attack-exercises-volleyball"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/10-esercizi-attacco-pallavolo"/>
     <lastmod>2026-02-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/reunion-equipo-efectiva-voleibol</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/reunion-equipo-efectiva-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-run-effective-team-meeting"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-condurre-riunione-squadra-efficace"/>
+    <loc>https://www.topvolleymanager.com/blog/reunion-equipo-efectiva-voleibol</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/reunion-equipo-efectiva-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-run-effective-team-meeting"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-condurre-riunione-squadra-efficace"/>
     <lastmod>2026-02-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/entrenar-emociones-voleibol</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/entrenar-emociones-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/training-emotions-the-key-many-ignore"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/allenare-emozioni-chiave-che-molti-ignorano"/>
+    <loc>https://www.topvolleymanager.com/blog/entrenar-emociones-voleibol</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/entrenar-emociones-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/training-emotions-the-key-many-ignore"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/allenare-emozioni-chiave-che-molti-ignorano"/>
     <lastmod>2026-02-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/saque-voleibol-entrenamiento-gestion-riesgo</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/saque-voleibol-entrenamiento-gestion-riesgo"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/volleyball-serve-training-risk-management"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/servizio-pallavolo-allenamento-gestione-rischio"/>
+    <loc>https://www.topvolleymanager.com/blog/saque-voleibol-entrenamiento-gestion-riesgo</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/saque-voleibol-entrenamiento-gestion-riesgo"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/volleyball-serve-training-risk-management"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/servizio-pallavolo-allenamento-gestione-rischio"/>
     <lastmod>2026-03-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/mejorar-comunicacion-arbitros-voleibol</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/mejorar-comunicacion-arbitros-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/improve-communication-with-referees"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/migliorare-comunicazione-con-arbitri"/>
+    <loc>https://www.topvolleymanager.com/blog/mejorar-comunicacion-arbitros-voleibol</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/mejorar-comunicacion-arbitros-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/improve-communication-with-referees"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/migliorare-comunicazione-con-arbitri"/>
     <lastmod>2026-03-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/tipos-colocacion-voleibol</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/tipos-colocacion-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/types-of-setting-volleyball"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/tipi-di-alzata-pallavolo"/>
+    <loc>https://www.topvolleymanager.com/blog/tipos-colocacion-voleibol</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/tipos-colocacion-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/types-of-setting-volleyball"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/tipi-di-alzata-pallavolo"/>
     <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/como-salir-derrota-voleibol-entrenadores</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/como-salir-derrota-voleibol-entrenadores"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-bounce-back-from-defeat"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-uscire-da-una-sconfitta-guida-allenatori"/>
+    <loc>https://www.topvolleymanager.com/blog/como-salir-derrota-voleibol-entrenadores</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/como-salir-derrota-voleibol-entrenadores"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-bounce-back-from-defeat"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-uscire-da-una-sconfitta-guida-allenatori"/>
     <lastmod>2026-03-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/padres-hijos-voleibol-grada</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/padres-hijos-voleibol-grada"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/parents-children-volleyball-stands"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/genitori-figli-pallavolo-tribuna"/>
+    <loc>https://www.topvolleymanager.com/blog/padres-hijos-voleibol-grada</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/padres-hijos-voleibol-grada"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/parents-children-volleyball-stands"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/genitori-figli-pallavolo-tribuna"/>
     <lastmod>2026-04-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -156,91 +156,91 @@
 
   <!-- Blog Articles - English -->
   <url>
-    <loc>https://topvolleymanager.com/blog/how-to-manage-timeouts-5-mistakes-to-avoid</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/como-gestionar-tiempos-muertos-5-errores-evitar"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-manage-timeouts-5-mistakes-to-avoid"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-gestire-i-timeout-5-errori-da-evitare"/>
+    <loc>https://www.topvolleymanager.com/blog/how-to-manage-timeouts-5-mistakes-to-avoid</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/como-gestionar-tiempos-muertos-5-errores-evitar"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-manage-timeouts-5-mistakes-to-avoid"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-gestire-i-timeout-5-errori-da-evitare"/>
     <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/the-mistake-every-coach-makes</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/error-entrenador-arruinar-jugadoras"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/the-mistake-every-coach-makes"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/errore-che-ogni-allenatore-commette"/>
+    <loc>https://www.topvolleymanager.com/blog/the-mistake-every-coach-makes</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/error-entrenador-arruinar-jugadoras"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/the-mistake-every-coach-makes"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/errore-che-ogni-allenatore-commette"/>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/10-attack-exercises-volleyball</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/10-ejercicios-ataque-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/10-attack-exercises-volleyball"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/10-esercizi-attacco-pallavolo"/>
+    <loc>https://www.topvolleymanager.com/blog/10-attack-exercises-volleyball</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/10-ejercicios-ataque-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/10-attack-exercises-volleyball"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/10-esercizi-attacco-pallavolo"/>
     <lastmod>2026-02-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/how-to-run-effective-team-meeting</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/reunion-equipo-efectiva-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-run-effective-team-meeting"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-condurre-riunione-squadra-efficace"/>
+    <loc>https://www.topvolleymanager.com/blog/how-to-run-effective-team-meeting</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/reunion-equipo-efectiva-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-run-effective-team-meeting"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-condurre-riunione-squadra-efficace"/>
     <lastmod>2026-02-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/training-emotions-the-key-many-ignore</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/entrenar-emociones-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/training-emotions-the-key-many-ignore"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/allenare-emozioni-chiave-che-molti-ignorano"/>
+    <loc>https://www.topvolleymanager.com/blog/training-emotions-the-key-many-ignore</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/entrenar-emociones-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/training-emotions-the-key-many-ignore"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/allenare-emozioni-chiave-che-molti-ignorano"/>
     <lastmod>2026-02-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/volleyball-serve-training-risk-management</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/saque-voleibol-entrenamiento-gestion-riesgo"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/volleyball-serve-training-risk-management"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/servizio-pallavolo-allenamento-gestione-rischio"/>
+    <loc>https://www.topvolleymanager.com/blog/volleyball-serve-training-risk-management</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/saque-voleibol-entrenamiento-gestion-riesgo"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/volleyball-serve-training-risk-management"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/servizio-pallavolo-allenamento-gestione-rischio"/>
     <lastmod>2026-03-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/improve-communication-with-referees</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/mejorar-comunicacion-arbitros-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/improve-communication-with-referees"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/migliorare-comunicazione-con-arbitri"/>
+    <loc>https://www.topvolleymanager.com/blog/improve-communication-with-referees</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/mejorar-comunicacion-arbitros-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/improve-communication-with-referees"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/migliorare-comunicazione-con-arbitri"/>
     <lastmod>2026-03-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/types-of-setting-volleyball</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/tipos-colocacion-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/types-of-setting-volleyball"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/tipi-di-alzata-pallavolo"/>
+    <loc>https://www.topvolleymanager.com/blog/types-of-setting-volleyball</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/tipos-colocacion-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/types-of-setting-volleyball"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/tipi-di-alzata-pallavolo"/>
     <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/how-to-bounce-back-from-defeat</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/como-salir-derrota-voleibol-entrenadores"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-bounce-back-from-defeat"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-uscire-da-una-sconfitta-guida-allenatori"/>
+    <loc>https://www.topvolleymanager.com/blog/how-to-bounce-back-from-defeat</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/como-salir-derrota-voleibol-entrenadores"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-bounce-back-from-defeat"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-uscire-da-una-sconfitta-guida-allenatori"/>
     <lastmod>2026-03-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/parents-children-volleyball-stands</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/padres-hijos-voleibol-grada"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/parents-children-volleyball-stands"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/genitori-figli-pallavolo-tribuna"/>
+    <loc>https://www.topvolleymanager.com/blog/parents-children-volleyball-stands</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/padres-hijos-voleibol-grada"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/parents-children-volleyball-stands"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/genitori-figli-pallavolo-tribuna"/>
     <lastmod>2026-04-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -248,91 +248,91 @@
 
   <!-- Blog Articles - Italian -->
   <url>
-    <loc>https://topvolleymanager.com/blog/come-gestire-i-timeout-5-errori-da-evitare</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/como-gestionar-tiempos-muertos-5-errores-evitar"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-manage-timeouts-5-mistakes-to-avoid"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-gestire-i-timeout-5-errori-da-evitare"/>
+    <loc>https://www.topvolleymanager.com/blog/come-gestire-i-timeout-5-errori-da-evitare</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/como-gestionar-tiempos-muertos-5-errores-evitar"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-manage-timeouts-5-mistakes-to-avoid"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-gestire-i-timeout-5-errori-da-evitare"/>
     <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/errore-che-ogni-allenatore-commette</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/error-entrenador-arruinar-jugadoras"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/the-mistake-every-coach-makes"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/errore-che-ogni-allenatore-commette"/>
+    <loc>https://www.topvolleymanager.com/blog/errore-che-ogni-allenatore-commette</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/error-entrenador-arruinar-jugadoras"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/the-mistake-every-coach-makes"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/errore-che-ogni-allenatore-commette"/>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/10-esercizi-attacco-pallavolo</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/10-ejercicios-ataque-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/10-attack-exercises-volleyball"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/10-esercizi-attacco-pallavolo"/>
+    <loc>https://www.topvolleymanager.com/blog/10-esercizi-attacco-pallavolo</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/10-ejercicios-ataque-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/10-attack-exercises-volleyball"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/10-esercizi-attacco-pallavolo"/>
     <lastmod>2026-02-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/come-condurre-riunione-squadra-efficace</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/reunion-equipo-efectiva-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-run-effective-team-meeting"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-condurre-riunione-squadra-efficace"/>
+    <loc>https://www.topvolleymanager.com/blog/come-condurre-riunione-squadra-efficace</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/reunion-equipo-efectiva-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-run-effective-team-meeting"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-condurre-riunione-squadra-efficace"/>
     <lastmod>2026-02-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/allenare-emozioni-chiave-che-molti-ignorano</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/entrenar-emociones-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/training-emotions-the-key-many-ignore"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/allenare-emozioni-chiave-che-molti-ignorano"/>
+    <loc>https://www.topvolleymanager.com/blog/allenare-emozioni-chiave-che-molti-ignorano</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/entrenar-emociones-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/training-emotions-the-key-many-ignore"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/allenare-emozioni-chiave-che-molti-ignorano"/>
     <lastmod>2026-02-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/servizio-pallavolo-allenamento-gestione-rischio</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/saque-voleibol-entrenamiento-gestion-riesgo"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/volleyball-serve-training-risk-management"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/servizio-pallavolo-allenamento-gestione-rischio"/>
+    <loc>https://www.topvolleymanager.com/blog/servizio-pallavolo-allenamento-gestione-rischio</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/saque-voleibol-entrenamiento-gestion-riesgo"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/volleyball-serve-training-risk-management"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/servizio-pallavolo-allenamento-gestione-rischio"/>
     <lastmod>2026-03-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/migliorare-comunicazione-con-arbitri</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/mejorar-comunicacion-arbitros-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/improve-communication-with-referees"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/migliorare-comunicazione-con-arbitri"/>
+    <loc>https://www.topvolleymanager.com/blog/migliorare-comunicazione-con-arbitri</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/mejorar-comunicacion-arbitros-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/improve-communication-with-referees"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/migliorare-comunicazione-con-arbitri"/>
     <lastmod>2026-03-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/tipi-di-alzata-pallavolo</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/tipos-colocacion-voleibol"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/types-of-setting-volleyball"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/tipi-di-alzata-pallavolo"/>
+    <loc>https://www.topvolleymanager.com/blog/tipi-di-alzata-pallavolo</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/tipos-colocacion-voleibol"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/types-of-setting-volleyball"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/tipi-di-alzata-pallavolo"/>
     <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/come-uscire-da-una-sconfitta-guida-allenatori</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/como-salir-derrota-voleibol-entrenadores"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/how-to-bounce-back-from-defeat"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/come-uscire-da-una-sconfitta-guida-allenatori"/>
+    <loc>https://www.topvolleymanager.com/blog/come-uscire-da-una-sconfitta-guida-allenatori</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/como-salir-derrota-voleibol-entrenadores"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/how-to-bounce-back-from-defeat"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/come-uscire-da-una-sconfitta-guida-allenatori"/>
     <lastmod>2026-03-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://topvolleymanager.com/blog/genitori-figli-pallavolo-tribuna</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://topvolleymanager.com/blog/padres-hijos-voleibol-grada"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://topvolleymanager.com/blog/parents-children-volleyball-stands"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://topvolleymanager.com/blog/genitori-figli-pallavolo-tribuna"/>
+    <loc>https://www.topvolleymanager.com/blog/genitori-figli-pallavolo-tribuna</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.topvolleymanager.com/blog/padres-hijos-voleibol-grada"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.topvolleymanager.com/blog/parents-children-volleyball-stands"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.topvolleymanager.com/blog/genitori-figli-pallavolo-tribuna"/>
     <lastmod>2026-04-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

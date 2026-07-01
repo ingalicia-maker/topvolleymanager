@@ -94,11 +94,11 @@ export default function BlogArticle() {
       <Helmet>
         <title>{article.title} - Blog | Top Volley Manager</title>
         <meta name="description" content={article.meta_description || article.excerpt || article.title} />
-        <link rel="canonical" href={`https://topvolleymanager.com/blog/${article.slug}`} />
+        <link rel="canonical" href={`https://www.topvolleymanager.com/blog/${article.slug}`} />
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.meta_description || article.excerpt || ""} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://topvolleymanager.com/blog/${article.slug}`} />
+        <meta property="og:url" content={`https://www.topvolleymanager.com/blog/${article.slug}`} />
         {article.featured_image && <meta property="og:image" content={article.featured_image} />}
         <meta property="article:published_time" content={article.published_at || ""} />
         <meta httpEquiv="content-language" content={inLanguage} />
@@ -107,17 +107,17 @@ export default function BlogArticle() {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "BlogPosting",
-            "@id": `https://topvolleymanager.com/blog/${article.slug}#article`,
+            "@id": `https://www.topvolleymanager.com/blog/${article.slug}#article`,
             headline: article.title,
             name: article.title,
             description: article.meta_description || article.excerpt,
             datePublished: article.published_at,
             dateModified: article.updated_at,
             dateCreated: article.created_at,
-            url: `https://topvolleymanager.com/blog/${article.slug}`,
+            url: `https://www.topvolleymanager.com/blog/${article.slug}`,
             mainEntityOfPage: {
               "@type": "WebPage",
-              "@id": `https://topvolleymanager.com/blog/${article.slug}`
+              "@id": `https://www.topvolleymanager.com/blog/${article.slug}`
             },
             image: article.featured_image ? {
               "@type": "ImageObject",
@@ -128,15 +128,15 @@ export default function BlogArticle() {
             author: {
               "@type": "Organization",
               name: "Top Volley Manager",
-              url: "https://topvolleymanager.com"
+              url: "https://www.topvolleymanager.com"
             },
             publisher: {
               "@type": "Organization",
               name: "Top Volley Manager",
-              url: "https://topvolleymanager.com",
+              url: "https://www.topvolleymanager.com",
               logo: {
                 "@type": "ImageObject",
-                url: "https://topvolleymanager.com/favicon.png",
+                url: "https://www.topvolleymanager.com/favicon.png",
                 width: 512,
                 height: 512
               }
@@ -147,9 +147,9 @@ export default function BlogArticle() {
             isAccessibleForFree: true,
             isPartOf: {
               "@type": "Blog",
-              "@id": "https://topvolleymanager.com/blog",
+              "@id": "https://www.topvolleymanager.com/blog",
               name: "Blog de Top Volley Manager",
-              url: "https://topvolleymanager.com/blog"
+              url: "https://www.topvolleymanager.com/blog"
             }
           })}
         </script>
@@ -159,9 +159,9 @@ export default function BlogArticle() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Inicio", item: "https://topvolleymanager.com" },
-              { "@type": "ListItem", position: 2, name: "Blog", item: "https://topvolleymanager.com/blog" },
-              { "@type": "ListItem", position: 3, name: article.title, item: `https://topvolleymanager.com/blog/${article.slug}` }
+              { "@type": "ListItem", position: 1, name: "Inicio", item: "https://www.topvolleymanager.com" },
+              { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.topvolleymanager.com/blog" },
+              { "@type": "ListItem", position: 3, name: article.title, item: `https://www.topvolleymanager.com/blog/${article.slug}` }
             ]
           })}
         </script>

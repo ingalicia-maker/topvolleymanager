@@ -108,14 +108,14 @@ export default function Landing() {
         <html lang={currentLang} />
         <title>{t('landing.hero.title')} | Top Volley Manager</title>
         <meta name="description" content={t('landing.hero.subtitle')} />
-        <link rel="canonical" href={`https://topvolleymanager.com/${currentLang}`} />
-        <link rel="alternate" hrefLang="es" href="https://topvolleymanager.com/es" />
-        <link rel="alternate" hrefLang="en" href="https://topvolleymanager.com/en" />
-        <link rel="alternate" hrefLang="it" href="https://topvolleymanager.com/it" />
-        <link rel="alternate" hrefLang="x-default" href="https://topvolleymanager.com/es" />
+        <link rel="canonical" href={`https://www.topvolleymanager.com/${currentLang}`} />
+        <link rel="alternate" hrefLang="es" href="https://www.topvolleymanager.com/es" />
+        <link rel="alternate" hrefLang="en" href="https://www.topvolleymanager.com/en" />
+        <link rel="alternate" hrefLang="it" href="https://www.topvolleymanager.com/it" />
+        <link rel="alternate" hrefLang="x-default" href="https://www.topvolleymanager.com/es" />
         <meta property="og:title" content={`${t('landing.hero.title')} | Top Volley Manager`} />
         <meta property="og:description" content={t('landing.hero.subtitle')} />
-        <meta property="og:url" content={`https://topvolleymanager.com/${currentLang}`} />
+        <meta property="og:url" content={`https://www.topvolleymanager.com/${currentLang}`} />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content={currentLang === 'en' ? 'en_US' : currentLang === 'it' ? 'it_IT' : 'es_ES'} />
         <link rel="preload" as="image" href={demoDashboard} fetchPriority="high" />
