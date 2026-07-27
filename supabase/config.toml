@@ -1,31 +1,27 @@
 project_id = "wjfrrtuupmxjxyhpprhh"
 
-[functions.notify-coach-approved]
-verify_jwt = false
-
-[functions.notify-new-coach]
-verify_jwt = false
-
-[functions.notify-new-director]
-verify_jwt = false
-
-[functions.create-checkout]
-verify_jwt = false
-
-[functions.check-subscription]
-verify_jwt = false
-
-[functions.customer-portal]
-verify_jwt = false
-
-[functions.send-verification-email]
-verify_jwt = false
-
-[functions.verify-email-code]
-verify_jwt = false
-
-[functions.send-engagement-email]
-verify_jwt = false
-
-[functions.verify-turnstile]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.check-subscription]
+    verify_jwt = false
+  [functions.create-checkout]
+    verify_jwt = false
+  [functions.customer-portal]
+    verify_jwt = false
+  [functions.notify-coach-approved]
+    verify_jwt = false
+  [functions.notify-new-coach]
+    verify_jwt = false
+  [functions.notify-new-director]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.send-engagement-email]
+    verify_jwt = false
+  [functions.send-verification-email]
+    verify_jwt = false
+  [functions.verify-email-code]
+    verify_jwt = false
+  [functions.verify-turnstile]
+    verify_jwt = false
