@@ -20,41 +20,93 @@ export default function ResetPassword() {
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
-  const [sessionError, setSessionError] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if we have a valid recovery session
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
+    let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
+    // Listen for PASSWORD_RECOVERY event fired by supabase-js after it
+    // auto-detects tokens in the URL. This is the only signal we trust.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (cancelled) return;
+      if (event === 'PASSWORD_RECOVERY') {
+        if (timeout) clearTimeout(timeout);
         setSessionReady(true);
-      } else {
-        // Wait for auth state change from recovery link
-        const timeout = setTimeout(() => {
-          setSessionError(true);
-        }, 5000);
+      }
+    });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
-            clearTimeout(timeout);
-            setSessionReady(true);
+    const bootstrap = async () => {
+      try {
+        const url = new URL(window.location.href);
+        const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+
+        // Case 1: PKCE flow — ?code=... in query string
+        const code = url.searchParams.get('code');
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (cancelled) return;
+          if (error) {
+            setSessionError(error.message || 'Enlace inválido o expirado');
+            return;
           }
-        });
+          // Clean the URL so refreshes don't retry the code
+          window.history.replaceState({}, '', window.location.pathname);
+          setSessionReady(true);
+          return;
+        }
 
-        return () => {
-          clearTimeout(timeout);
-          subscription.unsubscribe();
-        };
+        // Case 2: Implicit flow — #access_token=...&type=recovery
+        const accessToken = hash.get('access_token');
+        const refreshToken = hash.get('refresh_token');
+        const type = hash.get('type');
+        if (accessToken && refreshToken && type === 'recovery') {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (cancelled) return;
+          if (error) {
+            setSessionError(error.message || 'Enlace inválido o expirado');
+            return;
+          }
+          window.history.replaceState({}, '', window.location.pathname);
+          setSessionReady(true);
+          return;
+        }
+
+        // Case 3: Error returned by Supabase (?error=... or #error=...)
+        const errorDesc =
+          url.searchParams.get('error_description') ||
+          hash.get('error_description') ||
+          url.searchParams.get('error') ||
+          hash.get('error');
+        if (errorDesc) {
+          setSessionError(decodeURIComponent(errorDesc));
+          return;
+        }
+
+        // Case 4: Wait briefly for the auth listener to fire PASSWORD_RECOVERY
+        timeout = setTimeout(() => {
+          if (!cancelled) setSessionError('Enlace inválido o expirado');
+        }, 6000);
+      } catch (err) {
+        if (!cancelled) setSessionError('Enlace inválido o expirado');
       }
     };
 
-    checkSession();
+    bootstrap();
+
+    return () => {
+      cancelled = true;
+      if (timeout) clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const validateInputs = () => {
     const newErrors: typeof errors = {};
-    
+
     try {
       passwordSchema.parse(password);
     } catch {
@@ -74,7 +126,7 @@ export default function ResetPassword() {
     if (!validateInputs()) return;
 
     setLoading(true);
-    
+
     const { error } = await supabase.auth.updateUser({
       password: password,
     });
@@ -87,12 +139,13 @@ export default function ResetPassword() {
 
     setSuccess(true);
     toast.success('Contraseña actualizada correctamente');
-    
-    // Redirect after a short delay
-    setTimeout(() => {
-      navigate('/');
+
+    // Sign out so the user must log in with the new password
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      navigate('/auth');
     }, 2000);
-    
+
     setLoading(false);
   };
 
@@ -106,12 +159,12 @@ export default function ResetPassword() {
             </div>
             <CardTitle className="text-2xl">Enlace inválido o expirado</CardTitle>
             <CardDescription className="text-base">
-              El enlace de recuperación de contraseña no es válido o ha expirado.
+              {sessionError || 'El enlace de recuperación de contraseña no es válido o ha expirado.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               onClick={() => navigate('/auth')}
             >
               Volver a solicitar recuperación
