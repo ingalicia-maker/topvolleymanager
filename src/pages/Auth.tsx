@@ -205,26 +205,30 @@ export default function Auth() {
   }, [navigate, redirectTo, isInvitationFlow]);
 
 
-  const validateInputs = (isSignUp: boolean) => {
+  const validateInputs = (isSignUp: boolean, values?: { email?: string; password?: string; confirmPassword?: string; name?: string }) => {
     const newErrors: typeof errors = {};
+    const emailValue = values?.email ?? email;
+    const passwordValue = values?.password ?? password;
+    const confirmPasswordValue = values?.confirmPassword ?? confirmPassword;
+    const nameValue = values?.name ?? name;
     
     try {
-      emailSchema.parse(email);
+      emailSchema.parse(emailValue);
     } catch {
       newErrors.email = 'Email inválido';
     }
 
     try {
-      passwordSchema.parse(password);
+      passwordSchema.parse(passwordValue);
     } catch {
       newErrors.password = 'Mínimo 6 caracteres';
     }
 
     if (isSignUp) {
-      if (!name.trim()) {
+      if (!nameValue.trim()) {
         newErrors.name = 'El nombre es obligatorio';
       }
-      if (password !== confirmPassword) {
+      if (passwordValue !== confirmPasswordValue) {
         newErrors.confirmPassword = 'Las contraseñas no coinciden';
       }
     }
@@ -235,6 +239,9 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const submittedEmail = String(formData.get('email') ?? email).trim().toLowerCase();
+    const submittedPassword = String(formData.get('password') ?? password);
     
     // Security checks
     if (isHoneypotFilled(honeypot)) {
@@ -249,12 +256,12 @@ export default function Auth() {
       return;
     }
     
-    if (!validateInputs(false)) return;
+    if (!validateInputs(false, { email: submittedEmail, password: submittedPassword })) return;
 
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
+      email: submittedEmail,
+      password: submittedPassword,
     });
 
     if (error) {
@@ -799,6 +806,7 @@ export default function Auth() {
                   <Label htmlFor="login-email">{t('auth.email')}</Label>
                   <Input
                     id="login-email"
+                    name="email"
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -824,6 +832,7 @@ export default function Auth() {
                   </div>
                   <Input
                     id="login-password"
+                    name="password"
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
