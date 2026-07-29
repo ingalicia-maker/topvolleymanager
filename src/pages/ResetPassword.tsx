@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
+import { resetRateLimit } from '@/lib/security';
 
 const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres');
 
@@ -138,6 +139,7 @@ export default function ResetPassword() {
     }
 
     setSuccess(true);
+    resetRateLimit('auth_signin');
     toast.success('Contraseña actualizada correctamente');
 
     // Sign out so the user must log in with the new password
