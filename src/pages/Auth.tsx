@@ -1167,26 +1167,50 @@ export default function Auth() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="coach-password">{t('auth.password')} *</Label>
-                        <Input
-                          id="coach-password"
-                          type="password"
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
-                          placeholder={t('auth.minCharacters')}
-                          disabled={loading}
-                        />
+                        <div className="relative">
+                          <Input
+                            id="coach-password"
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            placeholder={t('auth.minCharacters')}
+                            disabled={loading}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(v => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            tabIndex={-1}
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                         {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="coach-confirm-password">{t('auth.confirmPassword')} *</Label>
-                        <Input
-                          id="coach-confirm-password"
-                          type="password"
-                          value={confirmPassword}
-                          onChange={e => setConfirmPassword(e.target.value)}
-                          placeholder={t('auth.repeatPassword')}
-                          disabled={loading}
-                        />
+                        <div className="relative">
+                          <Input
+                            id="coach-confirm-password"
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            value={confirmPassword}
+                            onChange={e => setConfirmPassword(e.target.value)}
+                            placeholder={t('auth.repeatPassword')}
+                            disabled={loading}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(v => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                            aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            tabIndex={-1}
+                          >
+                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                         {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
                       </div>
 
