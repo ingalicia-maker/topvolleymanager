@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2, Users, Ticket } from 'lucide-react';
+import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2, Users, Ticket, Eye, EyeOff } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
