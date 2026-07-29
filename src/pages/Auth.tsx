@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -18,11 +18,7 @@ import { InvitationRegistrationForm } from '@/components/InvitationRegistrationF
 import { TurnstileWidget, useTurnstile } from '@/components/TurnstileWidget';
 import { 
   checkRateLimit, 
-  resetRateLimit, 
-  isHoneypotFilled, 
-  isSubmittedTooQuickly,
-  containsSuspiciousPatterns,
-  logSecurityEvent 
+  resetRateLimit,
 } from '@/lib/security';
 
 const emailSchema = z.string().email('Email inválido').max(255);
@@ -46,11 +42,7 @@ export default function Auth() {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
-  
-  // Security: Honeypot and timing
-  const [honeypot, setHoneypot] = useState('');
-  const formLoadTime = useRef(Date.now());
-  
+
   // Short code invitation state
   const [invitationCode, setInvitationCode] = useState('');
   const [verifyingCode, setVerifyingCode] = useState(false);
@@ -243,13 +235,8 @@ export default function Auth() {
     const submittedEmail = String(formData.get('email') ?? email).trim().toLowerCase();
     const submittedPassword = String(formData.get('password') ?? password);
     
-    // Security checks
-    if (isHoneypotFilled(honeypot)) {
-      logSecurityEvent('honeypot_triggered', { action: 'signin' });
-      toast.error('Error de validación');
-      return;
-    }
-    
+    // Client-side soft rate limit only; password managers can populate hidden
+    // fields, so sign-in must not be blocked by honeypots.
     const rateLimit = checkRateLimit('auth_signin', 5, 60000, 300000);
     if (!rateLimit.allowed) {
       toast.error(`Demasiados intentos. Espera ${Math.ceil(rateLimit.retryAfterMs / 1000)} segundos.`);
@@ -790,18 +777,6 @@ export default function Auth() {
 
             <TabsContent value="login" className="mt-4">
               <form onSubmit={handleSignIn} className="space-y-4">
-                {/* Honeypot field - hidden from users, bots will fill it */}
-                <div className="absolute -left-[9999px]" aria-hidden="true">
-                  <input
-                    type="text"
-                    name="website"
-                    tabIndex={-1}
-                    autoComplete="off"
-                    value={honeypot}
-                    onChange={e => setHoneypot(e.target.value)}
-                  />
-                </div>
-                
                 <div className="space-y-2">
                   <Label htmlFor="login-email">{t('auth.email')}</Label>
                   <Input
@@ -813,6 +788,7 @@ export default function Auth() {
                     placeholder="tu@email.com"
                     disabled={loading}
                     maxLength={255}
+                    autoComplete="email"
                   />
                   {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
@@ -838,6 +814,7 @@ export default function Auth() {
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
                     disabled={loading}
+                    autoComplete="current-password"
                   />
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
