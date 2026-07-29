@@ -145,7 +145,7 @@ export default function ResetPassword() {
     // Sign out so the user must log in with the new password
     setTimeout(async () => {
       await supabase.auth.signOut();
-      navigate('/auth');
+      navigate('/auth?passwordReset=success');
     }, 2000);
 
     setLoading(false);

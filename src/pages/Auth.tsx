@@ -65,6 +65,13 @@ export default function Auth() {
 
   const redirectTo = searchParams.get('redirect') || '/';
 
+  useEffect(() => {
+    if (searchParams.get('passwordReset') === 'success') {
+      resetRateLimit('auth_signin');
+      setErrors({});
+    }
+  }, [searchParams]);
+
   // Extract invitation token from various URL formats
   const extractInviteToken = (value: string): string | null => {
     try {
@@ -806,7 +813,10 @@ export default function Auth() {
                     <Label htmlFor="login-password">{t('auth.password')}</Label>
                     <button
                       type="button"
-                      onClick={() => setShowPasswordReset(true)}
+                      onClick={() => {
+                        resetRateLimit('auth_signin');
+                        setShowPasswordReset(true);
+                      }}
                       className="text-xs text-primary hover:underline"
                     >
                       {t('auth.forgotPassword')}
