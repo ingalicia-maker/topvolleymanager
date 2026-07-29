@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2, Users, Ticket } from 'lucide-react';
+import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2, Users, Ticket, Eye, EyeOff } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
@@ -42,6 +42,8 @@ export default function Auth() {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Short code invitation state
   const [invitationCode, setInvitationCode] = useState('');
@@ -806,16 +808,28 @@ export default function Auth() {
                       {t('auth.forgotPassword')}
                     </button>
                   </div>
-                  <Input
-                    id="login-password"
-                    name="password"
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={loading}
-                    autoComplete="current-password"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="login-password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      disabled={loading}
+                      autoComplete="current-password"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
@@ -911,26 +925,50 @@ export default function Auth() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-password">{t('auth.password')} *</Label>
-                    <Input
-                      id="register-password"
-                      type="password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder={t('auth.minCharacters')}
-                      disabled={loading}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="register-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder={t('auth.minCharacters')}
+                        disabled={loading}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(v => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                     {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-confirm-password">{t('auth.confirmPassword')} *</Label>
-                    <Input
-                      id="register-confirm-password"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
-                      placeholder={t('auth.repeatPassword')}
-                      disabled={loading}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="register-confirm-password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        placeholder={t('auth.repeatPassword')}
+                        disabled={loading}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(v => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                        aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                     {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
                   </div>
 
@@ -1129,26 +1167,50 @@ export default function Auth() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="coach-password">{t('auth.password')} *</Label>
-                        <Input
-                          id="coach-password"
-                          type="password"
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
-                          placeholder={t('auth.minCharacters')}
-                          disabled={loading}
-                        />
+                        <div className="relative">
+                          <Input
+                            id="coach-password"
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            placeholder={t('auth.minCharacters')}
+                            disabled={loading}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(v => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            tabIndex={-1}
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                         {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="coach-confirm-password">{t('auth.confirmPassword')} *</Label>
-                        <Input
-                          id="coach-confirm-password"
-                          type="password"
-                          value={confirmPassword}
-                          onChange={e => setConfirmPassword(e.target.value)}
-                          placeholder={t('auth.repeatPassword')}
-                          disabled={loading}
-                        />
+                        <div className="relative">
+                          <Input
+                            id="coach-confirm-password"
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            value={confirmPassword}
+                            onChange={e => setConfirmPassword(e.target.value)}
+                            placeholder={t('auth.repeatPassword')}
+                            disabled={loading}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(v => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                            aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            tabIndex={-1}
+                          >
+                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                         {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
                       </div>
 
