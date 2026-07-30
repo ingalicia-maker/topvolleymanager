@@ -52,6 +52,7 @@ const App = () => (
         <ClubThemeProvider>
           <Sonner />
           <BrowserRouter>
+          <SeoHead />
           <Routes>
           {/* Language-prefixed landing pages */}
           <Route path="/:lang" element={<LandingWrapper />} />
