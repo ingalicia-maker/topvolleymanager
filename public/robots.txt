@@ -78,6 +78,19 @@ Disallow: /newsletter-admin
 Disallow: /blog-admin
 Disallow: /resources-admin
 Disallow: /exercises
+Disallow: /teams
+Disallow: /players
+Disallow: /events
+Disallow: /ausencias
+Disallow: /profile
+Disallow: /ratings
+Disallow: /displacements
+Disallow: /pending-tasks
+Disallow: /weekly-summary
+Disallow: /messages
+Disallow: /subscription
+Disallow: /seasons
 
 Sitemap: https://www.topvolleymanager.com/sitemap.xml
 Host: https://www.topvolleymanager.com
+
