@@ -6,6 +6,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ClubThemeProvider } from "@/components/ClubThemeProvider";
 import { LanguageRedirect } from "@/components/LanguageRedirect";
+import { SeoHead } from "@/components/SeoHead";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Teams from "./pages/Teams";
@@ -52,6 +53,7 @@ const App = () => (
         <ClubThemeProvider>
           <Sonner />
           <BrowserRouter>
+          <SeoHead />
           <Routes>
           {/* Language-prefixed landing pages */}
           <Route path="/:lang" element={<LandingWrapper />} />
