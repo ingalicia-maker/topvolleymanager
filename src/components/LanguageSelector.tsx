@@ -32,10 +32,15 @@ export function LanguageSelector() {
     }
   };
 
-  const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
+  const normalizedLang = i18n.language.startsWith('en')
+    ? 'en'
+    : i18n.language.startsWith('it')
+    ? 'it'
+    : 'es';
+  const currentLang = LANGUAGES.find(l => l.code === normalizedLang) || LANGUAGES[0];
 
   return (
-    <Select value={i18n.language} onValueChange={handleChange}>
+    <Select value={normalizedLang} onValueChange={handleChange}>
       <SelectTrigger className="w-full">
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4" />
