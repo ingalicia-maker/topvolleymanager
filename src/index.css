@@ -95,4 +95,10 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Reserve space for the iOS status bar / notch so fixed and sticky
+     headers don't render underneath it inside the native app. */
+  header {
+    padding-top: env(safe-area-inset-top);
+  }
 }
