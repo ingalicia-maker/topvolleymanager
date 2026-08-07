@@ -15,6 +15,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
 import { InvitationRegistrationForm } from '@/components/InvitationRegistrationForm';
+import { isExistingUserSignUp } from '@/lib/signupDetection';
+
 import { 
   checkRateLimit, 
   resetRateLimit,
@@ -496,11 +498,12 @@ export default function Auth() {
         return;
       }
 
-      // Supabase devuelve éxito "falso" si el email ya existe (identities vacío)
-      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      // Supabase devuelve éxito "falso" si el email ya existe
+      if (isExistingUserSignUp(data.user)) {
         toast.error('Este email ya está registrado. Inicia sesión o usa "¿Olvidaste tu contraseña?".');
         return;
       }
+
 
       if (data.user && !data.session) {
         setShowEmailConfirmation(true);
@@ -587,8 +590,9 @@ export default function Auth() {
         return;
       }
 
-      // Supabase devuelve éxito "falso" si el email ya existe (identities vacío)
-      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      // Supabase devuelve éxito "falso" si el email ya existe
+      if (isExistingUserSignUp(data.user)) {
+
         toast.error('Este email ya está registrado. Inicia sesión o usa "¿Olvidaste tu contraseña?".');
         return;
       }

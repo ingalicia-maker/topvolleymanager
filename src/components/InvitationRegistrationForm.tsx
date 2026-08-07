@@ -14,6 +14,8 @@ import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2, Building2 } fro
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
+import { isExistingUserSignUp } from '@/lib/signupDetection';
+
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres');
@@ -209,8 +211,9 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       return;
     }
 
-    // Supabase devuelve éxito "falso" si el email ya existe (identities vacío)
-    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    // Supabase devuelve éxito "falso" si el email ya existe
+    if (isExistingUserSignUp(data.user)) {
+
       toast.error('Este email ya está registrado. Inicia sesión con tu cuenta.');
       setLoading(false);
       return;
