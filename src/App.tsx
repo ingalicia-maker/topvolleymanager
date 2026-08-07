@@ -69,7 +69,9 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/confirm" element={<AuthConfirm />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+
           
           {/* Root: redirect unauthenticated to language-prefixed landing */}
           <Route
