@@ -186,6 +186,7 @@ serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         message_id: messageId,
+        idempotency_key: `welcome-${email.toLowerCase()}`,
         to: email,
         from: "Top Volley Manager <noreply@topvolleymanager.com>",
         sender_domain: "notify.topvolleymanager.com",
@@ -195,6 +196,7 @@ serve(async (req) => {
         label: "welcome",
         queued_at: new Date().toISOString(),
       },
+
     });
 
     if (enqueueError) {

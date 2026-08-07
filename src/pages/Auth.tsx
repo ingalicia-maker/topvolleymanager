@@ -338,7 +338,7 @@ export default function Auth() {
 
   const resendSignupEmail = async () => {
     try {
-      const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+      const redirectUrl = `${window.location.origin}/auth/confirm?redirect=/`;
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email.trim(),
@@ -471,7 +471,7 @@ export default function Auth() {
     try {
       localStorage.setItem('pending_signup_role', 'coach');
       localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
-      const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+      const redirectUrl = `${window.location.origin}/auth/confirm?redirect=/`;
 
       const { error, data } = await withTimeout(
         supabase.auth.signUp({
@@ -562,7 +562,7 @@ export default function Auth() {
     try {
       localStorage.setItem('pending_signup_role', 'director');
 
-      const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+      const redirectUrl = `${window.location.origin}/auth/confirm?redirect=/`;
 
       const { error, data } = await withTimeout(
         supabase.auth.signUp({
