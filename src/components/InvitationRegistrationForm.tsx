@@ -209,6 +209,13 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       return;
     }
 
+    // Supabase devuelve éxito "falso" si el email ya existe (identities vacío)
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      toast.error('Este email ya está registrado. Inicia sesión con tu cuenta.');
+      setLoading(false);
+      return;
+    }
+
     // Send custom verification email
     if (data.user && !data.session) {
       const emailSent = await sendVerificationEmail(email.trim(), fullName);

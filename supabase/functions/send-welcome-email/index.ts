@@ -18,14 +18,6 @@ serve(async (req) => {
       throw new Error("Email is required");
     }
 
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.log("No RESEND_API_KEY, skipping welcome email");
-      return new Response(
-        JSON.stringify({ success: true, skipped: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     const userName = name || "";
 
@@ -176,22 +168,48 @@ serve(async (req) => {
 </body>
 </html>`;
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${resendApiKey}`,
-      },
-      body: JSON.stringify({
-        from: "Top Volley Manager <noreply@topvolleymanager.com>",
-        to: [email],
-        subject: t.subject,
-        html,
-      }),
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const messageId = `welcome-${crypto.randomUUID()}`;
+
+    await supabase.from("email_send_log").insert({
+      message_id: messageId,
+      template_name: "welcome",
+      recipient_email: email,
+      status: "pending",
     });
 
-    const result = await res.json();
-    console.log("Welcome email sent:", result);
+    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
+      queue_name: "transactional_emails",
+      payload: {
+        message_id: messageId,
+        to: email,
+        from: "Top Volley Manager <noreply@topvolleymanager.com>",
+        sender_domain: "notify.topvolleymanager.com",
+        subject: t.subject,
+        html,
+        purpose: "transactional",
+        label: "welcome",
+        queued_at: new Date().toISOString(),
+      },
+    });
+
+    if (enqueueError) {
+      console.error("Failed to enqueue welcome email:", enqueueError);
+      await supabase.from("email_send_log").insert({
+        message_id: messageId,
+        template_name: "welcome",
+        recipient_email: email,
+        status: "failed",
+        error_message: enqueueError.message,
+      });
+    } else {
+      console.log("Welcome email enqueued for", email);
+    }
+
 
     return new Response(
       JSON.stringify({ success: true }),
