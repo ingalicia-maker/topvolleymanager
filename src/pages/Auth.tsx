@@ -15,6 +15,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
 import { InvitationRegistrationForm } from '@/components/InvitationRegistrationForm';
+import { isExistingUserSignUp } from '@/lib/signupDetection';
+
 import { 
   checkRateLimit, 
   resetRateLimit,
