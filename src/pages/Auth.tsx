@@ -1056,12 +1056,12 @@ export default function Auth() {
                     </div>
                   </div>
 
-                  {/* Turnstile invisible widget */}
+                  {/* Visible security check: invisible mode did not execute reliably. */}
                   <TurnstileWidget
                     onVerify={turnstile.setToken}
                     onError={turnstile.clearToken}
                     onExpire={turnstile.clearToken}
-                    invisible
+                    invisible={false}
                   />
 
                   <Button 
@@ -1281,12 +1281,12 @@ export default function Auth() {
                         </p>
                       </div>
 
-                      {/* Turnstile invisible widget */}
+                      {/* Visible security check: invisible mode did not execute reliably. */}
                       <TurnstileWidget
                         onVerify={turnstile.setToken}
                         onError={turnstile.clearToken}
                         onExpire={turnstile.clearToken}
-                        invisible
+                        invisible={false}
                       />
 
                       <Button 
