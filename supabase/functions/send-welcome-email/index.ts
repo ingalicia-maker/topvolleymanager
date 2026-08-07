@@ -18,14 +18,6 @@ serve(async (req) => {
       throw new Error("Email is required");
     }
 
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.log("No RESEND_API_KEY, skipping welcome email");
-      return new Response(
-        JSON.stringify({ success: true, skipped: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     const userName = name || "";
 
