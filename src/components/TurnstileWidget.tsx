@@ -40,7 +40,6 @@ export function TurnstileWidget({
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
-  const scriptLoadedRef = useRef(false);
 
   const renderWidget = useCallback(() => {
     if (!window.turnstile || !containerRef.current || widgetIdRef.current) return;
@@ -61,26 +60,34 @@ export function TurnstileWidget({
   }, [onVerify, onError, onExpire, invisible]);
 
   useEffect(() => {
-    // Load the Turnstile script if not already loaded
-    if (!document.querySelector('script[src*="turnstile"]')) {
+    let cancelled = false;
+    let retryTimer: number | undefined;
+
+    const renderWhenReady = () => {
+      if (cancelled) return;
+      if (window.turnstile) {
+        renderWidget();
+        return;
+      }
+      retryTimer = window.setTimeout(renderWhenReady, 150);
+    };
+
+    // Load once. Polling also handles React remounts while the shared script is
+    // still downloading, which previously left registration without a token.
+    if (!document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]')) {
       const script = document.createElement('script');
-      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
       script.async = true;
       script.defer = true;
-
-      window.onTurnstileLoad = () => {
-        scriptLoadedRef.current = true;
-        renderWidget();
-      };
-
+      script.addEventListener('load', renderWhenReady, { once: true });
+      script.addEventListener('error', () => onError?.(), { once: true });
       document.head.appendChild(script);
-    } else if (window.turnstile) {
-      // Script already loaded
-      scriptLoadedRef.current = true;
-      renderWidget();
     }
+    renderWhenReady();
 
     return () => {
+      cancelled = true;
+      if (retryTimer !== undefined) window.clearTimeout(retryTimer);
       // Cleanup widget on unmount
       if (widgetIdRef.current && window.turnstile) {
         try {
@@ -91,14 +98,7 @@ export function TurnstileWidget({
         widgetIdRef.current = null;
       }
     };
-  }, [renderWidget]);
-
-  // Re-render if script loads after initial mount
-  useEffect(() => {
-    if (scriptLoadedRef.current && !widgetIdRef.current) {
-      renderWidget();
-    }
-  }, [renderWidget]);
+  }, [renderWidget, onError]);
 
   return (
     <div 
