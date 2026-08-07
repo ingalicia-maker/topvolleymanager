@@ -496,11 +496,12 @@ export default function Auth() {
         return;
       }
 
-      // Supabase devuelve éxito "falso" si el email ya existe (identities vacío)
-      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      // Supabase devuelve éxito "falso" si el email ya existe
+      if (isExistingUserSignUp(data.user)) {
         toast.error('Este email ya está registrado. Inicia sesión o usa "¿Olvidaste tu contraseña?".');
         return;
       }
+
 
       if (data.user && !data.session) {
         setShowEmailConfirmation(true);
