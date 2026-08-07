@@ -466,65 +466,71 @@ export default function Auth() {
 
     setLoading(true);
 
-    localStorage.setItem('pending_signup_role', 'coach');
-    localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
-    const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+    try {
+      localStorage.setItem('pending_signup_role', 'coach');
+      localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
+      const redirectUrl = `${window.location.origin}/auth?redirect=/`;
 
-    const { error, data } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          name: name.trim(),
-          is_director: false,
-          assigned_teams: [],
-          terms_accepted_at: new Date().toISOString(),
-          responsibility_code_accepted_at: new Date().toISOString(),
-        },
-      },
-    });
+      const { error, data } = await withTimeout(
+        supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: {
+              name: name.trim(),
+              is_director: false,
+              assigned_teams: [],
+              terms_accepted_at: new Date().toISOString(),
+              responsibility_code_accepted_at: new Date().toISOString(),
+            },
+          },
+        }),
+        20000,
+        'El registro',
+      );
 
-    if (error) {
-      if (error.message.includes('already registered')) {
-        toast.error('Este email ya está registrado. Inicia sesión para unirte al club.');
-      } else {
-        toast.error(error.message);
+      if (error) {
+        console.error('[Auth] Coach signup error:', error);
+        toast.error(describeSignUpError(error));
+        return;
       }
-      setLoading(false);
-      return;
-    }
 
-    // If email confirmation is required, show "check your email" screen.
-    if (data.user && !data.session) {
-      setShowEmailConfirmation(true);
-      toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
-      // Send welcome email
-      supabase.functions.invoke('send-welcome-email', {
-        body: { email: email.trim(), name: name.trim(), language: i18n.language },
-      }).catch(console.error);
-      setLoading(false);
-      return;
-    }
+      if (data.user && !data.session) {
+        setShowEmailConfirmation(true);
+        toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
+        supabase.functions.invoke('send-welcome-email', {
+          body: { email: email.trim(), name: name.trim(), language: i18n.language },
+        }).catch(console.error);
+        return;
+      }
 
-    // If the backend auto-logged in (rare), auto-join immediately.
-    if (data.session) {
-      try {
-        const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', {
-          _code: invitationCode.toUpperCase(),
-        });
-        if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
-          window.dispatchEvent(new Event('club-membership-changed'));
-          triggerCoachWelcome();
-          toast.success(`¡Te has unido a ${verifiedClub.club_name}!`);
-          navigate('/', { replace: true });
+      if (data.session) {
+        try {
+          const { error: joinError } = await withTimeout(
+            supabase.rpc('accept_club_invitation_by_code', { _code: invitationCode.toUpperCase() }),
+            15000,
+            'La unión al club',
+          );
+          if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
+            window.dispatchEvent(new Event('club-membership-changed'));
+            triggerCoachWelcome();
+            toast.success(`¡Te has unido a ${verifiedClub.club_name}!`);
+            navigate('/', { replace: true });
+          } else {
+            toast.error(`Cuenta creada, pero no se pudo unir al club: ${joinError.message}`);
+          }
+        } catch (joinError) {
+          console.error('[Auth] Error joining club after coach signup:', joinError);
+          toast.error(`Cuenta creada, pero no se pudo unir al club: ${describeSignUpError(joinError)}`);
         }
-      } catch (joinError) {
-        console.error('[Auth] Error joining club after coach signup:', joinError);
       }
+    } catch (err) {
+      console.error('[Auth] Coach signup exception:', err);
+      toast.error(describeSignUpError(err));
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   // Sign up for directors
@@ -544,54 +550,58 @@ export default function Auth() {
 
     setLoading(true);
 
-    localStorage.setItem('pending_signup_role', 'director');
+    try {
+      localStorage.setItem('pending_signup_role', 'director');
 
-    const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+      const redirectUrl = `${window.location.origin}/auth?redirect=/`;
 
-    const { error, data } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          name: name.trim(),
-          is_director: true,
-          is_also_coach: alsoCoach,
-          assigned_teams: [],
-          director_declaration_accepted_at: new Date().toISOString(),
-          terms_accepted_at: new Date().toISOString(),
-        },
-      },
-    });
+      const { error, data } = await withTimeout(
+        supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: {
+              name: name.trim(),
+              is_director: true,
+              is_also_coach: alsoCoach,
+              assigned_teams: [],
+              director_declaration_accepted_at: new Date().toISOString(),
+              terms_accepted_at: new Date().toISOString(),
+            },
+          },
+        }),
+        20000,
+        'El registro',
+      );
 
-    if (error) {
-      if (error.message.includes('already registered')) {
-        toast.error('Este email ya está registrado');
-      } else {
-        toast.error(error.message);
+      if (error) {
+        console.error('[Auth] Director signup error:', error);
+        toast.error(describeSignUpError(error));
+        return;
       }
+
+      if (data.user && !data.session) {
+        setShowEmailConfirmation(true);
+        toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
+        supabase.functions.invoke('send-welcome-email', {
+          body: { email: email.trim(), name: name.trim(), language: i18n.language },
+        }).catch(console.error);
+        return;
+      }
+
+      if (data.session) {
+        localStorage.setItem('is_new_director', 'true');
+        toast.success('¡Cuenta creada correctamente!');
+      }
+    } catch (err) {
+      console.error('[Auth] Director signup exception:', err);
+      toast.error(describeSignUpError(err));
+    } finally {
       setLoading(false);
-      return;
     }
-
-    if (data.user && !data.session) {
-      setShowEmailConfirmation(true);
-      toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
-      // Send welcome email
-      supabase.functions.invoke('send-welcome-email', {
-        body: { email: email.trim(), name: name.trim(), language: i18n.language },
-      }).catch(console.error);
-      setLoading(false);
-      return;
-    }
-
-    if (data.session) {
-      localStorage.setItem('is_new_director', 'true');
-      toast.success('¡Cuenta creada correctamente!');
-    }
-
-    setLoading(false);
   };
+
 
   // ============= RENDER =============
 
