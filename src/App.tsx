@@ -8,6 +8,8 @@ import { ClubThemeProvider } from "@/components/ClubThemeProvider";
 import { LanguageRedirect } from "@/components/LanguageRedirect";
 import { SeoHead } from "@/components/SeoHead";
 import Auth from "./pages/Auth";
+import AuthConfirm from "./pages/AuthConfirm";
+
 import Index from "./pages/Index";
 import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
