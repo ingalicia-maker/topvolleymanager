@@ -54,6 +54,7 @@ export default {
     register: 'Registrarse',
     logout: 'Cerrar Sesión',
     email: 'Email',
+    emailPlaceholder: 'tu@email.com',
     password: 'Contraseña',
     confirmPassword: 'Confirmar Contraseña',
     forgotPassword: '¿Olvidaste tu contraseña?',

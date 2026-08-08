@@ -54,6 +54,7 @@ export default {
     register: 'Sign Up',
     logout: 'Log Out',
     email: 'Email',
+    emailPlaceholder: 'your@email.com',
     password: 'Password',
     confirmPassword: 'Confirm Password',
     forgotPassword: 'Forgot your password?',

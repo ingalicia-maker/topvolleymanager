@@ -539,7 +539,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t('auth.emailPlaceholder')}
               disabled={loading}
             />
             {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}

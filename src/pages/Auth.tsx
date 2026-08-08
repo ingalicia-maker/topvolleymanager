@@ -680,7 +680,7 @@ export default function Auth() {
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   disabled={loading}
                 />
                 {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
@@ -787,7 +787,7 @@ export default function Auth() {
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="tu@email.com"
+                    placeholder={t('auth.emailPlaceholder')}
                     disabled={loading}
                     maxLength={255}
                     autoComplete="email"
@@ -918,7 +918,7 @@ export default function Auth() {
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      placeholder="tu@email.com"
+                      placeholder={t('auth.emailPlaceholder')}
                       disabled={loading}
                     />
                     {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
@@ -1160,7 +1160,7 @@ export default function Auth() {
                           type="email"
                           value={email}
                           onChange={e => setEmail(e.target.value)}
-                          placeholder="tu@email.com"
+                          placeholder={t('auth.emailPlaceholder')}
                           disabled={loading}
                         />
                         {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}

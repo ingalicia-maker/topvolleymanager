@@ -54,6 +54,7 @@ export default {
     register: 'Registrati',
     logout: 'Esci',
     email: 'Email',
+    emailPlaceholder: 'tua@email.com',
     password: 'Password',
     confirmPassword: 'Conferma Password',
     forgotPassword: 'Password dimenticata?',
