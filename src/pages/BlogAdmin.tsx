@@ -43,7 +43,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 import {
   useBlogArticles,
   useBlogCategories,
@@ -56,7 +56,7 @@ import {
 import { useSubscription } from "@/hooks/useSubscription";
 
 export default function BlogAdmin() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { subscription, loading: isLoadingAdmin } = useSubscription();
   const isAppAdmin = subscription.isAdmin;
@@ -236,7 +236,7 @@ export default function BlogAdmin() {
                       )}
                       {article.updated_at && (
                         <span>
-                          Actualizado: {format(new Date(article.updated_at), "d MMM yyyy", { locale: es })}
+                          Actualizado: {format(new Date(article.updated_at), "d MMM yyyy", { locale: getDateFnsLocale(i18n.language) })}
                         </span>
                       )}
                     </div>

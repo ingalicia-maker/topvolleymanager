@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { CalendarIcon, X, AlertTriangle, History, BarChart3, CheckCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -35,6 +36,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
 
 export default function Ausencias() {
+  const { i18n } = useTranslation();
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
   const { ausencias, addAusencia, updateAusencia, deleteAusencia, isPlayerAbsent, getPlayerTeamAbsenceCount, getAbsencesByMonth } = useAusencias();
@@ -48,7 +50,7 @@ export default function Ausencias() {
   const [editingReasons, setEditingReasons] = useState<Record<string, string>>({});
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
-  const formattedDate = format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es });
+  const formattedDate = format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: getDateFnsLocale(i18n.language) });
 
   // Filter teams based on role - coaches only see their assigned teams
   const availableTeams = useMemo(() => 
@@ -458,7 +460,7 @@ export default function Ausencias() {
                   const monthAusencias = absencesByMonth[month];
                   const [year, monthNum] = month.split('-');
                   const monthDate = new Date(parseInt(year), parseInt(monthNum) - 1);
-                  const monthFormatted = format(monthDate, "MMMM yyyy", { locale: es });
+                  const monthFormatted = format(monthDate, "MMMM yyyy", { locale: getDateFnsLocale(i18n.language) });
 
                   // Group by date within month
                   const byDate: Record<string, typeof monthAusencias> = {};
@@ -478,7 +480,7 @@ export default function Ausencias() {
                         <div className="space-y-3">
                           {sortedDates.map(date => {
                             const dateAusencias = byDate[date];
-                            const dateFormatted = format(new Date(date), "EEEE d", { locale: es });
+                            const dateFormatted = format(new Date(date), "EEEE d", { locale: getDateFnsLocale(i18n.language) });
 
                             return (
                               <div key={date} className="border-l-2 border-muted pl-3">

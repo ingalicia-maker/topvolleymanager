@@ -17,7 +17,8 @@ import { MessageReadStatus } from '@/components/MessageReadStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { format, isToday, isYesterday } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { MessageSquare, Send, ArrowLeft, Users, Plus, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -31,6 +32,7 @@ import {
 import { Label } from '@/components/ui/label';
 
 export default function Messages() {
+  const { i18n } = useTranslation();
   const { user } = useAuth();
   const { club, members: clubMembers } = useClub();
   const { conversations, loading, sendMessage, markAsRead, createConversation, refetch } = useConversations();
@@ -159,7 +161,7 @@ export default function Messages() {
     } else if (isYesterday(date)) {
       return 'Ayer ' + format(date, 'HH:mm');
     }
-    return format(date, 'd MMM HH:mm', { locale: es });
+    return format(date, 'd MMM HH:mm', { locale: getDateFnsLocale(i18n.language) });
   };
 
   const getConversationTitle = (conv: typeof conversations[0]) => {

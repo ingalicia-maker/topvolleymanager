@@ -298,6 +298,7 @@ export default {
     createFirst: 'Create first event',
     create: 'Create Event',
     thisWeek: 'This Week',
+    createEventAt: 'Create event at {{time}}',
     displacement: 'Displacement',
     incident: 'Incident',
     holiday: 'Holiday',

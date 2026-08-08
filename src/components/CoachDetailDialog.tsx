@@ -18,7 +18,8 @@ import {
   MessageSquare, Save, Trash2, FileCheck, FileX, Edit2, X 
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -55,6 +56,7 @@ export function CoachDetailDialog({
   onCoachDeleted,
   currentUserId,
 }: CoachDetailDialogProps) {
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const { getOrCreateDirectConversation } = useConversations();
   const [isEditing, setIsEditing] = useState(false);
@@ -220,7 +222,7 @@ export function CoachDetailDialog({
               {coach.created_at && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  Registrado: {format(new Date(coach.created_at), "d MMM yyyy, HH:mm", { locale: es })}
+                  Registrado: {format(new Date(coach.created_at), "d MMM yyyy, HH:mm", { locale: getDateFnsLocale(i18n.language) })}
                 </div>
               )}
             </div>
@@ -235,7 +237,7 @@ export function CoachDetailDialog({
                 <>
                   <FileCheck className="h-4 w-4" />
                   <span>
-                    Código aceptado el {format(new Date(coach.responsibility_code_accepted_at!), "d MMM yyyy", { locale: es })}
+                    Código aceptado el {format(new Date(coach.responsibility_code_accepted_at!), "d MMM yyyy", { locale: getDateFnsLocale(i18n.language) })}
                   </span>
                 </>
               ) : (

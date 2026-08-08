@@ -10,10 +10,12 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { usePlayerRatings } from '@/hooks/usePlayerRatings';
 import { useUserRole } from '@/hooks/useUserRole';
 import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { Trophy, Dumbbell, Users, Star, TrendingUp, Calendar } from 'lucide-react';
 
 export default function WeeklySummary() {
+  const { i18n } = useTranslation();
   const { teams } = useTeams();
   const { events } = useEvents();
   const { players } = usePlayers();
@@ -30,7 +32,7 @@ export default function WeeklySummary() {
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
   
-  const weekLabel = `${format(weekStart, 'd MMM', { locale: es })} - ${format(weekEnd, 'd MMM yyyy', { locale: es })}`;
+  const weekLabel = `${format(weekStart, 'd MMM', { locale: getDateFnsLocale(i18n.language) })} - ${format(weekEnd, 'd MMM yyyy', { locale: getDateFnsLocale(i18n.language) })}`;
   
   const getTeamStats = (teamId: string) => {
     const teamEvents = events.filter(e => {

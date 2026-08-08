@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { AlertTriangle, CheckCircle, ChevronRight, Users, X, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useUserRole } from '@/hooks/useUserRole';
 
 export function MonthlyAbsenceSummary() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { ausencias } = useAusencias();
   const { teams } = useTeams();
   const { players } = usePlayers();
@@ -21,7 +21,7 @@ export function MonthlyAbsenceSummary() {
 
   // Get current month key (YYYY-MM)
   const currentMonthKey = format(new Date(), 'yyyy-MM');
-  const currentMonthName = format(new Date(), 'MMMM', { locale: es });
+  const currentMonthName = format(new Date(), 'MMMM', { locale: getDateFnsLocale(i18n.language) });
 
   // Filter teams based on role
   const visibleTeams = useMemo(() => 

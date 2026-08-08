@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { RATING_CATEGORIES, RatingCategoryKey } from '@/hooks/usePlayerRatings';
 import { Trophy, Medal, User } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 
 interface PlayerRankingProps {
   players: Array<{
@@ -36,10 +37,11 @@ interface RankedPlayer {
 }
 
 export function PlayerRanking({ players, ratings, teamId, month, onPlayerClick }: PlayerRankingProps) {
+  const { i18n } = useTranslation();
   const formatMonthDisplay = (monthStr: string) => {
     const [year, monthNum] = monthStr.split('-');
     const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-    return format(date, 'MMMM yyyy', { locale: es });
+    return format(date, 'MMMM yyyy', { locale: getDateFnsLocale(i18n.language) });
   };
 
   const rankedPlayers = useMemo(() => {

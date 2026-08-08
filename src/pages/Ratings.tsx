@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Star, User, Calendar, ChevronRight, Check, TrendingUp, Users, Plus, History } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 
 const RATING_EMOJIS: Record<string, string> = {
   effort_attitude: '💪',
@@ -32,7 +32,7 @@ const RATING_EMOJIS: Record<string, string> = {
 };
 
 export default function Ratings() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
   const { addRating, updateRating, ratings, getMonthlyEvolution, getPlayerTrends, getPositiveAlerts } = usePlayerRatings();
@@ -162,7 +162,7 @@ export default function Ratings() {
   const formatMonthDisplay = (monthStr: string) => {
     const [year, month] = monthStr.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    return format(date, 'MMMM yyyy', { locale: es });
+    return format(date, 'MMMM yyyy', { locale: getDateFnsLocale(i18n.language) });
   };
 
   // Generate month options (last 12 months)
@@ -462,7 +462,7 @@ function PlayerProgressView({
   getPlayerTrends: (playerId: string, teamId?: string) => string[];
   getPositiveAlerts: (playerId: string, teamId?: string) => string[];
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [rankingMonth, setRankingMonth] = useState(() => format(new Date(), 'yyyy-MM'));
@@ -488,7 +488,7 @@ function PlayerProgressView({
   const formatMonthDisplay = (monthStr: string) => {
     const [year, month] = monthStr.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    return format(date, 'MMMM yyyy', { locale: es });
+    return format(date, 'MMMM yyyy', { locale: getDateFnsLocale(i18n.language) });
   };
 
   const nativeSelectClassName =
@@ -727,7 +727,7 @@ function TeamProgressView({
   seasons: Season[];
   activeSeason: Season | null;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string | 'all'>(activeSeason?.id || 'all');
 

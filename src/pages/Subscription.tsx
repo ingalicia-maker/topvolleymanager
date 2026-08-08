@@ -31,12 +31,12 @@ import {
   Mail,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 
 type PlanType = 'starter_monthly' | 'starter_yearly' | 'pro_monthly' | 'pro_yearly';
 
 export default function Subscription() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { subscription, loading, isPaidPlan, canExport, canViewCharts, canUseBusStops, limits } = useSubscription();
   
   const [checkingStripe, setCheckingStripe] = useState(false);
@@ -200,7 +200,7 @@ export default function Subscription() {
             )}
             {isPaidPlan && stripeSubscription?.subscription_end && (
               <CardDescription>
-                Próxima renovación: {format(new Date(stripeSubscription.subscription_end), "d 'de' MMMM yyyy", { locale: es })}
+                Próxima renovación: {format(new Date(stripeSubscription.subscription_end), "d 'de' MMMM yyyy", { locale: getDateFnsLocale(i18n.language) })}
               </CardDescription>
             )}
           </CardHeader>

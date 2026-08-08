@@ -12,10 +12,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useConversations } from '@/hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { cn } from '@/lib/utils';
 
 export function NotificationBell() {
+  const { i18n } = useTranslation();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const { totalUnread: messageUnread } = useConversations();
   const [open, setOpen] = useState(false);
@@ -102,9 +104,9 @@ export function NotificationBell() {
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-[10px] text-muted-foreground">
-                          {formatDistanceToNow(new Date(notification.created_at), { 
-                            addSuffix: true, 
-                            locale: es 
+                          {formatDistanceToNow(new Date(notification.created_at), {
+                            addSuffix: true,
+                            locale: getDateFnsLocale(i18n.language)
                           })}
                         </p>
                         {notification.type === 'monthly_reminder' && (

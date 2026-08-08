@@ -31,10 +31,10 @@ import {
   UserPlus
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 
 export default function SeasonManagement() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { seasons, loading, activeSeason, createSeason, closeSeason, setAsActiveSeason } = useSeasons();
   const { isDirector, loading: roleLoading } = useUserRole();
   const { players, refetch: refetchPlayers } = usePlayers();
@@ -106,7 +106,7 @@ export default function SeasonManagement() {
   };
 
   const formatDate = (dateStr: string) => {
-    return format(new Date(dateStr), "d MMM yyyy", { locale: es });
+    return format(new Date(dateStr), "d MMM yyyy", { locale: getDateFnsLocale(i18n.language) });
   };
 
   // Generate suggested season name

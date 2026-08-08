@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { TrendingUp } from 'lucide-react';
 
 interface MonthlyData {
@@ -28,10 +29,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function PlayerProgressChart({ data }: PlayerProgressChartProps) {
+  const { i18n } = useTranslation();
   const formatMonth = (monthStr: string) => {
     const [year, month] = monthStr.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    return format(date, 'MMM yy', { locale: es });
+    return format(date, 'MMM yy', { locale: getDateFnsLocale(i18n.language) });
   };
 
   const chartData = data.map(d => ({

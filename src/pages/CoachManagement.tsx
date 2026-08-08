@@ -16,7 +16,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { toast } from 'sonner';
 import { Users, Shield, Mail, Phone, CheckCircle, Clock, UserX, MessageSquare, Send, FileCheck, FileX, Eye } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
@@ -51,7 +51,7 @@ interface UserRole {
 }
 
 export default function CoachManagement() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { loading: roleLoading, profile: currentUserProfile, isDirector } = useUserRole();
   const { club, members: clubMembers, loading: clubLoading } = useClub();
@@ -419,7 +419,7 @@ export default function CoachManagement() {
                       {director.created_at && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
-                          Registrado: {format(new Date(director.created_at), "d MMM yyyy", { locale: es })}
+                          Registrado: {format(new Date(director.created_at), "d MMM yyyy", { locale: getDateFnsLocale(i18n.language) })}
                         </div>
                       )}
                     </div>
@@ -505,7 +505,7 @@ export default function CoachManagement() {
                         {coach.created_at && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3" />
-                            {format(new Date(coach.created_at), "d MMM yyyy, HH:mm", { locale: es })}
+                            {format(new Date(coach.created_at), "d MMM yyyy, HH:mm", { locale: getDateFnsLocale(i18n.language) })}
                           </div>
                         )}
                         {hasTeams && (
@@ -522,7 +522,7 @@ export default function CoachManagement() {
                           {hasAcceptedCode ? (
                             <span className="flex items-center gap-1 text-green-600">
                               <FileCheck className="h-3 w-3" />
-                              Código de responsabilidad aceptado ({format(new Date(coach.responsibility_code_accepted_at!), "d MMM yyyy", { locale: es })})
+                              Código de responsabilidad aceptado ({format(new Date(coach.responsibility_code_accepted_at!), "d MMM yyyy", { locale: getDateFnsLocale(i18n.language) })})
                             </span>
                           ) : (
                             <span className="flex items-center gap-1 text-amber-600">

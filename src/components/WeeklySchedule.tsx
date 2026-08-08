@@ -183,7 +183,7 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          {format(weekStart, "d MMM", { locale: es })} - {format(weekEnd, "d MMM yyyy", { locale: es })}
+          {format(weekStart, "d MMM", { locale: getLocale() })} - {format(weekEnd, "d MMM yyyy", { locale: getLocale() })}
         </p>
       </CardHeader>
       <CardContent className="pt-0 px-2">
@@ -203,7 +203,7 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
                     className={`flex-1 text-center py-2 border-l ${isDayToday ? 'bg-primary/10' : ''}`}
                   >
                     <div className={`text-xs font-medium uppercase ${isDayToday ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {format(day, 'EEE', { locale: es })}
+                      {format(day, 'EEE', { locale: getLocale() })}
                     </div>
                     <div className={`text-lg font-bold ${isDayToday ? 'text-primary' : 'text-foreground'}`}>
                       {format(day, 'd')}
@@ -249,7 +249,7 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
                           top: `${(hour - startHour) * 48}px`,
                           height: '48px'
                         }}
-                        title={`Crear evento a las ${hour}:00`}
+                        title={t('events.createEventAt', { time: `${hour}:00` })}
                       >
                         <div className="opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center transition-opacity">
                           <Plus className="h-4 w-4 text-primary" />

@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { getDateFnsLocale } from '@/lib/dateLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DbAusencia } from '@/hooks/useAusencias';
 
@@ -12,6 +13,7 @@ interface AbsenceChartProps {
 }
 
 export function AbsenceChart({ ausencias, teamId, teamName }: AbsenceChartProps) {
+  const { i18n } = useTranslation();
   const chartData = useMemo(() => {
     const teamAusencias = ausencias.filter(a => a.team_id === teamId);
     
@@ -37,7 +39,7 @@ export function AbsenceChart({ ausencias, teamId, teamName }: AbsenceChartProps)
         const monthDate = new Date(parseInt(year), parseInt(monthNum) - 1);
         return {
           month,
-          monthLabel: format(monthDate, 'MMM yy', { locale: es }),
+          monthLabel: format(monthDate, 'MMM yy', { locale: getDateFnsLocale(i18n.language) }),
           justified: data.justified,
           unjustified: data.unjustified,
           total: data.justified + data.unjustified,
@@ -45,7 +47,7 @@ export function AbsenceChart({ ausencias, teamId, teamName }: AbsenceChartProps)
       })
       .sort((a, b) => a.month.localeCompare(b.month))
       .slice(-12); // Last 12 months
-  }, [ausencias, teamId]);
+  }, [ausencias, teamId, i18n.language]);
 
   if (chartData.length === 0) {
     return (
