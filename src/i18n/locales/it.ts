@@ -160,6 +160,14 @@ export default {
     acceptDirectorDeclaration: 'Devi accettare la dichiarazione di autenticità per registrarti come Direttore Sportivo',
     recoveryEmailSent: 'Email di recupero inviata',
     nameRequired: 'Il nome è obbligatorio',
+    tooManyAttempts: 'Troppi tentativi. Attendi {{seconds}} secondi.',
+    securityVerificationPending: 'Attendi il completamento della verifica di sicurezza',
+    securityVerificationFailed: 'Verifica di sicurezza fallita. Ricarica la pagina e riprova.',
+    errorJoiningClubWithReason: 'Errore durante l\'iscrizione al club: {{reason}}',
+    clubFoundNamed: 'Club trovato: {{name}}!',
+    youJoinedClubNamed: 'Ti sei unito a {{name}}!',
+    hidePassword: 'Nascondi password',
+    showPassword: 'Mostra password',
   },
 
   // Players

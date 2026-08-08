@@ -252,7 +252,7 @@ export default function Ausencias() {
                       onSelect={(date) => date && setSelectedDate(date)}
                       initialFocus
                       className={cn("p-3 pointer-events-auto")}
-                      locale={es}
+                      locale={getDateFnsLocale(i18n.language)}
                     />
                   </PopoverContent>
                 </Popover>

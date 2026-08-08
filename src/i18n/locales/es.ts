@@ -160,6 +160,14 @@ export default {
     acceptDirectorDeclaration: 'Debes aceptar la declaración de autenticidad para registrarte como Director Deportivo',
     recoveryEmailSent: 'Email de recuperación enviado',
     nameRequired: 'El nombre es obligatorio',
+    tooManyAttempts: 'Demasiados intentos. Espera {{seconds}} segundos.',
+    securityVerificationPending: 'Por favor espera a que se complete la verificación de seguridad',
+    securityVerificationFailed: 'Verificación de seguridad fallida. Por favor, recarga la página e inténtalo de nuevo.',
+    errorJoiningClubWithReason: 'Error al unirse al club: {{reason}}',
+    clubFoundNamed: '¡Club encontrado: {{name}}!',
+    youJoinedClubNamed: '¡Te has unido a {{name}}!',
+    hidePassword: 'Ocultar contraseña',
+    showPassword: 'Mostrar contraseña',
   },
 
   // Players

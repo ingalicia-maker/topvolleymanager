@@ -122,7 +122,7 @@ export default function Auth() {
           if (!error || error.message?.toLowerCase().includes('ya eres miembro')) {
             window.dispatchEvent(new Event('club-membership-changed'));
             triggerCoachWelcome();
-            toast.success('¡Te has unido al club!');
+            toast.success(t('auth.joinedClub'));
             navigate('/', { replace: true });
             return;
           }
@@ -140,7 +140,7 @@ export default function Auth() {
           if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
             window.dispatchEvent(new Event('club-membership-changed'));
             triggerCoachWelcome();
-            toast.success('¡Te has unido al club!');
+            toast.success(t('auth.joinedClub'));
           }
         } catch (err) {
           console.error('[Auth] Error joining club after email verification:', err);
@@ -176,7 +176,7 @@ export default function Auth() {
               if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
                 window.dispatchEvent(new Event('club-membership-changed'));
                 triggerCoachWelcome();
-                toast.success('¡Te has unido al club!');
+                toast.success(t('auth.joinedClub'));
               }
             } catch (err) {
               console.error('[Auth] Error joining club after SIGNED_IN:', err);
@@ -209,21 +209,21 @@ export default function Auth() {
     try {
       emailSchema.parse(emailValue);
     } catch {
-      newErrors.email = 'Email inválido';
+      newErrors.email = t('auth.invalidEmail');
     }
 
     try {
       passwordSchema.parse(passwordValue);
     } catch {
-      newErrors.password = 'Mínimo 6 caracteres';
+      newErrors.password = t('auth.minCharacters');
     }
 
     if (isSignUp) {
       if (!nameValue.trim()) {
-        newErrors.name = 'El nombre es obligatorio';
+        newErrors.name = t('auth.nameRequired');
       }
       if (passwordValue !== confirmPasswordValue) {
-        newErrors.confirmPassword = 'Las contraseñas no coinciden';
+        newErrors.confirmPassword = t('auth.passwordMismatch');
       }
     }
 
@@ -241,7 +241,7 @@ export default function Auth() {
     // fields, so sign-in must not be blocked by honeypots.
     const rateLimit = checkRateLimit('auth_signin', 5, 60000, 300000);
     if (!rateLimit.allowed) {
-      toast.error(`Demasiados intentos. Espera ${Math.ceil(rateLimit.retryAfterMs / 1000)} segundos.`);
+      toast.error(t('auth.tooManyAttempts', { seconds: Math.ceil(rateLimit.retryAfterMs / 1000) }));
       return;
     }
     
@@ -255,9 +255,9 @@ export default function Auth() {
 
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
-        toast.error('Email o contraseña incorrectos');
+        toast.error(t('auth.incorrectCredentials'));
       } else if (error.message.includes('Email not confirmed')) {
-        toast.error('Email no confirmado. Revisa tu bandeja de entrada.');
+        toast.error(t('auth.emailNotConfirmed'));
       } else {
         toast.error(error.message);
       }
@@ -276,14 +276,14 @@ export default function Auth() {
         if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
           window.dispatchEvent(new Event('club-membership-changed'));
           triggerCoachWelcome();
-          toast.success('¡Te has unido al club!');
+          toast.success(t('auth.joinedClub'));
           navigate('/', { replace: true });
           setLoading(false);
           return;
         }
       } catch (joinError) {
         console.error('[Auth] Error accepting invitation after sign-in:', joinError);
-        toast.error('No se ha podido completar la invitación');
+        toast.error(t('auth.errorJoiningClub'));
       }
     }
     
@@ -296,21 +296,21 @@ export default function Auth() {
         if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
           window.dispatchEvent(new Event('club-membership-changed'));
           triggerCoachWelcome();
-          toast.success(`¡Te has unido a ${verifiedClub.club_name}!`);
+          toast.success(t('auth.youJoinedClubNamed', { name: verifiedClub.club_name }));
           navigate('/', { replace: true });
           setLoading(false);
           return;
         } else if (joinError) {
           console.error('[Auth] Error joining via short code:', joinError);
-          toast.error('Error al unirse al club: ' + joinError.message);
+          toast.error(t('auth.errorJoiningClubWithReason', { reason: joinError.message }));
         }
       } catch (joinError) {
         console.error('[Auth] Error accepting invitation via code after sign-in:', joinError);
-        toast.error('No se ha podido completar la invitación');
+        toast.error(t('auth.errorJoiningClub'));
       }
     }
 
-    toast.success('¡Bienvenido!');
+    toast.success(t('auth.welcome'));
     setLoading(false);
   };
 
@@ -320,7 +320,7 @@ export default function Auth() {
     try {
       emailSchema.parse(email);
     } catch {
-      setErrors({ email: 'Email inválido' });
+      setErrors({ email: t('auth.invalidEmail') });
       return;
     }
 
@@ -333,7 +333,7 @@ export default function Auth() {
       toast.error(error.message);
     } else {
       setResetEmailSent(true);
-      toast.success('Email de recuperación enviado');
+      toast.success(t('auth.recoveryEmailSent'));
     }
     setLoading(false);
   };
@@ -376,7 +376,7 @@ export default function Auth() {
       });
       
       if (error || !data || data.length === 0) {
-        toast.error('Código inválido o expirado');
+        toast.error(t('auth.invalidOrExpiredCode'));
         setVerifiedClub(null);
         setVerifyingCode(false);
         return;
@@ -384,7 +384,7 @@ export default function Auth() {
       
       const invitation = data[0];
       if (invitation.used_at) {
-        toast.error('Este código ya ha sido utilizado');
+        toast.error(t('auth.codeAlreadyUsed'));
         setVerifiedClub(null);
         setVerifyingCode(false);
         return;
@@ -395,10 +395,10 @@ export default function Auth() {
         club_name: invitation.club_name,
         responsibility_code: invitation.responsibility_code
       });
-      toast.success(`¡Club encontrado: ${invitation.club_name}!`);
+      toast.success(t('auth.clubFoundNamed', { name: invitation.club_name }));
     } catch (err) {
       console.error('Error verifying invitation code:', err);
-      toast.error('Error al verificar el código');
+      toast.error(t('auth.errorVerifyingCode'));
     }
     setVerifyingCode(false);
   };
@@ -436,24 +436,24 @@ export default function Auth() {
     if (!validateInputs(true)) return;
     
     if (!verifiedClub) {
-      toast.error('Debes verificar el código de invitación primero');
+      toast.error(t('auth.verifyCodeFirst'));
       return;
     }
     
     if (!termsAccepted) {
-      toast.error('Debes aceptar los términos y condiciones');
+      toast.error(t('auth.acceptTermsError'));
       return;
     }
     
     if (!responsibilityCodeAccepted) {
-      toast.error('Debes aceptar el código de responsabilidad del club');
+      toast.error(t('auth.acceptResponsibilityCodeError'));
       return;
     }
 
     // Verify Turnstile token
     const turnstileToken = turnstile.getToken();
     if (!turnstileToken) {
-      toast.error('Por favor espera a que se complete la verificación de seguridad');
+      toast.error(t('auth.securityVerificationPending'));
       return;
     }
 
@@ -461,7 +461,7 @@ export default function Auth() {
     
     const isHuman = await verifyTurnstileToken(turnstileToken);
     if (!isHuman) {
-      toast.error('Verificación de seguridad fallida. Por favor, recarga la página e inténtalo de nuevo.');
+      toast.error(t('auth.securityVerificationFailed'));
       turnstile.clearToken();
       setLoading(false);
       return;
@@ -488,7 +488,7 @@ export default function Auth() {
 
     if (error) {
       if (error.message.includes('already registered')) {
-        toast.error('Este email ya está registrado. Inicia sesión para unirte al club.');
+        toast.error(t('auth.emailAlreadyRegistered'));
       } else {
         toast.error(error.message);
       }
@@ -499,7 +499,7 @@ export default function Auth() {
     // If email confirmation is required, show "check your email" screen.
     if (data.user && !data.session) {
       setShowEmailConfirmation(true);
-      toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
+      toast.success(t('auth.verificationEmailSentSuccess'));
       // Send welcome email
       supabase.functions.invoke('send-welcome-email', {
         body: { email: email.trim(), name: name.trim(), language: i18n.language },
@@ -517,7 +517,7 @@ export default function Auth() {
         if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
           window.dispatchEvent(new Event('club-membership-changed'));
           triggerCoachWelcome();
-          toast.success(`¡Te has unido a ${verifiedClub.club_name}!`);
+          toast.success(t('auth.youJoinedClubNamed', { name: verifiedClub.club_name }));
           navigate('/', { replace: true });
         }
       } catch (joinError) {
@@ -534,19 +534,19 @@ export default function Auth() {
     if (!validateInputs(true)) return;
 
     if (!directorDeclarationAccepted) {
-      toast.error('Debes aceptar la declaración de autenticidad para registrarte como Director Deportivo');
+      toast.error(t('auth.acceptDirectorDeclaration'));
       return;
     }
     
     if (!termsAccepted) {
-      toast.error('Debes aceptar los términos y condiciones para continuar');
+      toast.error(t('auth.acceptTermsError'));
       return;
     }
 
     // Verify Turnstile token
     const turnstileToken = turnstile.getToken();
     if (!turnstileToken) {
-      toast.error('Por favor espera a que se complete la verificación de seguridad');
+      toast.error(t('auth.securityVerificationPending'));
       return;
     }
 
@@ -554,7 +554,7 @@ export default function Auth() {
     
     const isHuman = await verifyTurnstileToken(turnstileToken);
     if (!isHuman) {
-      toast.error('Verificación de seguridad fallida. Por favor, recarga la página e inténtalo de nuevo.');
+      toast.error(t('auth.securityVerificationFailed'));
       turnstile.clearToken();
       setLoading(false);
       return;
@@ -582,7 +582,7 @@ export default function Auth() {
 
     if (error) {
       if (error.message.includes('already registered')) {
-        toast.error('Este email ya está registrado');
+        toast.error(t('auth.emailAlreadyRegisteredShort'));
       } else {
         toast.error(error.message);
       }
@@ -592,7 +592,7 @@ export default function Auth() {
 
     if (data.user && !data.session) {
       setShowEmailConfirmation(true);
-      toast.success('Te hemos enviado un email para verificar tu cuenta y acceder.');
+      toast.success(t('auth.verificationEmailSentSuccess'));
       // Send welcome email
       supabase.functions.invoke('send-welcome-email', {
         body: { email: email.trim(), name: name.trim(), language: i18n.language },
@@ -603,7 +603,7 @@ export default function Auth() {
 
     if (data.session) {
       localStorage.setItem('is_new_director', 'true');
-      toast.success('¡Cuenta creada correctamente!');
+      toast.success(t('auth.accountCreated'));
     }
 
     setLoading(false);
@@ -824,7 +824,7 @@ export default function Auth() {
                       type="button"
                       onClick={() => setShowPassword(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                       tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -939,7 +939,7 @@ export default function Auth() {
                         type="button"
                         onClick={() => setShowPassword(v => !v)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                         tabIndex={-1}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -963,7 +963,7 @@ export default function Auth() {
                         type="button"
                         onClick={() => setShowConfirmPassword(v => !v)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                        aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        aria-label={showConfirmPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                         tabIndex={-1}
                       >
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -1181,7 +1181,7 @@ export default function Auth() {
                             type="button"
                             onClick={() => setShowPassword(v => !v)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                             tabIndex={-1}
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -1205,7 +1205,7 @@ export default function Auth() {
                             type="button"
                             onClick={() => setShowConfirmPassword(v => !v)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                            aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            aria-label={showConfirmPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                             tabIndex={-1}
                           >
                             {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

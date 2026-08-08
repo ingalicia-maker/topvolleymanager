@@ -160,6 +160,14 @@ export default {
     acceptDirectorDeclaration: 'You must accept the authenticity declaration to register as Sports Director',
     recoveryEmailSent: 'Recovery email sent',
     nameRequired: 'Name is required',
+    tooManyAttempts: 'Too many attempts. Wait {{seconds}} seconds.',
+    securityVerificationPending: 'Please wait for the security verification to complete',
+    securityVerificationFailed: 'Security verification failed. Please reload the page and try again.',
+    errorJoiningClubWithReason: 'Error joining club: {{reason}}',
+    clubFoundNamed: 'Club found: {{name}}!',
+    youJoinedClubNamed: 'You have joined {{name}}!',
+    hidePassword: 'Hide password',
+    showPassword: 'Show password',
   },
 
   // Players
