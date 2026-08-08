@@ -84,27 +84,27 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       
       if (error) {
         console.error('[InvitationForm] Error fetching preview:', error);
-        setPreviewError('Invitación no válida o expirada');
+        setPreviewError(t('invitation.invalidOrExpired'));
         setLoadingClubInfo(false);
         return;
       }
 
       const preview = Array.isArray(data) ? data[0] : data;
-      
+
       if (!preview) {
-        setPreviewError('Invitación no válida o expirada');
+        setPreviewError(t('invitation.invalidOrExpired'));
         setLoadingClubInfo(false);
         return;
       }
 
       if (preview.used_at) {
-        setPreviewError('Esta invitación ya ha sido utilizada');
+        setPreviewError(t('invitation.alreadyUsed'));
         setLoadingClubInfo(false);
         return;
       }
-      
+
       if (new Date(preview.expires_at) < new Date()) {
-        setPreviewError('La invitación ha expirado');
+        setPreviewError(t('invitation.expired'));
         setLoadingClubInfo(false);
         return;
       }
@@ -112,7 +112,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       setClubPreview(preview);
     } catch (error) {
       console.error('[InvitationForm] Error:', error);
-      setPreviewError('Error al cargar la invitación');
+      setPreviewError(t('invitation.errorLoading'));
     }
     setLoadingClubInfo(false);
   };
@@ -121,27 +121,27 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
     const newErrors: typeof errors = {};
     
     if (!name.trim()) {
-      newErrors.name = 'El nombre es obligatorio';
+      newErrors.name = t('auth.nameRequired');
     }
-    
+
     if (!surname1.trim()) {
-      newErrors.surname1 = 'El primer apellido es obligatorio';
+      newErrors.surname1 = t('invitation.firstSurnameRequired');
     }
-    
+
     try {
       emailSchema.parse(email);
     } catch {
-      newErrors.email = 'Email inválido';
+      newErrors.email = t('auth.invalidEmail');
     }
 
     try {
       passwordSchema.parse(password);
     } catch {
-      newErrors.password = 'Mínimo 6 caracteres';
+      newErrors.password = t('auth.minCharacters');
     }
 
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      newErrors.confirmPassword = t('auth.passwordMismatch');
     }
 
     setErrors(newErrors);
@@ -188,27 +188,27 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
     if (!validateInputs()) return;
     
     if (!termsAccepted) {
-      toast.error('Debes aceptar los términos y condiciones para continuar');
+      toast.error(t('auth.acceptTermsError'));
       return;
     }
 
     if (clubPreview?.responsibility_code && !responsibilityCodeAccepted) {
-      toast.error('Debes aceptar el código de responsabilidad del club para continuar');
+      toast.error(t('auth.acceptResponsibilityCodeError'));
       return;
     }
 
     // Verify Turnstile token
     const turnstileToken = turnstile.getToken();
     if (!turnstileToken) {
-      toast.error('Por favor espera a que se complete la verificación de seguridad');
+      toast.error(t('auth.securityVerificationPending'));
       return;
     }
 
     setLoading(true);
-    
+
     const isHuman = await verifyTurnstileToken(turnstileToken);
     if (!isHuman) {
-      toast.error('Verificación de seguridad fallida. Por favor, recarga la página e inténtalo de nuevo.');
+      toast.error(t('auth.securityVerificationFailed'));
       turnstile.clearToken();
       setLoading(false);
       return;
@@ -237,7 +237,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
     if (error) {
       if (error.message.includes('already registered')) {
-        toast.error('Este email ya está registrado. Inicia sesión con tu cuenta.');
+        toast.error(t('invitation.emailAlreadyRegistered'));
       } else {
         toast.error(error.message);
       }
@@ -267,14 +267,14 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
       if (error && !error.message?.toLowerCase().includes('ya eres miembro')) {
         console.error('[InvitationForm] Error accepting invitation:', error);
-        toast.error('Error al unirse al club. Por favor, contacta con el administrador.');
+        toast.error(t('invitation.errorJoiningClub'));
         return;
       }
 
       // Show welcome dialog
       triggerCoachWelcome();
 
-      toast.success(`¡Bienvenido a ${clubPreview?.club_name}!`);
+      toast.success(t('invitation.welcomeToClub', { name: clubPreview?.club_name }));
 
       // Trigger club membership refresh and wait for it to complete
       window.dispatchEvent(new Event('club-membership-changed'));
@@ -288,7 +288,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       navigate('/', { replace: true });
     } catch (error) {
       console.error('[InvitationForm] Unexpected error:', error);
-      toast.error('Error al completar el registro');
+      toast.error(t('invitation.errorCompletingRegistration'));
     }
   };
 
@@ -365,12 +365,12 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
           <div className="mx-auto mb-4 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-destructive" />
           </div>
-          <CardTitle className="text-2xl">Invitación no válida</CardTitle>
+          <CardTitle className="text-2xl">{t('invitation.invalidInvitation')}</CardTitle>
           <CardDescription>{previewError}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" className="w-full" onClick={onBackToLogin}>
-            Volver al inicio
+            {t('invitation.backToHome')}
           </Button>
         </CardContent>
       </Card>
@@ -481,24 +481,24 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
           <Building2 className="w-8 h-8 text-primary" />
         </div>
         <CardTitle className="text-2xl font-bold text-primary">
-          Únete a {clubPreview?.club_name}
+          {t('invitation.joinClub', { name: clubPreview?.club_name })}
         </CardTitle>
         <CardDescription>
-          Has sido invitado como <strong>{clubPreview?.role === 'director' ? 'Director' : 'Entrenador'}</strong>. 
-          Completa tu registro para acceder al club.
+          {t('invitation.invitedAs')} <strong>{clubPreview?.role === 'director' ? t('auth.director') : t('auth.coach')}</strong>.{' '}
+          {t('invitation.completeRegistration')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSignUp} className="space-y-4">
           {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="inv-name">Nombre *</Label>
+            <Label htmlFor="inv-name">{t('invitation.firstName')} *</Label>
             <Input
               id="inv-name"
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Tu nombre"
+              placeholder={t('invitation.yourName')}
               disabled={loading}
             />
             {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
@@ -506,13 +506,13 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
           {/* Surname 1 */}
           <div className="space-y-2">
-            <Label htmlFor="inv-surname1">Primer apellido *</Label>
+            <Label htmlFor="inv-surname1">{t('invitation.firstSurname')} *</Label>
             <Input
               id="inv-surname1"
               type="text"
               value={surname1}
               onChange={e => setSurname1(e.target.value)}
-              placeholder="Primer apellido"
+              placeholder={t('invitation.firstSurname')}
               disabled={loading}
             />
             {errors.surname1 && <p className="text-xs text-destructive">{errors.surname1}</p>}
@@ -520,20 +520,20 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
           {/* Surname 2 */}
           <div className="space-y-2">
-            <Label htmlFor="inv-surname2">Segundo apellido</Label>
+            <Label htmlFor="inv-surname2">{t('invitation.secondSurname')}</Label>
             <Input
               id="inv-surname2"
               type="text"
               value={surname2}
               onChange={e => setSurname2(e.target.value)}
-              placeholder="Segundo apellido (opcional)"
+              placeholder={t('invitation.secondSurnameOptional')}
               disabled={loading}
             />
           </div>
 
           {/* Email */}
           <div className="space-y-2">
-            <Label htmlFor="inv-email">Email *</Label>
+            <Label htmlFor="inv-email">{t('auth.email')} *</Label>
             <Input
               id="inv-email"
               type="email"
@@ -547,13 +547,13 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
           {/* Password */}
           <div className="space-y-2">
-            <Label htmlFor="inv-password">Contraseña *</Label>
+            <Label htmlFor="inv-password">{t('auth.password')} *</Label>
             <Input
               id="inv-password"
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
+              placeholder={t('auth.minCharacters')}
               disabled={loading}
             />
             {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
@@ -561,13 +561,13 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
           {/* Confirm Password */}
           <div className="space-y-2">
-            <Label htmlFor="inv-confirm-password">Confirmar contraseña *</Label>
+            <Label htmlFor="inv-confirm-password">{t('auth.confirmPassword')} *</Label>
             <Input
               id="inv-confirm-password"
               type="password"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              placeholder="Repite tu contraseña"
+              placeholder={t('auth.repeatPassword')}
               disabled={loading}
             />
             {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
@@ -585,22 +585,22 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
                 htmlFor="inv-terms-acceptance"
                 className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
               >
-                He leído y acepto los{' '}
+                {t('auth.termsAcceptance')}{' '}
                 <a href="/terms" target="_blank" className="text-primary underline hover:no-underline">
-                  Términos y Condiciones
+                  {t('auth.termsAndConditions')}
                 </a>{' '}
-                y la{' '}
+                {t('auth.and')}{' '}
                 <a href="/privacy" target="_blank" className="text-primary underline hover:no-underline">
-                  Política de Privacidad
+                  {t('auth.privacyPolicy')}
                 </a>{' '}
-                de la aplicación *
+                {t('auth.ofTheApp')} *
               </label>
             </div>
-            
+
             {termsAccepted && (
               <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Términos de la app aceptados</span>
+                <span>{t('invitation.appTermsAccepted')}</span>
               </div>
             )}
           </div>
@@ -610,7 +610,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
             <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-400">
                 <Shield className="h-4 w-4" />
-                Código de Responsabilidad del Club
+                {t('invitation.clubResponsibilityCode')}
               </div>
               <ScrollArea className="h-40 rounded-lg border bg-muted/30 p-3">
                 <div className="text-xs text-muted-foreground whitespace-pre-wrap">
@@ -627,19 +627,19 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
                   htmlFor="inv-responsibility-acceptance"
                   className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
                 >
-                  He leído y acepto el código de responsabilidad del club{' '}
+                  {t('invitation.acceptResponsibilityCode')}{' '}
                   {clubPreview.responsible_person_name && (
                     <span className="text-muted-foreground">
-                      (Responsable: {clubPreview.responsible_person_name})
+                      ({t('invitation.responsiblePerson')}: {clubPreview.responsible_person_name})
                     </span>
                   )} *
                 </label>
               </div>
-              
+
               {responsibilityCodeAccepted && (
                 <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Código de responsabilidad aceptado</span>
+                  <span>{t('invitation.responsibilityCodeAccepted')}</span>
                 </div>
               )}
             </div>
@@ -649,7 +649,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
           <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
             <Mail className="w-4 h-4 shrink-0 mt-0.5" />
             <span>
-              Se te enviará un email para verificar tu identidad antes de acceder al club.
+              {t('invitation.emailVerificationNote')}
             </span>
           </div>
 
@@ -670,10 +670,10 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creando cuenta...
+                {t('auth.creatingAccount')}
               </>
             ) : (
-              'Crear cuenta y unirme al club'
+              t('auth.createAccountAndJoin')
             )}
           </Button>
 
@@ -684,7 +684,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
               onClick={onBackToLogin}
               className="text-sm text-primary hover:underline"
             >
-              ¿Ya tienes cuenta? Inicia sesión
+              {t('invitation.alreadyHaveAccount')}
             </button>
           </div>
         </form>
