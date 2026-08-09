@@ -10,9 +10,9 @@ import {
 import { Globe } from 'lucide-react';
 
 const LANGUAGES = [
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { code: 'es', name: 'Español', shortCode: 'ES', flag: '🇪🇸' },
+  { code: 'en', name: 'English', shortCode: 'EN', flag: '🇬🇧' },
+  { code: 'it', name: 'Italiano', shortCode: 'IT', flag: '🇮🇹' },
 ];
 
 const SUPPORTED_LANG_PATHS = ['es', 'en', 'it'];
@@ -47,7 +47,8 @@ export function LanguageSelector() {
           <SelectValue>
             <span className="flex items-center gap-2">
               <span>{currentLang.flag}</span>
-              <span>{currentLang.name}</span>
+              <span className="hidden sm:inline">{currentLang.name}</span>
+              <span className="sm:hidden">{currentLang.shortCode}</span>
             </span>
           </SelectValue>
         </div>
