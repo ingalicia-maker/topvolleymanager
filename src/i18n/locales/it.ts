@@ -172,6 +172,18 @@ export default {
     youJoinedClubNamed: 'Ti sei unito a {{name}}!',
     hidePassword: 'Nascondi password',
     showPassword: 'Mostra password',
+    invalidOrExpiredLink: 'Link non valido o scaduto',
+    invalidResetLinkDesc: 'Il link di recupero password non è valido o è scaduto.',
+    requestNewRecovery: 'Richiedi un nuovo recupero',
+    verifyingRecoveryLink: 'Verifica del link di recupero...',
+    passwordUpdatedTitle: 'Password aggiornata!',
+    passwordUpdatedDesc: 'La tua password è stata cambiata correttamente. Reindirizzamento...',
+    newPassword: 'Nuova password',
+    enterNewPassword: 'Inserisci la tua nuova password',
+    passwordMinLengthNote: 'La nuova password deve avere almeno 6 caratteri.',
+    updating: 'Aggiornamento...',
+    changePassword: 'Cambia password',
+    passwordUpdatedToast: 'Password aggiornata correttamente',
   },
 
   invitation: {

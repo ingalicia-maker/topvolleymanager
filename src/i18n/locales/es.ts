@@ -172,6 +172,18 @@ export default {
     youJoinedClubNamed: '¡Te has unido a {{name}}!',
     hidePassword: 'Ocultar contraseña',
     showPassword: 'Mostrar contraseña',
+    invalidOrExpiredLink: 'Enlace inválido o expirado',
+    invalidResetLinkDesc: 'El enlace de recuperación de contraseña no es válido o ha expirado.',
+    requestNewRecovery: 'Volver a solicitar recuperación',
+    verifyingRecoveryLink: 'Verificando enlace de recuperación...',
+    passwordUpdatedTitle: '¡Contraseña actualizada!',
+    passwordUpdatedDesc: 'Tu contraseña ha sido cambiada correctamente. Redirigiendo...',
+    newPassword: 'Nueva contraseña',
+    enterNewPassword: 'Introduce tu nueva contraseña',
+    passwordMinLengthNote: 'Tu nueva contraseña debe tener al menos 6 caracteres.',
+    updating: 'Actualizando...',
+    changePassword: 'Cambiar contraseña',
+    passwordUpdatedToast: 'Contraseña actualizada correctamente',
   },
 
   invitation: {

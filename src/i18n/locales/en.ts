@@ -172,6 +172,18 @@ export default {
     youJoinedClubNamed: 'You have joined {{name}}!',
     hidePassword: 'Hide password',
     showPassword: 'Show password',
+    invalidOrExpiredLink: 'Invalid or expired link',
+    invalidResetLinkDesc: 'The password recovery link is invalid or has expired.',
+    requestNewRecovery: 'Request new recovery link',
+    verifyingRecoveryLink: 'Verifying recovery link...',
+    passwordUpdatedTitle: 'Password updated!',
+    passwordUpdatedDesc: 'Your password has been changed successfully. Redirecting...',
+    newPassword: 'New password',
+    enterNewPassword: 'Enter your new password',
+    passwordMinLengthNote: 'Your new password must be at least 6 characters.',
+    updating: 'Updating...',
+    changePassword: 'Change password',
+    passwordUpdatedToast: 'Password updated successfully',
   },
 
   invitation: {

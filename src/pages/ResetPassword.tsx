@@ -10,10 +10,12 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
 import { resetRateLimit } from '@/lib/security';
+import { useTranslation } from 'react-i18next';
 
-const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres');
+const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState('');
@@ -48,7 +50,7 @@ export default function ResetPassword() {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (cancelled) return;
           if (error) {
-            setSessionError(error.message || 'Enlace inválido o expirado');
+            setSessionError(error.message || t('auth.invalidOrExpiredLink'));
             return;
           }
           // Clean the URL so refreshes don't retry the code
@@ -68,7 +70,7 @@ export default function ResetPassword() {
           });
           if (cancelled) return;
           if (error) {
-            setSessionError(error.message || 'Enlace inválido o expirado');
+            setSessionError(error.message || t('auth.invalidOrExpiredLink'));
             return;
           }
           window.history.replaceState({}, '', window.location.pathname);
@@ -89,10 +91,10 @@ export default function ResetPassword() {
 
         // Case 4: Wait briefly for the auth listener to fire PASSWORD_RECOVERY
         timeout = setTimeout(() => {
-          if (!cancelled) setSessionError('Enlace inválido o expirado');
+          if (!cancelled) setSessionError(t('auth.invalidOrExpiredLink'));
         }, 6000);
       } catch (err) {
-        if (!cancelled) setSessionError('Enlace inválido o expirado');
+        if (!cancelled) setSessionError(t('auth.invalidOrExpiredLink'));
       }
     };
 
@@ -111,11 +113,11 @@ export default function ResetPassword() {
     try {
       passwordSchema.parse(password);
     } catch {
-      newErrors.password = 'Mínimo 6 caracteres';
+      newErrors.password = t('auth.minCharacters');
     }
 
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      newErrors.confirmPassword = t('auth.passwordMismatch');
     }
 
     setErrors(newErrors);
@@ -140,7 +142,7 @@ export default function ResetPassword() {
 
     setSuccess(true);
     resetRateLimit('auth_signin');
-    toast.success('Contraseña actualizada correctamente');
+    toast.success(t('auth.passwordUpdatedToast'));
 
     // Sign out so the user must log in with the new password
     setTimeout(async () => {
@@ -159,9 +161,9 @@ export default function ResetPassword() {
             <div className="mx-auto mb-4 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-destructive" />
             </div>
-            <CardTitle className="text-2xl">Enlace inválido o expirado</CardTitle>
+            <CardTitle className="text-2xl">{t('auth.invalidOrExpiredLink')}</CardTitle>
             <CardDescription className="text-base">
-              {sessionError || 'El enlace de recuperación de contraseña no es válido o ha expirado.'}
+              {sessionError || t('auth.invalidResetLinkDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -169,7 +171,7 @@ export default function ResetPassword() {
               className="w-full"
               onClick={() => navigate('/auth')}
             >
-              Volver a solicitar recuperación
+              {t('auth.requestNewRecovery')}
             </Button>
           </CardContent>
         </Card>
@@ -184,7 +186,7 @@ export default function ResetPassword() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center gap-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="text-muted-foreground">Verificando enlace de recuperación...</p>
+              <p className="text-muted-foreground">{t('auth.verifyingRecoveryLink')}</p>
             </div>
           </CardContent>
         </Card>
@@ -200,9 +202,9 @@ export default function ResetPassword() {
             <div className="mx-auto mb-4 w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8 text-green-500" />
             </div>
-            <CardTitle className="text-2xl">¡Contraseña actualizada!</CardTitle>
+            <CardTitle className="text-2xl">{t('auth.passwordUpdatedTitle')}</CardTitle>
             <CardDescription className="text-base">
-              Tu contraseña ha sido cambiada correctamente. Redirigiendo...
+              {t('auth.passwordUpdatedDesc')}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -217,33 +219,33 @@ export default function ResetPassword() {
           <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
             <KeyRound className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Nueva contraseña</CardTitle>
+          <CardTitle className="text-2xl">{t('auth.newPassword')}</CardTitle>
           <CardDescription>
-            Introduce tu nueva contraseña
+            {t('auth.enterNewPassword')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="new-password">Nueva contraseña</Label>
+              <Label htmlFor="new-password">{t('auth.newPassword')}</Label>
               <Input
                 id="new-password"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t('auth.minCharacters')}
                 disabled={loading}
               />
               {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-new-password">Confirmar contraseña</Label>
+              <Label htmlFor="confirm-new-password">{t('auth.confirmPassword')}</Label>
               <Input
                 id="confirm-new-password"
                 type="password"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
-                placeholder="Repite tu contraseña"
+                placeholder={t('auth.repeatPassword')}
                 disabled={loading}
               />
               {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
@@ -251,11 +253,11 @@ export default function ResetPassword() {
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Tu nueva contraseña debe tener al menos 6 caracteres.
+                {t('auth.passwordMinLengthNote')}
               </AlertDescription>
             </Alert>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Actualizando...' : 'Cambiar contraseña'}
+              {loading ? t('auth.updating') : t('auth.changePassword')}
             </Button>
           </form>
         </CardContent>
