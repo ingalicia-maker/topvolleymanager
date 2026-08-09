@@ -131,7 +131,7 @@ export default function Teams() {
                     id="teamName"
                     value={newTeamName}
                     onChange={e => setNewTeamName(e.target.value)}
-                    placeholder="Ej: Cadete A"
+                    placeholder={t('teams.namePlaceholder')}
                     disabled={saving}
                   />
                 </div>
@@ -141,7 +141,7 @@ export default function Teams() {
                     id="teamCoach"
                     value={newTeamCoach}
                     onChange={e => setNewTeamCoach(e.target.value)}
-                    placeholder="Nombre del entrenador"
+                    placeholder={t('teams.coachPlaceholder')}
                     disabled={saving}
                   />
                 </div>

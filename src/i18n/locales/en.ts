@@ -486,6 +486,9 @@ export default {
     teamsUpdated: 'Teams updated successfully',
     noTeamsYet: 'You haven\'t created any teams yet. Create your first team to get started.',
     createFirst: 'Create team',
+    namePlaceholder: 'E.g.: U16 A',
+    coachPlaceholder: "Coach's name",
+    teamNotFound: 'Team not found',
   },
 
   // Events

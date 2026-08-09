@@ -486,6 +486,9 @@ export default {
     teamsUpdated: 'Squadre aggiornate con successo',
     noTeamsYet: 'Non hai ancora creato nessuna squadra. Crea la tua prima squadra per iniziare.',
     createFirst: 'Crea squadra',
+    namePlaceholder: 'Es: Under 16 A',
+    coachPlaceholder: "Nome dell'allenatore",
+    teamNotFound: 'Squadra non trovata',
   },
 
   // Events

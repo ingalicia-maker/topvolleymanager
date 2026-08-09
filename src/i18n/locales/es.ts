@@ -486,6 +486,9 @@ export default {
     teamsUpdated: 'Equipos actualizados correctamente',
     noTeamsYet: 'Aún no has creado ningún equipo. Crea tu primer equipo para empezar.',
     createFirst: 'Crear equipo',
+    namePlaceholder: 'Ej: Cadete A',
+    coachPlaceholder: 'Nombre del entrenador',
+    teamNotFound: 'Equipo no encontrado',
   },
 
   // Events
