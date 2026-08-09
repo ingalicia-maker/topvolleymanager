@@ -182,7 +182,7 @@ export default function Ratings() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header
-        title="Puntuaciones"
+        title={t('ratings.title')}
         showBack={activeTab === 'add' && step !== 'select-team'}
         onBack={() => {
           if (step === 'rate') setStep('select-player');
@@ -195,15 +195,15 @@ export default function Ratings() {
           <TabsList className="w-full mb-4">
             <TabsTrigger value="add" className="flex-1 gap-1">
               <Plus className="h-4 w-4" />
-              Añadir
+              {t('ratings.addTab')}
             </TabsTrigger>
             <TabsTrigger value="players" className="flex-1 gap-1">
               <User className="h-4 w-4" />
-              Jugadoras
+              {t('ratings.playersTab')}
             </TabsTrigger>
             <TabsTrigger value="team" className="flex-1 gap-1">
               <Users className="h-4 w-4" />
-              Equipo
+              {t('ratings.teamTab')}
             </TabsTrigger>
           </TabsList>
 
@@ -212,7 +212,7 @@ export default function Ratings() {
             {step === 'select-team' && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Mes de puntuación</Label>
+                  <Label>{t('ratings.ratingMonthLabel')}</Label>
                   <select
                     className={nativeSelectClassName}
                     value={selectedMonth}
@@ -227,36 +227,36 @@ export default function Ratings() {
                 </div>
 
                 <p className="text-muted-foreground text-sm">
-                  Selecciona un equipo para puntuar jugadoras
+                  {t('ratings.selectTeamToRate')}
                 </p>
 
                 {visibleTeams.length === 0 ? (
                   <Card>
                     <CardContent className="p-6 text-center">
                       <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                      <p className="text-muted-foreground text-sm">No tienes equipos asignados</p>
+                      <p className="text-muted-foreground text-sm">{t('ratings.noTeamsAssignedShort')}</p>
                     </CardContent>
                   </Card>
                 ) : (
                   <div className="space-y-2">
-                    {visibleTeams.map(t => {
-                      const teamPlayerCount = players.filter(p => p.teams?.includes(t.id)).length;
+                    {visibleTeams.map(tm => {
+                      const teamPlayerCount = players.filter(p => p.teams?.includes(tm.id)).length;
                       return (
                         <Card
-                          key={t.id}
+                          key={tm.id}
                           className="cursor-pointer hover:bg-accent/50 transition-colors"
-                          onClick={() => handleSelectTeam(t.id)}
+                          onClick={() => handleSelectTeam(tm.id)}
                         >
                           <CardContent className="p-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div
                                 className="w-2 h-10 rounded-full"
-                                style={{ backgroundColor: t.color }}
+                                style={{ backgroundColor: tm.color }}
                               />
                               <div>
-                                <p className="font-medium">{t.name}</p>
+                                <p className="font-medium">{tm.name}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {teamPlayerCount} jugadoras • {t.coach}
+                                  {t('events.playersCountLabel', { count: teamPlayerCount })} • {tm.coach}
                                 </p>
                               </div>
                             </div>
@@ -288,14 +288,14 @@ export default function Ratings() {
                 </Card>
 
                 <p className="text-muted-foreground text-sm">
-                  Selecciona una jugadora para puntuar
+                  {t('ratings.selectPlayerToRate')}
                 </p>
 
                 {teamPlayers.length === 0 ? (
                   <Card>
                     <CardContent className="p-6 text-center">
                       <User className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                      <p className="text-muted-foreground text-sm">No hay jugadoras en este equipo</p>
+                      <p className="text-muted-foreground text-sm">{t('events.noPlayersInTeam')}</p>
                     </CardContent>
                   </Card>
                 ) : (
@@ -335,7 +335,7 @@ export default function Ratings() {
                             {isRated ? (
                               <Badge variant="outline" className="text-green-600 border-green-600">
                                 <Check className="h-3 w-3 mr-1" />
-                                Editar
+                                {t('common.edit')}
                               </Badge>
                             ) : (
                               <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -373,7 +373,7 @@ export default function Ratings() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Star className="h-4 w-4 text-amber-500" />
-                      Puntuación (1-10)
+                      {t('ratings.scoreRange')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="px-4 py-2">
@@ -394,18 +394,18 @@ export default function Ratings() {
                 </Card>
 
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Notas (opcional)</Label>
+                  <Label htmlFor="notes">{t('ratings.notes')} ({t('common.optional')})</Label>
                   <Textarea
                     id="notes"
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
-                    placeholder="Observaciones sobre el rendimiento..."
+                    placeholder={t('ratings.performanceObservationsPlaceholder')}
                     rows={3}
                   />
                 </div>
 
                 <Button onClick={handleSaveRating} disabled={saving} className="w-full">
-                  {saving ? 'Guardando...' : editingRatingId ? 'Actualizar Puntuación' : 'Guardar Puntuación'}
+                  {saving ? t('common.saving') : editingRatingId ? t('ratings.updateRating') : t('ratings.saveRating')}
                 </Button>
               </div>
             )}
@@ -619,7 +619,7 @@ function PlayerProgressView({
         <Card>
           <CardContent className="p-6 text-center">
             <User className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-            <p className="text-muted-foreground text-sm">No hay jugadoras en este equipo</p>
+            <p className="text-muted-foreground text-sm">{t('events.noPlayersInTeam')}</p>
           </CardContent>
         </Card>
       )}
@@ -634,7 +634,7 @@ function PlayerProgressView({
             onClick={() => setSelectedPlayer(null)}
             className="mb-2"
           >
-            ← Volver a la lista
+            {t('ratings.backToList')}
           </Button>
 
           {/* Player Info */}
@@ -674,7 +674,7 @@ function PlayerProgressView({
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
-                  Tendencias
+                  {t('ratings.trends')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -694,7 +694,7 @@ function PlayerProgressView({
             <Card>
               <CardContent className="p-6 text-center">
                 <Calendar className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-muted-foreground text-sm">No hay puntuaciones registradas</p>
+                <p className="text-muted-foreground text-sm">{t('ratings.noRatingsRegistered')}</p>
               </CardContent>
             </Card>
           )}
@@ -705,7 +705,7 @@ function PlayerProgressView({
         <Card>
           <CardContent className="p-6 text-center">
             <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-            <p className="text-muted-foreground text-sm">Selecciona un equipo para ver jugadoras</p>
+            <p className="text-muted-foreground text-sm">{t('ratings.selectTeamToSeePlayers')}</p>
           </CardContent>
         </Card>
       )}
@@ -834,7 +834,7 @@ function TeamProgressView({
             <Card>
               <CardContent className="p-6 text-center">
                 <Calendar className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-muted-foreground text-sm">No hay puntuaciones registradas para este equipo</p>
+                <p className="text-muted-foreground text-sm">{t('ratings.noRatingsForTeam')}</p>
               </CardContent>
             </Card>
           )}
@@ -845,7 +845,7 @@ function TeamProgressView({
         <Card>
           <CardContent className="p-6 text-center">
             <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-            <p className="text-muted-foreground text-sm">Selecciona un equipo para ver su evolución</p>
+            <p className="text-muted-foreground text-sm">{t('ratings.selectTeamToSeeEvolution')}</p>
           </CardContent>
         </Card>
       )}
