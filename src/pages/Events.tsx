@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Plus, Filter, Bus, Calendar as CalendarIcon, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
@@ -20,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 type ViewMode = 'list' | 'calendar';
 
 export default function Events() {
+  const { t } = useTranslation();
   const { events, loading } = useEvents();
   const { teams, loading: teamsLoading } = useTeams();
   const [teamFilter, setTeamFilter] = useState<string[]>([]);
@@ -59,7 +61,7 @@ export default function Events() {
   if (loading || teamsLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Eventos" />
+        <Header title={t('events.title')} />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -71,7 +73,7 @@ export default function Events() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header
-        title="Eventos"
+        title={t('events.title')}
         rightAction={
           <div className="flex gap-2">
             {/* View Mode Toggle */}
@@ -103,7 +105,7 @@ export default function Events() {
                 </Link>
               </TooltipTrigger>
               <TooltipContent>
-                Calendario desplazamientos
+                {t('displacement.title')}
               </TooltipContent>
             </Tooltip>
             <DropdownMenu>
@@ -120,7 +122,7 @@ export default function Events() {
               <DropdownMenuContent align="end">
                 {teams.length === 0 ? (
                   <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                    No hay equipos
+                    {t('events.noTeamsShort')}
                   </div>
                 ) : (
                   teams.map(team => (
@@ -154,16 +156,16 @@ export default function Events() {
           <Tabs defaultValue="upcoming" className="w-full">
             <TabsList className="w-full">
               <TabsTrigger value="upcoming" className="flex-1">
-                Próximos ({upcomingEvents.length})
+                {t('events.upcomingTab', { count: upcomingEvents.length })}
               </TabsTrigger>
               <TabsTrigger value="past" className="flex-1">
-                Pasados ({pastEvents.length})
+                {t('events.pastTab', { count: pastEvents.length })}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="upcoming" className="mt-4 space-y-3">
               {upcomingEvents.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No hay eventos próximos
+                  {t('events.noUpcoming')}
                 </p>
               ) : (
                 upcomingEvents.map(event => (
@@ -174,7 +176,7 @@ export default function Events() {
             <TabsContent value="past" className="mt-4 space-y-3">
               {pastEvents.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No hay eventos pasados
+                  {t('events.noPastEvents')}
                 </p>
               ) : (
                 pastEvents.map(event => (

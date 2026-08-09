@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, Clock, Users, Download, Trophy, Dumbbell, Copy, Send, Bus, ArrowLeftRight, CheckCircle, AlertCircle, Edit, Trash2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -29,7 +30,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from 'sonner';
 
+const UNASSIGNED_STOP = '__unassigned__';
+
 export default function EventDetail() {
+  const { t, i18n } = useTranslation();
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { events, updateEvent, deleteEvent, refetch } = useEvents();
@@ -54,20 +58,20 @@ export default function EventDetail() {
   const coachTeams = profile?.assigned_teams || [];
   const eventTeams = event?.selected_teams || [];
   // Directors can manage all event teams; coaches only their assigned teams
-  const myTeamsInEvent = isDirector 
-    ? eventTeams 
+  const myTeamsInEvent = isDirector
+    ? eventTeams
     : eventTeams.filter(t => coachTeams.includes(t));
 
   // Initialize local state when event loads
   useEffect(() => {
     if (event && event.type === 'displacement') {
       // Get players already added by this coach's teams
-      const myTeamPlayers = players.filter(p => 
-        p.teams?.some(t => myTeamsInEvent.includes(t)) && 
+      const myTeamPlayers = players.filter(p =>
+        p.teams?.some(t => myTeamsInEvent.includes(t)) &&
         event.invited_players?.includes(p.id)
       );
       setSelectedPlayers(myTeamPlayers.map(p => p.id));
-      
+
       // Initialize stops and returns
       const stops: Record<string, string> = {};
       const returns: Record<string, boolean> = {};
@@ -87,7 +91,7 @@ export default function EventDetail() {
   if (!event) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Evento no encontrado" showBack />
+        <Header title={t('eventDetail.eventNotFound')} showBack />
         <BottomNav />
       </div>
     );
@@ -102,7 +106,7 @@ export default function EventDetail() {
   const pendingTeams = eventTeams.filter(t => !coachSubmissions[t]?.submitted);
 
   // Players available for selection (from coach's teams in this event)
-  const availablePlayersForCoach = players.filter(p => 
+  const availablePlayersForCoach = players.filter(p =>
     p.teams?.some(t => myTeamsInEvent.includes(t))
   );
 
@@ -144,17 +148,17 @@ export default function EventDetail() {
 
   const handleSaveAndSubmit = async (submit: boolean) => {
     if (!user || myTeamsInEvent.length === 0) return;
-    
+
     setSaving(true);
-    
+
     // Merge with existing data
     const newInvitedPlayers = new Set(event.invited_players || []);
     const newPlayerStops = { ...event.player_stops };
     const newPlayerReturns = { ...event.player_returns };
-    
+
     // Remove old players from my teams
-    const oldMyPlayers = players.filter(p => 
-      p.teams?.some(t => myTeamsInEvent.includes(t)) && 
+    const oldMyPlayers = players.filter(p =>
+      p.teams?.some(t => myTeamsInEvent.includes(t)) &&
       event.invited_players?.includes(p.id)
     );
     oldMyPlayers.forEach(p => {
@@ -162,7 +166,7 @@ export default function EventDetail() {
       delete newPlayerStops[p.id];
       delete newPlayerReturns[p.id];
     });
-    
+
     // Add new selected players
     selectedPlayers.forEach(pid => {
       newInvitedPlayers.add(pid);
@@ -173,26 +177,26 @@ export default function EventDetail() {
         newPlayerReturns[pid] = localPlayerReturns[pid];
       }
     });
-    
+
     // Calculate total passengers (players who return + coaches)
     const allPlayersArray = Array.from(newInvitedPlayers);
     const returningPlayers = allPlayersArray.filter(pid => newPlayerReturns[pid] !== false);
-    const coachCount = event.total_passengers ? 
-      event.total_passengers - (event.invited_players?.length || 0) + 
+    const coachCount = event.total_passengers ?
+      event.total_passengers - (event.invited_players?.length || 0) +
       (event.invited_players?.filter(pid => event.player_returns?.[pid] !== false).length || 0) : 1;
     const newTotalPassengers = returningPlayers.length + Math.max(0, coachCount);
-    
+
     // Update coach submissions
     const newCoachSubmissions = { ...coachSubmissions };
     myTeamsInEvent.forEach(teamId => {
       newCoachSubmissions[teamId] = {
         coach_id: user.id,
-        coach_name: profile?.name || 'Entrenador',
+        coach_name: profile?.name || t('auth.coach'),
         submitted: submit,
         submitted_at: submit ? new Date().toISOString() : null,
       };
     });
-    
+
     const success = await updateEvent(event.id, {
       invited_players: Array.from(newInvitedPlayers),
       player_stops: newPlayerStops,
@@ -200,10 +204,10 @@ export default function EventDetail() {
       total_passengers: newTotalPassengers,
       coach_submissions: newCoachSubmissions,
     });
-    
+
     if (success) {
       setHasChanges(false);
-      toast.success(submit ? 'Lista enviada correctamente' : 'Cambios guardados');
+      toast.success(submit ? t('eventDetail.listSentSuccess') : t('eventDetail.changesSaved'));
       refetch();
     }
     setSaving(false);
@@ -211,7 +215,7 @@ export default function EventDetail() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   const getPlayerName = (player: typeof players[0]) => {
@@ -221,29 +225,29 @@ export default function EventDetail() {
   const generateMessage = () => {
     if (isDisplacement) {
       const stopsInfo = (event.stops || []).map(stop => {
-        const playersAtStop = invitedPlayersList.filter(p => 
+        const playersAtStop = invitedPlayersList.filter(p =>
           event.player_stops?.[p.id] === stop && event.player_returns?.[p.id] !== false
         );
         const playerNames = playersAtStop.map(p => `  - ${getPlayerName(p)}`).join('\n');
-        return `📍 *${stop}* (${playersAtStop.length})\n${playerNames || '  Ninguna'}`;
+        return `📍 *${stop}* (${playersAtStop.length})\n${playerNames || `  ${t('eventDetail.none')}`}`;
       }).join('\n\n');
 
       const notReturning = invitedPlayersList.filter(p => event.player_returns?.[p.id] === false);
-      const notReturningInfo = notReturning.length > 0 
-        ? `\n\n🚶 *No vuelven en bus:*\n${notReturning.map(p => `  - ${getPlayerName(p)}`).join('\n')}`
+      const notReturningInfo = notReturning.length > 0
+        ? `\n\n${t('eventDetail.notReturningByBusMsg')}\n${notReturning.map(p => `  - ${getPlayerName(p)}`).join('\n')}`
         : '';
 
-      return `🚌 *${event.title}*\n📅 ${formatDate(event.date)}\n⏰ Salida: ${event.time}\n📍 Destino: ${event.destination}\n\n👥 *Total pasajeros (vuelta): ${event.total_passengers}*\n\n*Paradas:*\n${stopsInfo}${notReturningInfo}`;
+      return `🚌 *${event.title}*\n📅 ${formatDate(event.date)}\n${t('eventDetail.departureShareLabel')}: ${event.time}\n${t('eventDetail.destinationShareLabel')}: ${event.destination}\n\n${t('eventDetail.totalPassengersShareLabel')}: ${event.total_passengers}*\n\n${t('eventDetail.stopsShareLabel')}\n${stopsInfo}${notReturningInfo}`;
     }
 
     // Simple list for training/match events
     const playerNames = invitedPlayersList.map(p => `  - ${getPlayerName(p)}`).join('\n');
-    return `*${event.title}*\n📅 ${formatDate(event.date)}\n⏰ ${event.time}\n📍 ${event.location}\n\n*Convocadas (${invitedPlayersList.length}):*\n${playerNames || 'Ninguna'}`;
+    return `*${event.title}*\n📅 ${formatDate(event.date)}\n⏰ ${event.time}\n📍 ${event.location}\n\n*${t('eventDetail.summonedShareLabel')} (${invitedPlayersList.length}):*\n${playerNames || t('eventDetail.none')}`;
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generateMessage());
-    toast.success('Lista copiada al portapapeles');
+    toast.success(t('eventDetail.listCopied'));
   };
 
   const shareWhatsApp = () => {
@@ -260,34 +264,34 @@ export default function EventDetail() {
     a.download = `${event.title.replace(/\s+/g, '_')}_${event.date}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('Lista descargada');
+    toast.success(t('eventDetail.listDownloaded'));
   };
 
   // Calculate passengers by stop for displacement events (only returning passengers)
   const getPassengersByStop = () => {
     const result: Record<string, { count: number; players: typeof players }> = {};
     const playerReturns = event.player_returns || {};
-    
+
     (event.stops || []).forEach(stop => {
-      const playersAtStop = invitedPlayersList.filter(p => 
+      const playersAtStop = invitedPlayersList.filter(p =>
         event.player_stops?.[p.id] === stop && playerReturns[p.id] !== false
       );
       result[stop] = { count: playersAtStop.length, players: playersAtStop };
     });
 
     // Also count unassigned players (that return)
-    const unassigned = invitedPlayersList.filter(p => 
+    const unassigned = invitedPlayersList.filter(p =>
       !event.player_stops?.[p.id] && playerReturns[p.id] !== false
     );
     if (unassigned.length > 0) {
-      result['Sin asignar'] = { count: unassigned.length, players: unassigned };
+      result[UNASSIGNED_STOP] = { count: unassigned.length, players: unassigned };
     }
 
     return result;
   };
 
   // Players not returning
-  const playersNotReturning = invitedPlayersList.filter(p => 
+  const playersNotReturning = invitedPlayersList.filter(p =>
     (event.player_returns || {})[p.id] === false
   );
 
@@ -304,9 +308,9 @@ export default function EventDetail() {
 
   const getEventBadge = () => {
     switch (event.type) {
-      case 'match': return { variant: 'default' as const, label: 'Partido' };
-      case 'displacement': return { variant: 'outline' as const, label: 'Desplazamiento' };
-      default: return { variant: 'secondary' as const, label: 'Entrenamiento' };
+      case 'match': return { variant: 'default' as const, label: t('events.match') };
+      case 'displacement': return { variant: 'outline' as const, label: t('events.displacement') };
+      default: return { variant: 'secondary' as const, label: t('events.training') };
     }
   };
 
@@ -331,7 +335,7 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header title={event.title} showBack />
-      
+
       <div className="p-4 space-y-4">
         {/* Edit and Delete buttons */}
         <div className="flex gap-2 justify-end">
@@ -342,26 +346,26 @@ export default function EventDetail() {
             className="gap-1"
           >
             <Edit className="h-4 w-4" />
-            Editar
+            {t('common.edit')}
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" className="gap-1">
                 <Trash2 className="h-4 w-4" />
-                Eliminar
+                {t('common.delete')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>¿Eliminar evento?</AlertDialogTitle>
+                <AlertDialogTitle>{t('eventDetail.deleteEventConfirmTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta acción no se puede deshacer. Se eliminará permanentemente este evento y toda su información.
+                  {t('eventDetail.deleteEventConfirmDesc')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDeleteEvent} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Eliminar
+                  {t('common.delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -372,15 +376,15 @@ export default function EventDetail() {
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-amber-800">Acción requerida</p>
+              <p className="font-medium text-amber-800">{t('eventDetail.actionRequired')}</p>
               <p className="text-sm text-amber-700">
-                Debes añadir las jugadoras de tu equipo a este desplazamiento e indicar la parada donde suben.
+                {t('eventDetail.addPlayersToDisplacement')}
               </p>
             </div>
           </div>
         )}
         {/* Event Info Card */}
-        <div 
+        <div
           className="rounded-xl p-4 space-y-3"
           style={{ backgroundColor: team ? `${team.color}10` : 'hsl(var(--muted))' }}
         >
@@ -404,7 +408,7 @@ export default function EventDetail() {
               </Badge>
             )}
           </div>
-          
+
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2 text-foreground">
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -412,7 +416,7 @@ export default function EventDetail() {
             </div>
             <div className="flex items-center gap-2 text-foreground">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              {isDisplacement ? `Salida: ${event.time}` : event.time}
+              {isDisplacement ? t('eventDetail.departurePrefix', { time: event.time }) : event.time}
             </div>
             <div className="flex items-center gap-2 text-foreground">
               <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -431,12 +435,12 @@ export default function EventDetail() {
               {isDisplacement ? (
                 <>
                   <span className="text-blue-600 font-medium">{event.total_passengers || 0}</span>
-                  <span className="text-muted-foreground">pasajeros (vuelta)</span>
+                  <span className="text-muted-foreground">{t('eventDetail.passengersReturn')}</span>
                 </>
               ) : (
                 <>
                   <span className="text-green-600 font-medium">{invitedPlayersList.length}</span>
-                  <span className="text-muted-foreground">convocadas</span>
+                  <span className="text-muted-foreground">{t('eventDetail.summonedLabel')}</span>
                 </>
               )}
             </div>
@@ -455,7 +459,7 @@ export default function EventDetail() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Estado de equipos
+                {t('eventDetail.teamsStatus')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -464,10 +468,10 @@ export default function EventDetail() {
                 const submission = coachSubmissions[teamId];
                 const isSubmitted = submission?.submitted;
                 const teamPlayerCount = invitedPlayersList.filter(p => p.teams?.includes(teamId)).length;
-                
+
                 return (
-                  <div 
-                    key={teamId} 
+                  <div
+                    key={teamId}
                     className={`flex items-center justify-between p-3 rounded-lg border ${
                       isSubmitted ? 'border-green-500/50 bg-green-500/5' : 'border-amber-500/50 bg-amber-500/5'
                     }`}
@@ -483,13 +487,13 @@ export default function EventDetail() {
                       {isSubmitted ? (
                         <>
                           <Badge variant="default" className="bg-green-600">
-                            {teamPlayerCount} jugadoras
+                            {t('events.playersCountLabel', { count: teamPlayerCount })}
                           </Badge>
                           <CheckCircle className="h-5 w-5 text-green-600" />
                         </>
                       ) : (
                         <>
-                          <Badge variant="secondary">Pendiente</Badge>
+                          <Badge variant="secondary">{t('eventDetail.pending')}</Badge>
                           <AlertCircle className="h-5 w-5 text-amber-500" />
                         </>
                       )}
@@ -497,14 +501,14 @@ export default function EventDetail() {
                   </div>
                 );
               })}
-              
+
               {allTeamsSubmitted ? (
                 <p className="text-sm text-green-600 text-center py-2 font-medium">
-                  ✅ Todos los equipos han enviado su lista
+                  {t('eventDetail.allTeamsSubmittedMsg')}
                 </p>
               ) : (
                 <p className="text-sm text-amber-600 text-center py-2">
-                  ⏳ Faltan {pendingTeams.length} equipo(s) por enviar
+                  {t('eventDetail.teamsPendingMsg', { count: pendingTeams.length })}
                 </p>
               )}
             </CardContent>
@@ -517,7 +521,7 @@ export default function EventDetail() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Mis jugadoras para este desplazamiento
+                {t('eventDetail.myPlayersForDisplacement')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -525,7 +529,7 @@ export default function EventDetail() {
                 const tm = teams.find(t => t.id === teamId);
                 const teamPlayersList = availablePlayersForCoach.filter(p => p.teams?.includes(teamId));
                 const submission = coachSubmissions[teamId];
-                
+
                 return (
                   <div key={teamId} className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -537,7 +541,7 @@ export default function EventDetail() {
                         <span className="font-medium">{tm?.name}</span>
                         {submission?.submitted && (
                           <Badge variant="default" className="bg-green-600 text-xs">
-                            Enviado
+                            {t('eventDetail.sent')}
                           </Badge>
                         )}
                       </div>
@@ -545,12 +549,12 @@ export default function EventDetail() {
                         {selectedPlayers.filter(pid => teamPlayersList.some(p => p.id === pid)).length}/{teamPlayersList.length}
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-2">
                       {teamPlayersList.map(player => {
                         const isSelected = selectedPlayers.includes(player.id);
                         const playerReturn = localPlayerReturns[player.id] !== false;
-                        
+
                         return (
                           <div key={player.id} className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -563,17 +567,17 @@ export default function EventDetail() {
                                 {player.number && <span className="text-xs text-primary ml-1">#{player.number}</span>}
                               </span>
                             </div>
-                            
+
                             {isSelected && (
                               <div className="ml-6 flex flex-wrap items-center gap-3 text-sm">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground text-xs">Parada:</span>
+                                  <span className="text-muted-foreground text-xs">{t('eventDetail.stopLabel')}:</span>
                                   <select
                                     className="text-sm border rounded px-2 py-1 bg-background"
                                     value={localPlayerStops[player.id] || ''}
                                     onChange={(e) => setPlayerStop(player.id, e.target.value)}
                                   >
-                                    <option value="">Sin asignar</option>
+                                    <option value="">{t('eventDetail.unassigned')}</option>
                                     {(event.stops || []).map(stop => (
                                       <option key={stop} value={stop}>{stop}</option>
                                     ))}
@@ -585,7 +589,7 @@ export default function EventDetail() {
                                     onCheckedChange={(checked) => setPlayerReturn(player.id, !checked)}
                                   />
                                   <span className={`text-xs ${!playerReturn ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
-                                    No vuelve en bus
+                                    {t('eventDetail.doesNotReturnByBus')}
                                   </span>
                                 </div>
                               </div>
@@ -597,7 +601,7 @@ export default function EventDetail() {
                   </div>
                 );
               })}
-              
+
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
@@ -605,14 +609,14 @@ export default function EventDetail() {
                   onClick={() => handleSaveAndSubmit(false)}
                   disabled={saving}
                 >
-                  Guardar borrador
+                  {t('eventDetail.saveDraft')}
                 </Button>
                 <Button
                   className="flex-1"
                   onClick={() => handleSaveAndSubmit(true)}
                   disabled={saving}
                 >
-                  {saving ? 'Enviando...' : 'Enviar lista'}
+                  {saving ? t('eventDetail.sending') : t('eventDetail.sendList')}
                 </Button>
               </div>
             </CardContent>
@@ -621,20 +625,20 @@ export default function EventDetail() {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-3 gap-2">
-          <Button 
-            className="flex-1 gap-1 bg-green-600 hover:bg-green-700 text-white" 
+          <Button
+            className="flex-1 gap-1 bg-green-600 hover:bg-green-700 text-white"
             onClick={shareWhatsApp}
           >
             <Send className="h-4 w-4" />
-            <span className="text-xs">WhatsApp</span>
+            <span className="text-xs">{t('eventDetail.whatsapp')}</span>
           </Button>
           <Button variant="outline" className="flex-1 gap-1" onClick={copyToClipboard}>
             <Copy className="h-4 w-4" />
-            <span className="text-xs">Copiar</span>
+            <span className="text-xs">{t('eventDetail.copy')}</span>
           </Button>
           <Button variant="outline" className="flex-1 gap-1" onClick={downloadList}>
             <Download className="h-4 w-4" />
-            <span className="text-xs">Descargar</span>
+            <span className="text-xs">{t('eventDetail.download')}</span>
           </Button>
         </div>
 
@@ -644,23 +648,23 @@ export default function EventDetail() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Bus className="h-4 w-4" />
-                Pasajeros por parada
+                {t('eventDetail.passengersByStopTitle')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Parada</TableHead>
-                    <TableHead className="text-right">Pasajeros</TableHead>
+                    <TableHead>{t('eventDetail.stopLabel')}</TableHead>
+                    <TableHead className="text-right">{t('eventDetail.passengersLabel')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Object.entries(passengersByStop).map(([stop, data]) => (
-                    <TableRow key={stop} className={stop === 'Sin asignar' ? 'text-amber-600' : ''}>
-                      <TableCell className="font-medium">{stop}</TableCell>
+                    <TableRow key={stop} className={stop === UNASSIGNED_STOP ? 'text-amber-600' : ''}>
+                      <TableCell className="font-medium">{stop === UNASSIGNED_STOP ? t('eventDetail.unassigned') : stop}</TableCell>
                       <TableCell className="text-right">
-                        <Badge variant={stop === 'Sin asignar' ? 'secondary' : 'default'}>
+                        <Badge variant={stop === UNASSIGNED_STOP ? 'secondary' : 'default'}>
                           {data.count}
                         </Badge>
                       </TableCell>
@@ -668,14 +672,14 @@ export default function EventDetail() {
                   ))}
                   {playersNotReturning.length > 0 && (
                     <TableRow className="text-amber-600">
-                      <TableCell className="font-medium">No vuelven en bus</TableCell>
+                      <TableCell className="font-medium">{t('eventDetail.doesNotReturnByBus')}</TableCell>
                       <TableCell className="text-right">
                         <Badge variant="secondary">{playersNotReturning.length}</Badge>
                       </TableCell>
                     </TableRow>
                   )}
                   <TableRow className="font-bold bg-primary/10">
-                    <TableCell>TOTAL PASAJEROS (VUELTA)</TableCell>
+                    <TableCell>{t('eventDetail.totalPassengersReturn')}</TableCell>
                     <TableCell className="text-right">
                       <Badge variant="default" className="text-lg px-3">
                         {event.total_passengers || 0}
@@ -707,7 +711,7 @@ export default function EventDetail() {
                   <CardContent className="space-y-2">
                     {playersAtStop.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-2">
-                        Ninguna jugadora asignada
+                        {t('eventDetail.noPlayerAssigned')}
                       </p>
                     ) : (
                       playersAtStop.map(player => {
@@ -719,7 +723,7 @@ export default function EventDetail() {
                             </div>
                             {!returns && (
                               <Badge variant="secondary" className="text-amber-600 text-xs">
-                                No vuelve
+                                {t('eventDetail.doesNotReturn')}
                               </Badge>
                             )}
                           </div>
@@ -738,7 +742,7 @@ export default function EventDetail() {
                   <CardTitle className="text-sm flex items-center justify-between text-amber-600">
                     <span className="flex items-center gap-2">
                       <ArrowLeftRight className="h-4 w-4" />
-                      No vuelven en bus
+                      {t('eventDetail.doesNotReturnByBus')}
                     </span>
                     <Badge variant="secondary">{playersNotReturning.length}</Badge>
                   </CardTitle>
@@ -759,13 +763,13 @@ export default function EventDetail() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Jugadoras convocadas ({invitedPlayersList.length})
+                {t('eventDetail.summonedPlayersCount', { count: invitedPlayersList.length })}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {invitedPlayersList.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4 text-sm">
-                  No hay jugadoras convocadas
+                  {t('eventDetail.noSummonedPlayers')}
                 </p>
               ) : (
                 invitedPlayersList.map(player => (

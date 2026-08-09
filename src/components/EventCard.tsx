@@ -1,5 +1,6 @@
 import { Calendar, MapPin, Users, Trophy, Dumbbell, Bus, CheckCircle, Clock, AlertTriangle, CalendarOff, Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTeams } from '@/hooks/useTeams';
 import { DbEvent } from '@/hooks/useEvents';
 import { Card, CardContent } from './ui/card';
@@ -10,6 +11,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
+  const { t, i18n } = useTranslation();
   const { teams } = useTeams();
   const team = teams.find(t => t.id === event.team_id);
   const invitedCount = event.invited_players?.length || 0;
@@ -28,7 +30,7 @@ export function EventCard({ event }: EventCardProps) {
   
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+    return date.toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
   const getEventIcon = () => {
@@ -44,12 +46,12 @@ export function EventCard({ event }: EventCardProps) {
 
   const getEventBadge = () => {
     switch (event.type) {
-      case 'match': return { variant: 'default' as const, label: 'Partido' };
-      case 'displacement': return { variant: 'outline' as const, label: 'Desplazamiento' };
-      case 'incident': return { variant: 'destructive' as const, label: 'Incidencia' };
-      case 'holiday': return { variant: 'default' as const, label: 'Festivo', className: 'bg-green-600 hover:bg-green-700' };
-      case 'communication': return { variant: 'default' as const, label: 'Comunicación', className: 'bg-blue-600 hover:bg-blue-700' };
-      default: return { variant: 'secondary' as const, label: 'Entrenamiento' };
+      case 'match': return { variant: 'default' as const, label: t('events.match') };
+      case 'displacement': return { variant: 'outline' as const, label: t('events.displacement') };
+      case 'incident': return { variant: 'destructive' as const, label: t('events.incident') };
+      case 'holiday': return { variant: 'default' as const, label: t('events.holiday'), className: 'bg-green-600 hover:bg-green-700' };
+      case 'communication': return { variant: 'default' as const, label: t('events.communication'), className: 'bg-blue-600 hover:bg-blue-700' };
+      default: return { variant: 'secondary' as const, label: t('events.training') };
     }
   };
 
@@ -99,7 +101,7 @@ export function EventCard({ event }: EventCardProps) {
                   allSubmitted ? (
                     <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-700">
                       <CheckCircle className="h-3 w-3 mr-1" />
-                      Completo
+                      {t('events.complete')}
                     </Badge>
                   ) : (
                     <Badge variant="secondary" className="text-xs">
@@ -113,7 +115,7 @@ export function EventCard({ event }: EventCardProps) {
               {/* Show teams involved */}
               {isNotificationType ? (
                 <p className="text-sm text-muted-foreground">
-                  {affectsAllTeams ? 'Todos los equipos' : involvedTeams.map(t => t?.name).join(', ')}
+                  {affectsAllTeams ? t('events.allTeams') : involvedTeams.map(tm => tm?.name).join(', ')}
                 </p>
               ) : isDisplacement && involvedTeams.length > 0 ? (
                 <div className="flex flex-wrap gap-1 mt-1">

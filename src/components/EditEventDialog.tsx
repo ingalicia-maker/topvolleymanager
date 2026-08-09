@@ -73,19 +73,19 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
 
   const handleSave = async () => {
     if (!date) {
-      toast.error('La fecha es obligatoria');
+      toast.error(t('events.dateRequiredError'));
       return;
     }
     if (!time) {
-      toast.error('La hora es obligatoria');
+      toast.error(t('events.timeRequiredError'));
       return;
     }
     if (isDisplacement && !destination.trim()) {
-      toast.error('El destino es obligatorio');
+      toast.error(t('events.destinationRequiredError'));
       return;
     }
     if (!isDisplacement && !location.trim()) {
-      toast.error('La ubicación es obligatoria');
+      toast.error(t('events.locationRequiredError'));
       return;
     }
 
@@ -114,7 +114,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
     setSaving(false);
 
     if (success) {
-      toast.success('Evento actualizado');
+      toast.success(t('events.eventUpdated'));
       onOpenChange(false);
     }
   };
@@ -123,12 +123,12 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Editar evento</DialogTitle>
+          <DialogTitle>{t('events.editEvent')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Título</Label>
+            <Label htmlFor="title">{t('events.eventTitleLabel')}</Label>
             <Input
               id="title"
               value={title}
@@ -138,7 +138,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">Fecha</Label>
+            <Label htmlFor="date">{t('events.date')}</Label>
             <Input
               id="date"
               type="date"
@@ -149,7 +149,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="time">{isDisplacement ? 'Hora de salida' : 'Hora'}</Label>
+            <Label htmlFor="time">{isDisplacement ? t('events.departureTimeLabel') : t('events.time')}</Label>
             <select
               id="time"
               className={nativeSelectClassName}
@@ -167,7 +167,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
 
           {isDisplacement ? (
             <div className="space-y-2">
-              <Label htmlFor="destination">Destino</Label>
+              <Label htmlFor="destination">{t('events.destination')}</Label>
               <Input
                 id="destination"
                 value={destination}
@@ -177,7 +177,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="location">Ubicación</Label>
+              <Label htmlFor="location">{t('events.locationLabelRequired')}</Label>
               <Input
                 id="location"
                 value={location}
@@ -190,12 +190,12 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
           {/* Opponent field - only for matches */}
           {isMatch && (
             <div className="space-y-2">
-              <Label htmlFor="opponent">Adversario (opcional)</Label>
+              <Label htmlFor="opponent">{t('events.opponentOptional')}</Label>
               <Input
                 id="opponent"
                 value={opponent}
                 onChange={(e) => setOpponent(e.target.value)}
-                placeholder="Nombre del equipo rival..."
+                placeholder={t('events.opponentPlaceholder')}
                 disabled={saving}
               />
             </div>
@@ -203,7 +203,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
           {/* Teams selection for displacement */}
           {isDisplacement && (
             <div className="space-y-2">
-              <Label>Equipos</Label>
+              <Label>{t('players.teams')}</Label>
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {teams.map(tm => (
                   <label
@@ -233,7 +233,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
           {/* Stops selection for displacement */}
           {isDisplacement && (
             <div className="space-y-2">
-              <Label>Paradas del bus (opcional)</Label>
+              <Label>{t('events.busStopsOptional')}</Label>
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {availableStops.map(stop => (
                   <label
@@ -252,7 +252,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
                 ))}
                 {availableStops.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-2">
-                    No hay paradas configuradas
+                    {t('events.noStopsConfiguredShort')}
                   </p>
                 )}
               </div>
@@ -264,7 +264,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notas adicionales..."
+              placeholder={t('events.additionalNotesPlaceholder')}
               disabled={saving}
               rows={3}
             />
@@ -276,7 +276,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
               <div className="flex items-start gap-2">
                 <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Los eventos se eliminan automáticamente 30 días después de su publicación.
+                  {t('events.autoDeleteShort')}
                 </p>
               </div>
 
@@ -288,13 +288,13 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
                 />
                 <div className="flex items-center gap-1">
                   <Shield className="h-3 w-3 text-primary" />
-                  <span className="text-xs font-medium">Mantener guardado para siempre</span>
+                  <span className="text-xs font-medium">{t('events.keepSavedForever')}</span>
                 </div>
               </label>
 
               {keepForever && (
                 <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
-                  ✓ Este evento no se eliminará automáticamente.
+                  ✓ {t('events.keepForeverConfirmedShort')}
                 </p>
               )}
             </CardContent>
@@ -303,10 +303,10 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? 'Guardando...' : 'Guardar'}
+            {saving ? t('common.saving') : t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
