@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
 
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
@@ -25,6 +26,7 @@ import { Bus, MapPin, Clock, Users, ChevronDown, ChevronUp, AlertTriangle, Repea
 type EventType = 'training' | 'match' | 'displacement' | 'incident' | 'holiday' | 'communication';
 
 export default function NewEvent() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { players } = usePlayers();
@@ -168,13 +170,13 @@ export default function NewEvent() {
 
   const getEventTitle = () => {
     switch (type) {
-      case 'training': return 'Entrenamiento';
-      case 'match': return 'Partido';
-      case 'displacement': return 'Desplazamiento';
-      case 'incident': return 'Incidencia';
-      case 'holiday': return 'Festivo';
-      case 'communication': return 'Comunicación';
-      default: return 'Evento';
+      case 'training': return t('events.training');
+      case 'match': return t('events.match');
+      case 'displacement': return t('events.displacement');
+      case 'incident': return t('events.incident');
+      case 'holiday': return t('events.holiday');
+      case 'communication': return t('events.communication');
+      default: return t('events.title');
     }
   };
 
@@ -190,44 +192,44 @@ export default function NewEvent() {
     e.preventDefault();
 
     if (!isNotificationType && type !== 'displacement' && !teamId) {
-      toast.error('Selecciona un equipo');
+      toast.error(t('events.selectTeamError'));
       return;
     }
     if (!date) {
-      toast.error('La fecha es obligatoria');
+      toast.error(t('events.dateRequiredError'));
       return;
     }
 
     if (type === 'displacement') {
       if (!destination.trim()) {
-        toast.error('El destino es obligatorio');
+        toast.error(t('events.destinationRequiredError'));
         return;
       }
       if (!departureTime) {
-        toast.error('La hora de salida es obligatoria');
+        toast.error(t('events.departureTimeRequiredError'));
         return;
       }
       if (selectedTeams.length === 0) {
-        toast.error('Selecciona al menos un equipo');
+        toast.error(t('events.selectAtLeastOneTeamError'));
         return;
       }
     } else if (isNotificationType) {
       // Notification types: incident, holiday, communication
       if (!affectsAllTeams && affectedTeams.length === 0) {
-        toast.error('Selecciona al menos un equipo afectado');
+        toast.error(t('events.selectAffectedTeamError'));
         return;
       }
       if (!notes.trim()) {
-        toast.error('Describe la incidencia o comunicación');
+        toast.error(t('events.describeNotificationError'));
         return;
       }
     } else {
       if (!time) {
-        toast.error('La hora es obligatoria');
+        toast.error(t('events.timeRequiredError'));
         return;
       }
       if (!location.trim()) {
-        toast.error('La ubicación es obligatoria');
+        toast.error(t('events.locationRequiredError'));
         return;
       }
     }
@@ -378,10 +380,10 @@ export default function NewEvent() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Nuevo Evento" showBack />
+      <Header title={t('events.newEvent')} showBack />
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="type">Tipo de evento</Label>
+          <Label htmlFor="type">{t('events.eventType')}</Label>
           <select
             id="type"
             className={nativeSelectClassName}
@@ -398,15 +400,15 @@ export default function NewEvent() {
             }}
             disabled={loading}
           >
-            <optgroup label="Actividades">
-              <option value="training">🏐 Entrenamiento</option>
-              <option value="match">🏆 Partido</option>
-              <option value="displacement">🚌 Desplazamiento</option>
+            <optgroup label={t('events.activitiesGroup')}>
+              <option value="training">🏐 {t('events.training')}</option>
+              <option value="match">🏆 {t('events.match')}</option>
+              <option value="displacement">🚌 {t('events.displacement')}</option>
             </optgroup>
-            <optgroup label="Notificaciones">
-              <option value="incident">⚠️ Incidencia</option>
-              <option value="holiday">🎉 Festivo</option>
-              <option value="communication">📢 Comunicación</option>
+            <optgroup label={t('events.notificationsGroup')}>
+              <option value="incident">⚠️ {t('events.incident')}</option>
+              <option value="holiday">🎉 {t('events.holiday')}</option>
+              <option value="communication">📢 {t('events.communication')}</option>
             </optgroup>
           </select>
         </div>
@@ -417,19 +419,19 @@ export default function NewEvent() {
             <div className="space-y-2">
               <Label htmlFor="destination" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                Destino *
+                {t('events.destination')} *
               </Label>
               <Input
                 id="destination"
                 value={destination}
                 onChange={e => setDestination(e.target.value)}
-                placeholder="Ciudad o pabellón de destino"
+                placeholder={t('events.destinationPlaceholder')}
                 disabled={loading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Fecha *</Label>
+              <Label htmlFor="date">{t('events.date')} *</Label>
               <Input
                 id="date"
                 type="date"
@@ -442,7 +444,7 @@ export default function NewEvent() {
             <div className="space-y-2">
               <Label htmlFor="departureTime" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Hora de salida *
+                {t('events.departureTimeLabel')} *
               </Label>
               <select
                 id="departureTime"
@@ -452,7 +454,7 @@ export default function NewEvent() {
                 disabled={loading}
               >
                 <option value="" disabled>
-                  Selecciona hora
+                  {t('events.selectTime')}
                 </option>
                 {timeOptions.map((t) => (
                   <option key={t} value={t}>
@@ -467,7 +469,7 @@ export default function NewEvent() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Bus className="h-4 w-4" />
-                  Paradas del bus (opcional)
+                  {t('events.busStopsOptional')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -477,7 +479,7 @@ export default function NewEvent() {
                   </div>
                 ) : availableStops.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No hay paradas configuradas. Configúralas en Ajustes del Club.
+                    {t('events.noStopsConfiguredGoSettings')}
                   </p>
                 ) : (
                   availableStops.map(stop => (
@@ -504,7 +506,7 @@ export default function NewEvent() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Equipos que viajan *
+                  {t('events.travelingTeams')} *
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -535,7 +537,7 @@ export default function NewEvent() {
                           <div className="flex-1">
                             <span className="font-medium">{team.name}</span>
                             <span className="text-xs text-muted-foreground ml-2">
-                              ({teamPlayerCount} jugadoras)
+                              ({t('events.playersCountLabel', { count: teamPlayerCount })})
                             </span>
                           </div>
                         </label>
@@ -550,7 +552,7 @@ export default function NewEvent() {
             <div className="space-y-2">
               <Label htmlFor="totalCoaches" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Número de entrenadores/acompañantes
+                {t('events.numberOfCoaches')}
               </Label>
               <Input
                 id="totalCoaches"
@@ -566,10 +568,10 @@ export default function NewEvent() {
               <Card className="bg-blue-500/10 border-blue-500/30">
                 <CardContent className="p-4 space-y-2">
                   <p className="text-sm text-blue-700 font-medium">
-                    ℹ️ Tras crear el desplazamiento, cada entrenador podrá añadir las jugadoras de su equipo con la parada donde suben y si no vuelven en bus.
+                    ℹ️ {t('events.afterCreatingDisplacementInfo')}
                   </p>
                   <p className="text-xs text-blue-600">
-                    Equipos seleccionados: {selectedTeams.map(t => teams.find(tm => tm.id === t)?.name).join(', ')}
+                    {t('events.selectedTeamsLabel', { teams: selectedTeams.map(t => teams.find(tm => tm.id === t)?.name).join(', ') })}
                   </p>
                 </CardContent>
               </Card>
@@ -585,21 +587,21 @@ export default function NewEvent() {
                   {type === 'holiday' && <CalendarOff className="h-5 w-5 text-green-600" />}
                   {type === 'communication' && <Megaphone className="h-5 w-5 text-blue-600" />}
                   <span className="font-medium">
-                    {type === 'incident' && 'Incidencia de pista u otras'}
-                    {type === 'holiday' && 'Festivo o día sin actividad'}
-                    {type === 'communication' && 'Comunicación importante'}
+                    {type === 'incident' && t('events.incidentTitle')}
+                    {type === 'holiday' && t('events.holidayTitle')}
+                    {type === 'communication' && t('events.communicationTitle')}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {type === 'incident' && 'Informa sobre problemas con pistas, cambios de horario, etc.'}
-                  {type === 'holiday' && 'Marca días festivos o sin entrenamientos.'}
-                  {type === 'communication' && 'Envía información importante a los equipos.'}
+                  {type === 'incident' && t('events.incidentDesc')}
+                  {type === 'holiday' && t('events.holidayDesc')}
+                  {type === 'communication' && t('events.communicationDesc')}
                 </p>
               </CardContent>
             </Card>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Fecha *</Label>
+              <Label htmlFor="date">{t('events.date')} *</Label>
               <Input
                 id="date"
                 type="date"
@@ -610,7 +612,7 @@ export default function NewEvent() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="time">Hora (opcional)</Label>
+              <Label htmlFor="time">{t('events.timeOptional')}</Label>
               <select
                 id="time"
                 className={nativeSelectClassName}
@@ -618,7 +620,7 @@ export default function NewEvent() {
                 onChange={(e) => setTime(e.target.value)}
                 disabled={loading}
               >
-                <option value="">Todo el día</option>
+                <option value="">{t('events.allDay')}</option>
                 {timeOptions.map((t) => (
                   <option key={t} value={t}>
                     {t}
@@ -628,12 +630,12 @@ export default function NewEvent() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">Lugar afectado (opcional)</Label>
+              <Label htmlFor="location">{t('events.affectedLocationOptional')}</Label>
               <Input
                 id="location"
                 value={location}
                 onChange={e => setLocation(e.target.value)}
-                placeholder="Ej: Pabellón principal, Sala 2..."
+                placeholder={t('events.affectedLocationPlaceholder')}
                 disabled={loading}
               />
             </div>
@@ -643,7 +645,7 @@ export default function NewEvent() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Equipos afectados *
+                  {t('events.affectedTeamsLabel')} *
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -656,9 +658,9 @@ export default function NewEvent() {
                     disabled={loading}
                     className="h-4 w-4"
                   />
-                  <span className="font-medium">Todos los equipos</span>
+                  <span className="font-medium">{t('events.allTeams')}</span>
                 </label>
-                
+
                 <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors hover:bg-muted/50">
                   <input
                     type="radio"
@@ -668,7 +670,7 @@ export default function NewEvent() {
                     disabled={loading}
                     className="h-4 w-4"
                   />
-                  <span className="font-medium">Solo algunos equipos</span>
+                  <span className="font-medium">{t('events.someTeamsOnly')}</span>
                 </label>
 
                 {!affectsAllTeams && (
@@ -706,18 +708,18 @@ export default function NewEvent() {
             <div className="space-y-2">
               <Label htmlFor="notes" className="flex items-center gap-2">
                 <Info className="h-4 w-4" />
-                Descripción *
+                {t('events.descriptionLabel')} *
               </Label>
               <Textarea
                 id="notes"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder={
-                  type === 'incident' 
-                    ? 'Ej: La pista 1 estará cerrada por mantenimiento...'
+                  type === 'incident'
+                    ? t('events.incidentPlaceholder')
                     : type === 'holiday'
-                    ? 'Ej: Festivo local, no hay entrenamientos...'
-                    : 'Ej: Reunión de padres el próximo viernes...'
+                    ? t('events.holidayPlaceholder')
+                    : t('events.communicationPlaceholder')
                 }
                 rows={3}
                 disabled={loading}
@@ -728,7 +730,7 @@ export default function NewEvent() {
           <>
             {/* STANDARD EVENT FLOW */}
             <div className="space-y-2">
-              <Label htmlFor="teamId">Equipo *</Label>
+              <Label htmlFor="teamId">{t('events.teamLabel')} *</Label>
               {teamsLoading ? (
                 <div className="flex items-center justify-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
@@ -742,7 +744,7 @@ export default function NewEvent() {
                   disabled={loading}
                 >
                   <option value="" disabled>
-                    Selecciona equipo
+                    {t('events.selectTeamPlaceholder')}
                   </option>
                   {teams.map((team) => (
                     <option key={team.id} value={team.id}>
@@ -754,7 +756,7 @@ export default function NewEvent() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Fecha *</Label>
+              <Label htmlFor="date">{t('events.date')} *</Label>
               <Input
                 id="date"
                 type="date"
@@ -765,7 +767,7 @@ export default function NewEvent() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="time">Hora *</Label>
+              <Label htmlFor="time">{t('events.time')} *</Label>
               <select
                 id="time"
                 className={nativeSelectClassName}
@@ -774,7 +776,7 @@ export default function NewEvent() {
                 disabled={loading}
               >
                 <option value="" disabled>
-                  Selecciona hora
+                  {t('events.selectTime')}
                 </option>
                 {timeOptions.map((t) => (
                   <option key={t} value={t}>
@@ -785,12 +787,12 @@ export default function NewEvent() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">Ubicación *</Label>
+              <Label htmlFor="location">{t('events.locationLabelRequired')} *</Label>
               <Input
                 id="location"
                 value={location}
                 onChange={e => setLocation(e.target.value)}
-                placeholder="Pabellón, dirección..."
+                placeholder={t('events.locationPlaceholder')}
                 disabled={loading}
               />
             </div>
@@ -798,12 +800,12 @@ export default function NewEvent() {
             {/* Opponent field - only for matches */}
             {type === 'match' && (
               <div className="space-y-2">
-                <Label htmlFor="opponent">Adversario (opcional)</Label>
+                <Label htmlFor="opponent">{t('events.opponentOptional')}</Label>
                 <Input
                   id="opponent"
                   value={opponent}
                   onChange={e => setOpponent(e.target.value)}
-                  placeholder="Nombre del equipo rival..."
+                  placeholder={t('events.opponentPlaceholder')}
                   disabled={loading}
                 />
               </div>
@@ -812,12 +814,12 @@ export default function NewEvent() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="notes">Notas</Label>
+          <Label htmlFor="notes">{t('events.notes')}</Label>
           <Textarea
             id="notes"
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            placeholder="Información adicional..."
+            placeholder={t('events.additionalInfoPlaceholder')}
             rows={3}
             disabled={loading}
           />
@@ -829,7 +831,7 @@ export default function NewEvent() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Repeat className="h-4 w-4" />
-                Evento recurrente
+                {t('events.recurringEvent')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -839,13 +841,13 @@ export default function NewEvent() {
                   onCheckedChange={(checked) => setIsRecurring(checked === true)}
                   disabled={loading}
                 />
-                <span className="text-sm">Repetir este evento automáticamente</span>
+                <span className="text-sm">{t('events.repeatAutomatically')}</span>
               </label>
 
               {isRecurring && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="recurringPattern">Frecuencia</Label>
+                    <Label htmlFor="recurringPattern">{t('events.frequency')}</Label>
                     <select
                       id="recurringPattern"
                       className={nativeSelectClassName}
@@ -853,15 +855,15 @@ export default function NewEvent() {
                       onChange={(e) => setRecurringPattern(e.target.value as 'weekly' | 'biweekly')}
                       disabled={loading}
                     >
-                      <option value="weekly">Cada semana</option>
-                      <option value="biweekly">Cada 2 semanas</option>
+                      <option value="weekly">{t('events.everyWeek')}</option>
+                      <option value="biweekly">{t('events.everyTwoWeeks')}</option>
                     </select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="recurringEndDate" className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Hasta (opcional)
+                      {t('events.untilOptional')}
                     </Label>
                     <Input
                       id="recurringEndDate"
@@ -872,7 +874,7 @@ export default function NewEvent() {
                       disabled={loading}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Si no especificas fecha, se crearán eventos hasta fin de temporada
+                      {t('events.noEndDateHint')}
                     </p>
                   </div>
                 </>
@@ -888,10 +890,10 @@ export default function NewEvent() {
               <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  Eliminación automática de eventos
+                  {t('events.autoDeleteTitle')}
                 </p>
                 <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Los eventos se eliminan automáticamente 30 días después de su publicación para mantener el sistema organizado.
+                  {t('events.autoDeleteDesc')}
                 </p>
               </div>
             </div>
@@ -904,13 +906,13 @@ export default function NewEvent() {
               />
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">Mantener este evento guardado para siempre</span>
+                <span className="text-sm font-medium">{t('events.keepForeverLabel')}</span>
               </div>
             </label>
 
             {keepForever && (
               <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
-                ✓ Este evento no se eliminará automáticamente. Podrás eliminarlo manualmente cuando quieras.
+                ✓ {t('events.keepForeverConfirmed')}
               </p>
             )}
           </CardContent>
@@ -919,7 +921,7 @@ export default function NewEvent() {
         {/* Player selection for standard events only */}
         {type !== 'displacement' && teamId && (
           <div className="space-y-3">
-            <Label>Convocar jugadoras ({invitedPlayers.length})</Label>
+            <Label>{t('events.summonPlayers', { count: invitedPlayers.length })}</Label>
 
             <div className="w-full">
               <div className="inline-flex h-10 w-full items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
@@ -947,7 +949,7 @@ export default function NewEvent() {
                   onClick={() => setPlayerTab('other')}
                   disabled={loading}
                 >
-                  Otras ({otherPlayers.length})
+                  {t('events.otherPlayersTab', { count: otherPlayers.length })}
                 </button>
               </div>
 
@@ -955,7 +957,7 @@ export default function NewEvent() {
                 <div className="mt-3 space-y-2">
                   {teamPlayers.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4 text-sm">
-                      No hay jugadoras en este equipo
+                      {t('events.noPlayersInTeam')}
                     </p>
                   ) : (
                     <>
@@ -967,7 +969,7 @@ export default function NewEvent() {
                           onClick={allTeamSelected ? deselectAllTeam : selectAllTeam}
                           disabled={loading}
                         >
-                          {allTeamSelected ? 'Quitar todas' : 'Seleccionar todas'}
+                          {allTeamSelected ? t('events.removeAll') : t('events.selectAllPlayers')}
                         </Button>
                       </div>
                       {teamPlayers.map((player) => (
@@ -988,7 +990,7 @@ export default function NewEvent() {
                 <div className="mt-3 space-y-3">
                   {otherTeams.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4 text-sm">
-                      No hay otros equipos
+                      {t('events.noOtherTeams')}
                     </p>
                   ) : (
                     otherTeams.map((team) => {
@@ -1014,11 +1016,11 @@ export default function NewEvent() {
                               />
                               <span className="font-medium">{team.name}</span>
                               <span className="text-xs text-muted-foreground">
-                                ({teamOtherPlayers.length} jugadoras)
+                                ({t('events.playersCountLabel', { count: teamOtherPlayers.length })})
                               </span>
                               {selectedCount > 0 && (
                                 <Badge variant="default" className="ml-1">
-                                  {selectedCount} seleccionadas
+                                  {t('events.selectedCount', { count: selectedCount })}
                                 </Badge>
                               )}
                             </div>
@@ -1039,7 +1041,7 @@ export default function NewEvent() {
                                   onClick={() => allSelected ? deselectAllFromOtherTeam(team.id) : selectAllFromOtherTeam(team.id)}
                                   disabled={loading}
                                 >
-                                  {allSelected ? 'Quitar todas' : 'Seleccionar todas'}
+                                  {allSelected ? t('events.removeAll') : t('events.selectAllPlayers')}
                                 </Button>
                               </div>
                               {teamOtherPlayers.map((player) => (
@@ -1066,7 +1068,7 @@ export default function NewEvent() {
         )}
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Creando...' : type === 'displacement' ? 'Crear Desplazamiento' : 'Crear Evento'}
+          {loading ? t('events.creating') : type === 'displacement' ? t('events.createDisplacement') : t('events.create')}
         </Button>
       </form>
       <BottomNav />
