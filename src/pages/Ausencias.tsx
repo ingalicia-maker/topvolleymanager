@@ -36,7 +36,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
 
 export default function Ausencias() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { players } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
   const { ausencias, addAusencia, updateAusencia, deleteAusencia, isPlayerAbsent, getPlayerTeamAbsenceCount, getAbsencesByMonth } = useAusencias();
@@ -129,7 +129,7 @@ export default function Ausencias() {
 
   const getPlayerName = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
-    return player?.name || 'Jugadora desconocida';
+    return player?.name || t('ausencias.unknownPlayer');
   };
 
   // Statistics: total absences per player for this team
@@ -163,12 +163,12 @@ export default function Ausencias() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Ausencias" />
+      <Header title={t('ausencias.title')} />
 
       <div className="p-4 space-y-4">
         {/* Team Selector */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Equipo</label>
+          <label className="text-sm font-medium">{t('ausencias.team')}</label>
           <select
             className={nativeSelectClassName}
             value={selectedTeamId}
@@ -185,13 +185,13 @@ export default function Ausencias() {
               <CardContent className="p-4 text-center space-y-3">
                 <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto" />
                 <div>
-                  <p className="font-medium text-foreground">No tienes equipos asignados</p>
+                  <p className="font-medium text-foreground">{t('ausencias.noTeamsAssignedTitle')}</p>
                   <p className="text-sm text-muted-foreground">
-                    Configura tus equipos desde el panel principal para poder registrar ausencias.
+                    {t('ausencias.noTeamsAssignedDesc')}
                   </p>
                 </div>
                 <Button asChild>
-                  <a href="/">Configurar mis equipos</a>
+                  <a href="/">{t('ausencias.configureMyTeams')}</a>
                 </Button>
               </CardContent>
             </Card>
@@ -207,7 +207,7 @@ export default function Ausencias() {
               onClick={() => setActiveTab('registrar')}
             >
               <AlertTriangle className="h-3 w-3" />
-              Registrar
+              {t('ausencias.tabRegister')}
             </button>
             <button
               type="button"
@@ -215,7 +215,7 @@ export default function Ausencias() {
               onClick={() => setActiveTab('historial')}
             >
               <History className="h-3 w-3" />
-              Historial
+              {t('ausencias.tabHistory')}
             </button>
             <button
               type="button"
@@ -223,7 +223,7 @@ export default function Ausencias() {
               onClick={() => setActiveTab('estadisticas')}
             >
               <BarChart3 className="h-3 w-3" />
-              Totales
+              {t('ausencias.tabTotals')}
             </button>
           </div>
 
@@ -261,25 +261,25 @@ export default function Ausencias() {
                   size="sm"
                   onClick={() => setSelectedDate(new Date())}
                 >
-                  Hoy
+                  {t('ausencias.today')}
                 </Button>
               </div>
 
               {/* Summary */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {teamPlayers.length} jugadoras en {selectedTeam?.name}
+                  {t('ausencias.playersInTeam', { count: teamPlayers.length, team: selectedTeam?.name })}
                 </span>
                 <Badge variant="destructive" className="gap-1">
                   <AlertTriangle className="h-3 w-3" />
-                  {ausenciasForTeamDate.length} ausencias
+                  {t('ausencias.absencesCount', { count: ausenciasForTeamDate.length })}
                 </Badge>
               </div>
 
               {/* Player List */}
               {teamPlayers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No hay jugadoras en este equipo
+                  {t('events.noPlayersInTeam')}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -336,15 +336,15 @@ export default function Ausencias() {
                                       : "text-destructive" 
                                     : "text-green-600"
                                 )}>
-                                  {isAbsent 
-                                    ? ausencia.absence_type === 'justified' 
-                                      ? 'Ausente (Justificada)' 
-                                      : 'Ausente (No justificada)' 
-                                    : 'Presente'}
+                                  {isAbsent
+                                    ? ausencia.absence_type === 'justified'
+                                      ? t('ausencias.absentJustified')
+                                      : t('ausencias.absentUnjustified')
+                                    : t('ausencias.present')}
                                 </span>
                                 {totalAbsences > 0 && !isAbsent && (
                                   <Badge variant="secondary" className="text-[10px]">
-                                    {totalAbsences} ausencias
+                                    {t('ausencias.absencesCount', { count: totalAbsences })}
                                   </Badge>
                                 )}
                               </div>
@@ -359,7 +359,7 @@ export default function Ausencias() {
                                   className="text-green-600 border-green-600/50 hover:bg-green-500/10"
                                 >
                                   <CheckCircle className="h-3 w-3 mr-1" />
-                                  Presente
+                                  {t('ausencias.present')}
                                 </Button>
                               ) : (
                                 <>
@@ -378,7 +378,7 @@ export default function Ausencias() {
                                     }}
                                     className="text-amber-600 border-amber-600/50 hover:bg-amber-500/10 text-xs px-2"
                                   >
-                                    Justificada
+                                    {t('ausencias.justified')}
                                   </Button>
                                   <Button
                                     variant="destructive"
@@ -395,7 +395,7 @@ export default function Ausencias() {
                                     }}
                                     className="text-xs px-2"
                                   >
-                                    No justificada
+                                    {t('ausencias.unjustified')}
                                   </Button>
                                 </>
                               )}
@@ -416,7 +416,7 @@ export default function Ausencias() {
                                   onClick={() => handleUpdateAbsenceType(ausencia.id, 'justified')}
                                 >
                                   <CheckCircle className="h-3 w-3 mr-1" />
-                                  Justificada
+                                  {t('ausencias.justified')}
                                 </Button>
                                 <Button
                                   type="button"
@@ -426,11 +426,11 @@ export default function Ausencias() {
                                   onClick={() => handleUpdateAbsenceType(ausencia.id, 'unjustified')}
                                 >
                                   <AlertTriangle className="h-3 w-3 mr-1" />
-                                  No justificada
+                                  {t('ausencias.unjustified')}
                                 </Button>
                               </div>
                               <Textarea
-                                placeholder="Motivo (opcional)..."
+                                placeholder={t('ausencias.reasonPlaceholder')}
                                 value={editingReasons[ausencia.id] ?? ausencia.reason ?? ''}
                                 onChange={(e) => handleUpdateReason(ausencia.id, e.target.value)}
                                 onBlur={() => commitReasonUpdate(ausencia.id)}
@@ -453,7 +453,7 @@ export default function Ausencias() {
             <div className="mt-4 space-y-4">
               {sortedMonths.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No hay ausencias registradas para {selectedTeam?.name}
+                  {t('ausencias.noAbsencesRegisteredFor', { team: selectedTeam?.name })}
                 </p>
               ) : (
                 sortedMonths.map(month => {
@@ -475,7 +475,7 @@ export default function Ausencias() {
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="font-semibold capitalize">{monthFormatted}</h3>
-                          <Badge variant="secondary">{monthAusencias.length} ausencias</Badge>
+                          <Badge variant="secondary">{t('ausencias.absencesCount', { count: monthAusencias.length })}</Badge>
                         </div>
                         <div className="space-y-3">
                           {sortedDates.map(date => {
@@ -503,7 +503,7 @@ export default function Ausencias() {
                                             variant={ausencia.absence_type === 'justified' ? 'default' : 'destructive'}
                                             className="text-[10px] h-4"
                                           >
-                                            {ausencia.absence_type === 'justified' ? 'Justificada' : 'No justificada'}
+                                            {ausencia.absence_type === 'justified' ? t('ausencias.justified') : t('ausencias.unjustified')}
                                           </Badge>
                                         </div>
                                         {ausencia.reason && (
@@ -520,15 +520,15 @@ export default function Ausencias() {
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
                                           <AlertDialogHeader>
-                                            <AlertDialogTitle>¿Eliminar ausencia?</AlertDialogTitle>
+                                            <AlertDialogTitle>{t('ausencias.deleteAbsenceConfirmTitle')}</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                              Se eliminará la ausencia de {getPlayerName(ausencia.player_id)}.
+                                              {t('ausencias.deleteAbsenceConfirmDesc', { name: getPlayerName(ausencia.player_id) })}
                                             </AlertDialogDescription>
                                           </AlertDialogHeader>
                                           <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                                             <AlertDialogAction onClick={() => deleteAusencia(ausencia.id)}>
-                                              Eliminar
+                                              {t('common.delete')}
                                             </AlertDialogAction>
                                           </AlertDialogFooter>
                                         </AlertDialogContent>
@@ -563,7 +563,7 @@ export default function Ausencias() {
                   <div className="text-center mb-4">
                     <p className="text-3xl font-bold text-primary">{totalTeamAbsences}</p>
                     <p className="text-sm text-muted-foreground">
-                      ausencias totales en {selectedTeam?.name}
+                      {t('ausencias.totalAbsencesIn', { team: selectedTeam?.name })}
                     </p>
                   </div>
                 </CardContent>
@@ -571,12 +571,12 @@ export default function Ausencias() {
 
               {playerStats.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No hay jugadoras en este equipo
+                  {t('events.noPlayersInTeam')}
                 </p>
               ) : (
                 <Card>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold mb-3">Ausencias por jugadora</h3>
+                    <h3 className="font-semibold mb-3">{t('ausencias.absencesByPlayer')}</h3>
                     <div className="space-y-2">
                       {playerStats.map(({ player, totalAbsences, justified, unjustified }) => (
                         <div
@@ -592,12 +592,12 @@ export default function Ausencias() {
                           <div className="flex items-center gap-2">
                             {justified > 0 && (
                               <Badge variant="default" className="text-[10px]">
-                                {justified} J
+                                {justified} {t('ausencias.justifiedAbbr')}
                               </Badge>
                             )}
                             {unjustified > 0 && (
                               <Badge variant="destructive" className="text-[10px]">
-                                {unjustified} NJ
+                                {unjustified} {t('ausencias.unjustifiedAbbr')}
                               </Badge>
                             )}
                             <Badge
