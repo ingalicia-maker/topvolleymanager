@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useTranslation } from 'react-i18next';
 import { useClub } from '@/hooks/useClub';
 import { useStops } from '@/hooks/useStops';
 import { supabase } from '@/integrations/supabase/client';
@@ -75,6 +76,7 @@ interface MemberWithProfile {
 }
 
 export default function ClubManagement() {
+  const { t } = useTranslation();
   const {
     club,
     members,
@@ -171,12 +173,12 @@ export default function ClubManagement() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor selecciona una imagen');
+      toast.error(t('clubManagement.selectImage'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('La imagen debe ser menor a 5MB');
+      toast.error(t('clubManagement.imageSizeLimit'));
       return;
     }
 
@@ -189,7 +191,7 @@ export default function ClubManagement() {
       .upload(fileName, file, { upsert: true });
 
     if (uploadError) {
-      toast.error('Error al subir el logo');
+      toast.error(t('clubManagement.errorUploadingLogo'));
       setUploading(false);
       return;
     }
@@ -199,13 +201,13 @@ export default function ClubManagement() {
       .getPublicUrl(fileName);
 
     setLogoUrl(urlData.publicUrl);
-    toast.success('Logo subido correctamente');
+    toast.success(t('clubManagement.logoUploaded'));
     setUploading(false);
   };
 
   const handleSaveClub = async () => {
     if (!clubName.trim()) {
-      toast.error('El nombre del club es obligatorio');
+      toast.error(t('clubManagement.clubNameRequired'));
       return;
     }
 
@@ -220,15 +222,15 @@ export default function ClubManagement() {
     setSaving(false);
 
     if (success) {
-      toast.success('Configuración guardada. Recarga para ver los cambios.');
+      toast.success(t('clubManagement.settingsSaved'));
     } else {
-      toast.error('Error al actualizar el club');
+      toast.error(t('clubManagement.errorUpdatingClub'));
     }
   };
 
   const handleAddStop = async () => {
     if (!newStopName.trim()) {
-      toast.error('El nombre de la parada es obligatorio');
+      toast.error(t('clubManagement.stopNameRequired'));
       return;
     }
     setAddingStop(true);
@@ -239,7 +241,7 @@ export default function ClubManagement() {
 
   const handleEditStop = async (stopId: string) => {
     if (!editingStopName.trim()) {
-      toast.error('El nombre de la parada es obligatorio');
+      toast.error(t('clubManagement.stopNameRequired'));
       return;
     }
     const success = await updateStop(stopId, { name: editingStopName.trim() });
@@ -273,7 +275,7 @@ export default function ClubManagement() {
   const copyInviteLink = (token: string) => {
     const link = getInviteLink(token);
     navigator.clipboard.writeText(link);
-    toast.success('Enlace copiado al portapapeles');
+    toast.success(t('clubManagement.linkCopied'));
   };
 
   const openAndValidateInviteLink = async (token: string) => {
@@ -286,18 +288,18 @@ export default function ClubManagement() {
     try {
       const response = await fetch(link, { method: 'HEAD', mode: 'no-cors' });
       // With no-cors we can't read the status, so we just inform the user
-      toast.info('Enlace abierto en nueva pestaña. Verifica que carga correctamente.', {
+      toast.info(t('clubManagement.linkOpenedVerify'), {
         duration: 5000,
       });
     } catch (error) {
       // If fetch fails, the window might still work (CORS restrictions)
       if (!newWindow || newWindow.closed) {
-        toast.error('No se pudo abrir el enlace. Verifica que la app está publicada.', {
+        toast.error(t('clubManagement.linkOpenFailed'), {
           duration: 5000,
-          description: 'Si ves un error 404, necesitas publicar la aplicación.',
+          description: t('clubManagement.error404Hint'),
         });
       } else {
-        toast.info('Enlace abierto. Si ves un error 404, republica la app.', {
+        toast.info(t('clubManagement.linkOpenedRepublish'), {
           duration: 5000,
         });
       }
@@ -307,9 +309,9 @@ export default function ClubManagement() {
   const handleDeleteInvitation = async (id: string) => {
     const success = await deleteInvitation(id);
     if (success) {
-      toast.success('Invitación eliminada');
+      toast.success(t('clubManagement.invitationDeleted'));
     } else {
-      toast.error('Error al eliminar la invitación');
+      toast.error(t('clubManagement.errorDeletingInvitation'));
     }
   };
 
@@ -317,7 +319,7 @@ export default function ClubManagement() {
     // Delete the old one and create a new one with same role
     const deleted = await deleteInvitation(oldInvitation.id);
     if (!deleted) {
-      toast.error('Error al regenerar la invitación');
+      toast.error(t('clubManagement.errorRegeneratingInvitation'));
       return;
     }
     
@@ -326,52 +328,52 @@ export default function ClubManagement() {
       setLastInviteToken(invitation.token);
       try {
         await navigator.clipboard.writeText(getInviteLink(invitation.token));
-        toast.success('Enlace regenerado y copiado');
+        toast.success(t('clubManagement.linkRegeneratedCopied'));
       } catch {
-        toast.success('Enlace regenerado. ¡Cópialo!');
+        toast.success(t('clubManagement.linkRegenerated'));
       }
     } else {
-      toast.error(error || 'Error al regenerar la invitación');
+      toast.error(error || t('clubManagement.errorRegeneratingInvitation'));
     }
   };
 
   const getInvitationStatus = (inv: typeof invitations[0]) => {
     if (inv.used_at) {
-      return { status: 'used', label: 'Usada', color: 'text-green-600', icon: CheckCircle2 };
+      return { status: 'used', label: t('clubManagement.statusUsed'), color: 'text-green-600', icon: CheckCircle2 };
     }
     if (new Date(inv.expires_at) < new Date()) {
-      return { status: 'expired', label: 'Expirada', color: 'text-destructive', icon: XCircle };
+      return { status: 'expired', label: t('clubManagement.statusExpired'), color: 'text-destructive', icon: XCircle };
     }
-    return { status: 'active', label: 'Activa', color: 'text-primary', icon: Clock };
+    return { status: 'active', label: t('clubManagement.statusActive'), color: 'text-primary', icon: Clock };
   };
 
   const handleRemoveMember = async (memberId: string) => {
     const success = await removeMember(memberId);
     if (success) {
-      toast.success('Miembro eliminado');
+      toast.success(t('clubManagement.memberRemoved'));
       refetch();
     } else {
-      toast.error('Error al eliminar el miembro');
+      toast.error(t('clubManagement.errorRemovingMember'));
     }
   };
 
   const handlePromoteToDirector = async (memberId: string, memberName: string) => {
     const success = await updateMemberRole(memberId, 'director');
     if (success) {
-      toast.success(`${memberName} ahora es Director Deportivo`);
+      toast.success(t('clubManagement.nowDirector', { name: memberName }));
       refetch();
     } else {
-      toast.error('Error al actualizar el rol');
+      toast.error(t('clubManagement.errorUpdatingRole'));
     }
   };
 
   const handleDemoteToCoach = async (memberId: string, memberName: string) => {
     const success = await updateMemberRole(memberId, 'coach');
     if (success) {
-      toast.success(`${memberName} ahora es Entrenador`);
+      toast.success(t('clubManagement.nowCoach', { name: memberName }));
       refetch();
     } else {
-      toast.error('Error al actualizar el rol');
+      toast.error(t('clubManagement.errorUpdatingRole'));
     }
   };
 
@@ -390,12 +392,12 @@ export default function ClubManagement() {
       // Best effort: auto-copy
       try {
         await navigator.clipboard.writeText(getInviteLink(invitation.token));
-        toast.success('Enlace de invitación creado y copiado');
+        toast.success(t('clubManagement.inviteLinkCreatedCopied'));
       } catch {
-        toast.success('Enlace de invitación creado. ¡Cópialo y compártelo!');
+        toast.success(t('clubManagement.inviteLinkCreated'));
       }
     } else {
-      toast.error(error || 'Error al crear la invitación');
+      toast.error(error || t('clubManagement.errorCreatingInvitation'));
     }
   };
 
@@ -412,16 +414,16 @@ export default function ClubManagement() {
     setSavingLegal(false);
 
     if (success) {
-      toast.success('Configuración legal guardada correctamente');
+      toast.success(t('clubManagement.legalSettingsSaved'));
     } else {
-      toast.error('Error al guardar la configuración legal');
+      toast.error(t('clubManagement.errorSavingLegal'));
     }
   };
 
   if (!club) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Gestión del Club" showBack backTo="/profile" />
+        <Header title={t('clubManagement.title')} showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -432,30 +434,30 @@ export default function ClubManagement() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Gestión del Club" showBack backTo="/profile" />
+      <Header title={t('clubManagement.title')} showBack backTo="/profile" />
 
       <div className="p-4">
         <Tabs defaultValue="general">
           <TabsList className="w-full mb-4 grid grid-cols-5">
             <TabsTrigger value="general" className="gap-1 text-xs sm:text-sm">
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">General</span>
+              <span className="hidden sm:inline">{t('clubManagement.tabGeneral')}</span>
             </TabsTrigger>
             <TabsTrigger value="visual" className="gap-1 text-xs sm:text-sm">
               <Palette className="h-4 w-4" />
-              <span className="hidden sm:inline">Visual</span>
+              <span className="hidden sm:inline">{t('clubManagement.tabVisual')}</span>
             </TabsTrigger>
             <TabsTrigger value="legal" className="gap-1 text-xs sm:text-sm">
               <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Legal</span>
+              <span className="hidden sm:inline">{t('clubManagement.tabLegal')}</span>
             </TabsTrigger>
             <TabsTrigger value="members" className="gap-1 text-xs sm:text-sm">
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Miembros</span>
+              <span className="hidden sm:inline">{t('clubManagement.tabMembers')}</span>
             </TabsTrigger>
             <TabsTrigger value="invitations" className="gap-1 text-xs sm:text-sm">
               <Link2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Invitar</span>
+              <span className="hidden sm:inline">{t('clubManagement.tabInvite')}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -464,13 +466,13 @@ export default function ClubManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5" />
-                  Identidad del Club
+                  {t('clubManagement.clubIdentity')}
                 </CardTitle>
-                <CardDescription>Nombre y escudo del club</CardDescription>
+                <CardDescription>{t('clubManagement.nameAndCrest')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="clubName">Nombre del club</Label>
+                  <Label htmlFor="clubName">{t('clubManagement.clubName')}</Label>
                   <Input
                     id="clubName"
                     value={clubName}
@@ -481,7 +483,7 @@ export default function ClubManagement() {
 
                 {isDirector && (
                   <div className="space-y-2">
-                    <Label>Escudo del Club</Label>
+                    <Label>{t('clubManagement.clubCrest')}</Label>
                     <div className="flex items-center gap-4">
                       {logoUrl ? (
                         <img src={logoUrl} alt="Logo" className="w-20 h-20 object-contain rounded-lg border bg-background" />
@@ -494,9 +496,9 @@ export default function ClubManagement() {
                         <input type="file" ref={fileInputRef} onChange={handleLogoUpload} accept="image/*" className="hidden" />
                         <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="gap-2">
                           <Upload className="h-4 w-4" />
-                          {uploading ? 'Subiendo...' : 'Subir escudo'}
+                          {uploading ? t('clubManagement.uploading') : t('clubManagement.uploadCrest')}
                         </Button>
-                        <p className="text-xs text-muted-foreground mt-1">PNG, JPG hasta 5MB</p>
+                        <p className="text-xs text-muted-foreground mt-1">{t('clubManagement.imageFormatHint')}</p>
                       </div>
                     </div>
                   </div>
@@ -510,9 +512,9 @@ export default function ClubManagement() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Bus className="h-5 w-5" />
-                    Paradas de Bus
+                    {t('clubManagement.busStops')}
                   </CardTitle>
-                  <CardDescription>Configura las paradas para desplazamientos</CardDescription>
+                  <CardDescription>{t('clubManagement.configureStops')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {stopsLoading ? (
@@ -528,13 +530,13 @@ export default function ClubManagement() {
                             {editingStopId === stop.id ? (
                               <>
                                 <Input value={editingStopName} onChange={(e) => setEditingStopName(e.target.value)} className="flex-1" autoFocus />
-                                <Button size="sm" onClick={() => handleEditStop(stop.id)}>Guardar</Button>
-                                <Button size="sm" variant="outline" onClick={() => { setEditingStopId(null); setEditingStopName(''); }}>Cancelar</Button>
+                                <Button size="sm" onClick={() => handleEditStop(stop.id)}>{t('clubManagement.save')}</Button>
+                                <Button size="sm" variant="outline" onClick={() => { setEditingStopId(null); setEditingStopName(''); }}>{t('clubManagement.cancel')}</Button>
                               </>
                             ) : (
                               <>
                                 <span className="flex-1 font-medium">{stop.name}</span>
-                                <Button size="sm" variant="ghost" onClick={() => { setEditingStopId(stop.id); setEditingStopName(stop.name); }}>Editar</Button>
+                                <Button size="sm" variant="ghost" onClick={() => { setEditingStopId(stop.id); setEditingStopName(stop.name); }}>{t('clubManagement.edit')}</Button>
                                 <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDeleteStop(stop.id)}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -542,13 +544,13 @@ export default function ClubManagement() {
                             )}
                           </div>
                         ))}
-                        {stops.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No hay paradas configuradas</p>}
+                        {stops.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">{t('clubManagement.noStopsConfigured')}</p>}
                       </div>
                       <div className="flex gap-2">
-                        <Input placeholder="Nueva parada" value={newStopName} onChange={(e) => setNewStopName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddStop()} />
+                        <Input placeholder={t('clubManagement.newStopPlaceholder')} value={newStopName} onChange={(e) => setNewStopName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddStop()} />
                         <Button onClick={handleAddStop} disabled={addingStop || !newStopName.trim()} className="gap-2 shrink-0">
                           <Plus className="h-4 w-4" />
-                          Añadir
+                          {t('clubManagement.add')}
                         </Button>
                       </div>
                     </>
@@ -560,7 +562,7 @@ export default function ClubManagement() {
             {isDirector && (
               <Button onClick={handleSaveClub} disabled={saving} className="w-full">
                 {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Guardar cambios
+                {t('clubManagement.saveChanges')}
               </Button>
             )}
           </TabsContent>
@@ -569,7 +571,7 @@ export default function ClubManagement() {
             {!isDirector ? (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  Solo los directores pueden modificar la configuración visual.
+                  {t('clubManagement.onlyDirectorsVisual')}
                 </CardContent>
               </Card>
             ) : (
@@ -578,13 +580,13 @@ export default function ClubManagement() {
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Palette className="h-5 w-5" />
-                      Colores
+                      {t('clubManagement.colors')}
                     </CardTitle>
-                    <CardDescription>Personaliza los colores de la interfaz</CardDescription>
+                    <CardDescription>{t('clubManagement.customizeColors')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Color Principal</Label>
+                      <Label>{t('clubManagement.primaryColor')}</Label>
                       <div className="grid grid-cols-4 gap-2">
                         {COLOR_PRESETS.map((color) => (
                           <button
@@ -598,11 +600,11 @@ export default function ClubManagement() {
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Seleccionado: {COLOR_PRESETS.find(c => c.value === primaryColor)?.name || 'Personalizado'}
+                        {t('clubManagement.selected')}: {COLOR_PRESETS.find(c => c.value === primaryColor)?.name || t('clubManagement.custom')}
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label>Color de Acento</Label>
+                      <Label>{t('clubManagement.accentColor')}</Label>
                       <div className="grid grid-cols-4 gap-2">
                         {COLOR_PRESETS.map((color) => (
                           <button
@@ -616,7 +618,7 @@ export default function ClubManagement() {
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Seleccionado: {COLOR_PRESETS.find(c => c.value === accentColor)?.name || 'Personalizado'}
+                        {t('clubManagement.selected')}: {COLOR_PRESETS.find(c => c.value === accentColor)?.name || t('clubManagement.custom')}
                       </p>
                     </div>
                   </CardContent>
@@ -626,14 +628,14 @@ export default function ClubManagement() {
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Type className="h-5 w-5" />
-                      Tipografía
+                      {t('clubManagement.typography')}
                     </CardTitle>
-                    <CardDescription>Elige la fuente de la aplicación</CardDescription>
+                    <CardDescription>{t('clubManagement.chooseFont')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Select value={fontFamily} onValueChange={setFontFamily}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona una fuente" />
+                        <SelectValue placeholder={t('clubManagement.selectFont')} />
                       </SelectTrigger>
                       <SelectContent>
                         {FONT_OPTIONS.map((font) => (
@@ -646,7 +648,7 @@ export default function ClubManagement() {
 
                 <Button onClick={handleSaveClub} disabled={saving} className="w-full">
                   {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  Guardar configuración visual
+                  {t('clubManagement.saveVisualSettings')}
                 </Button>
               </>
             )}
@@ -656,7 +658,7 @@ export default function ClubManagement() {
             {!isDirector ? (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  Solo los directores pueden modificar la configuración legal.
+                  {t('clubManagement.onlyDirectorsLegal')}
                 </CardContent>
               </Card>
             ) : (
@@ -665,22 +667,22 @@ export default function ClubManagement() {
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <User className="h-5 w-5" />
-                      Responsable del Tratamiento
+                      {t('clubManagement.dataController')}
                     </CardTitle>
-                    <CardDescription>Datos del Director Deportivo responsable del club</CardDescription>
+                    <CardDescription>{t('clubManagement.directorDataDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="responsibleName">Nombre del responsable</Label>
+                      <Label htmlFor="responsibleName">{t('clubManagement.responsibleName')}</Label>
                       <Input
                         id="responsibleName"
                         value={responsiblePersonName}
                         onChange={(e) => setResponsiblePersonName(e.target.value)}
-                        placeholder="Nombre y apellidos del Director Deportivo"
+                        placeholder={t('clubManagement.responsibleNamePlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="responsibleEmail">Email de contacto</Label>
+                      <Label htmlFor="responsibleEmail">{t('clubManagement.contactEmail')}</Label>
                       <Input
                         id="responsibleEmail"
                         type="email"
@@ -696,21 +698,21 @@ export default function ClubManagement() {
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <FileText className="h-5 w-5" />
-                      Términos y Condiciones del Club
+                      {t('clubManagement.clubTerms')}
                     </CardTitle>
                     <CardDescription>
-                      Condiciones de uso y tratamiento de datos personales. Este texto se muestra a los usuarios al registrarse.
+                      {t('clubManagement.clubTermsDescription')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Textarea
                       value={termsAndConditions}
                       onChange={(e) => setTermsAndConditions(e.target.value)}
-                      placeholder="Escribe aquí los términos y condiciones del club..."
+                      placeholder={t('clubManagement.termsPlaceholder')}
                       className="min-h-[200px] font-mono text-xs"
                     />
                     <p className="text-xs text-muted-foreground mt-2">
-                      Se recomienda incluir: finalidad del tratamiento, base legal, destinatarios, derechos y conservación de datos.
+                      {t('clubManagement.termsHint')}
                     </p>
                   </CardContent>
                 </Card>
@@ -719,28 +721,28 @@ export default function ClubManagement() {
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Shield className="h-5 w-5" />
-                      Código de Responsabilidad
+                      {t('clubManagement.responsibilityCode')}
                     </CardTitle>
                     <CardDescription>
-                      Los nuevos miembros deberán aceptar este código al unirse al club. Define las normas de uso de datos.
+                      {t('clubManagement.responsibilityCodeDescription')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Textarea
                       value={responsibilityCode}
                       onChange={(e) => setResponsibilityCode(e.target.value)}
-                      placeholder="Escribe aquí el código de responsabilidad del club..."
+                      placeholder={t('clubManagement.responsibilityCodePlaceholder')}
                       className="min-h-[200px] font-mono text-xs"
                     />
                     <p className="text-xs text-muted-foreground mt-2">
-                      Se recomienda incluir: confidencialidad, uso responsable, respeto a la privacidad y cumplimiento legal (RGPD).
+                      {t('clubManagement.responsibilityCodeHint')}
                     </p>
                   </CardContent>
                 </Card>
 
                 <Button onClick={handleSaveLegalSettings} disabled={savingLegal} className="w-full">
                   {savingLegal && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  Guardar configuración legal
+                  {t('clubManagement.saveLegalSettings')}
                 </Button>
               </>
             )}
@@ -751,10 +753,10 @@ export default function ClubManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Miembros del Club
+                  {t('clubManagement.clubMembers')}
                 </CardTitle>
                 <CardDescription>
-                  {members.length} miembro{members.length !== 1 ? 's' : ''}
+                  {t('clubManagement.memberCount', { count: members.length })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -778,7 +780,7 @@ export default function ClubManagement() {
                         </div>
                         <div>
                           <p className="font-medium">
-                            {member.profile?.name || 'Usuario'}
+                            {member.profile?.name || t('clubManagement.defaultUserName')}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {member.profile?.email}
@@ -789,7 +791,7 @@ export default function ClubManagement() {
                         <Badge
                           variant={member.role === 'director' ? 'default' : 'secondary'}
                         >
-                          {member.role === 'director' ? 'Director' : 'Entrenador'}
+                          {member.role === 'director' ? t('auth.director') : t('auth.coach')}
                         </Badge>
                         {isDirector && member.role !== 'director' && (
                           <>
@@ -797,24 +799,24 @@ export default function ClubManagement() {
                               <AlertDialogTrigger asChild>
                                 <Button variant="outline" size="sm" className="gap-1">
                                   <Crown className="h-3 w-3" />
-                                  <span className="hidden sm:inline">Hacer Director</span>
+                                  <span className="hidden sm:inline">{t('clubManagement.makeDirector')}</span>
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
-                                    ¿Conceder permisos de Director?
+                                    {t('clubManagement.confirmGrantDirectorTitle')}
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    {member.profile?.name} tendrá permisos completos de Director Deportivo: gestionar equipos, jugadoras, invitaciones y configuración del club.
+                                    {t('clubManagement.confirmGrantDirectorDescription', { name: member.profile?.name })}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogCancel>{t('clubManagement.cancel')}</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => handlePromoteToDirector(member.id, member.profile?.name || 'Usuario')}
+                                    onClick={() => handlePromoteToDirector(member.id, member.profile?.name || t('clubManagement.defaultUserName'))}
                                   >
-                                    Confirmar
+                                    {t('clubManagement.confirm')}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -828,18 +830,18 @@ export default function ClubManagement() {
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
-                                    ¿Eliminar miembro?
+                                    {t('clubManagement.confirmRemoveMemberTitle')}
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    {member.profile?.name} será eliminado del club.
+                                    {t('clubManagement.confirmRemoveMemberDescription', { name: member.profile?.name })}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogCancel>{t('clubManagement.cancel')}</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => handleRemoveMember(member.id)}
                                   >
-                                    Eliminar
+                                    {t('clubManagement.remove')}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -851,24 +853,24 @@ export default function ClubManagement() {
                             <AlertDialogTrigger asChild>
                               <Button variant="outline" size="sm" className="gap-1">
                                 <User className="h-3 w-3" />
-                                <span className="hidden sm:inline">Hacer Entrenador</span>
+                                <span className="hidden sm:inline">{t('clubManagement.makeCoach')}</span>
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  ¿Revocar permisos de Director?
+                                  {t('clubManagement.confirmRevokeDirectorTitle')}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  {member.profile?.name} pasará a ser Entrenador y perderá los permisos de gestión del club.
+                                  {t('clubManagement.confirmRevokeDirectorDescription', { name: member.profile?.name })}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogCancel>{t('clubManagement.cancel')}</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleDemoteToCoach(member.id, member.profile?.name || 'Usuario')}
+                                  onClick={() => handleDemoteToCoach(member.id, member.profile?.name || t('clubManagement.defaultUserName'))}
                                 >
-                                  Confirmar
+                                  {t('clubManagement.confirm')}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -887,16 +889,16 @@ export default function ClubManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <UserPlus className="h-5 w-5" />
-                  Invitar Miembros
+                  {t('clubManagement.inviteMembers')}
                 </CardTitle>
                 <CardDescription>
-                  Genera un código de invitación que pueden introducir al registrarse
+                  {t('clubManagement.generateInviteHint')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {isDirector ? (
                   <div className="space-y-2">
-                    <Label>Rol del invitado</Label>
+                    <Label>{t('clubManagement.inviteeRole')}</Label>
                     <Select
                       value={inviteRole}
                       onValueChange={(v) => setInviteRole(v as 'coach' | 'director')}
@@ -905,14 +907,14 @@ export default function ClubManagement() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="coach">Entrenador</SelectItem>
-                        <SelectItem value="director">Director Deportivo</SelectItem>
+                        <SelectItem value="coach">{t('auth.coach')}</SelectItem>
+                        <SelectItem value="director">{t('auth.director')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Como entrenador, puedes invitar a otros entrenadores al club. El director deportivo será notificado de la invitación.
+                    {t('clubManagement.coachInviteHint')}
                   </p>
                 )}
                 <Button onClick={handleCreateInvitation} disabled={creatingInvite} className="w-full">
@@ -921,12 +923,12 @@ export default function ClubManagement() {
                   ) : (
                     <Plus className="h-4 w-4 mr-2" />
                   )}
-                  Generar código de invitación
+                  {t('clubManagement.generateInviteCode')}
                 </Button>
 
                 {lastInviteToken && (
                   <div className="space-y-3 p-4 rounded-lg border-2 border-primary/50 bg-primary/5">
-                    <Label className="text-sm font-medium">Código de invitación generado</Label>
+                    <Label className="text-sm font-medium">{t('clubManagement.generatedInviteCode')}</Label>
                     <div className="flex items-center justify-center gap-2">
                       <div className="text-3xl font-mono font-bold tracking-widest text-primary bg-background px-4 py-2 rounded-lg border">
                         {invitations.find(i => i.token === lastInviteToken)?.short_code || '------'}
@@ -938,7 +940,7 @@ export default function ClubManagement() {
                           const code = invitations.find(i => i.token === lastInviteToken)?.short_code;
                           if (code) {
                             navigator.clipboard.writeText(code);
-                            toast.success('Código copiado');
+                            toast.success(t('clubManagement.codeCopied'));
                           }
                         }}
                         className="shrink-0"
@@ -947,11 +949,11 @@ export default function ClubManagement() {
                       </Button>
                     </div>
                     <p className="text-xs text-center text-muted-foreground">
-                      Comparte este código con el nuevo miembro para que lo introduzca al registrarse
+                      {t('clubManagement.shareCodeHint')}
                     </p>
-                    
+
                     <div className="border-t pt-3 mt-3">
-                      <Label className="text-xs text-muted-foreground">O comparte el enlace directo:</Label>
+                      <Label className="text-xs text-muted-foreground">{t('clubManagement.orShareLink')}</Label>
                       <div className="flex items-center gap-2 mt-1">
                         <Input
                           value={getInviteLink(lastInviteToken)}
@@ -972,7 +974,7 @@ export default function ClubManagement() {
                 )}
 
                 <p className="text-xs text-muted-foreground text-center">
-                  El código será válido por 7 días
+                  {t('clubManagement.codeValidFor7Days')}
                 </p>
               </CardContent>
             </Card>
@@ -982,10 +984,10 @@ export default function ClubManagement() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Link2 className="h-5 w-5" />
-                    Historial de invitaciones
+                    {t('clubManagement.invitationHistory')}
                   </CardTitle>
                   <CardDescription>
-                    Todas las invitaciones generadas (activas, usadas y expiradas)
+                    {t('clubManagement.allInvitationsGenerated')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -1010,7 +1012,7 @@ export default function ClubManagement() {
                               </span>
                             )}
                             <Badge variant={inv.role === 'director' ? 'default' : 'secondary'}>
-                              {inv.role === 'director' ? 'Director' : 'Entrenador'}
+                              {inv.role === 'director' ? t('auth.director') : t('auth.coach')}
                             </Badge>
                             <span className={`text-xs font-medium flex items-center gap-1 ${color}`}>
                               <StatusIcon className="h-3 w-3" />
@@ -1019,8 +1021,8 @@ export default function ClubManagement() {
                           </div>
                           <span className="text-xs text-muted-foreground">
                             {status === 'used'
-                              ? `Usada: ${new Date(inv.used_at!).toLocaleDateString()}`
-                              : `Expira: ${new Date(inv.expires_at).toLocaleDateString()}`}
+                              ? t('clubManagement.usedOn', { date: new Date(inv.used_at!).toLocaleDateString() })
+                              : t('clubManagement.expiresOn', { date: new Date(inv.expires_at).toLocaleDateString() })}
                           </span>
                         </div>
 
@@ -1033,12 +1035,12 @@ export default function ClubManagement() {
                                 size="sm"
                                 onClick={() => {
                                   navigator.clipboard.writeText(shortCode);
-                                  toast.success('Código copiado');
+                                  toast.success(t('clubManagement.codeCopied'));
                                 }}
                                 className="shrink-0 gap-2"
                               >
                                 <Copy className="h-4 w-4" />
-                                Copiar código
+                                {t('clubManagement.copyCode')}
                               </Button>
                             )}
                             <Button
@@ -1048,7 +1050,7 @@ export default function ClubManagement() {
                               className="shrink-0 gap-2 text-muted-foreground"
                             >
                               <Link2 className="h-4 w-4" />
-                              Copiar enlace
+                              {t('clubManagement.copyLink')}
                             </Button>
                           </div>
                         )}
@@ -1070,7 +1072,7 @@ export default function ClubManagement() {
                                 className="gap-1"
                               >
                                 <RefreshCw className="h-4 w-4" />
-                                Regenerar
+                                {t('clubManagement.regenerate')}
                               </Button>
                             )}
                             <Button
@@ -1080,7 +1082,7 @@ export default function ClubManagement() {
                               className="text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
-                              Eliminar
+                              {t('clubManagement.remove')}
                             </Button>
                           </div>
                         </div>
