@@ -339,13 +339,13 @@ export default function PlayerDetail() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Solo se permiten imágenes');
+      toast.error(t('players.imagesOnly'));
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('La imagen debe ser menor a 5MB');
+      toast.error(t('clubManagement.imageSizeLimit'));
       return;
     }
 
@@ -372,10 +372,10 @@ export default function PlayerDetail() {
 
       // Store only the file path (not full URL) for signed URL generation
       setPhotoUrl(fileName);
-      toast.success('Foto subida correctamente');
+      toast.success(t('players.photoUploaded'));
     } catch (error) {
       console.error('Error uploading photo:', error);
-      toast.error('Error al subir la foto');
+      toast.error(t('players.errorUploadingPhoto'));
     } finally {
       setUploadingPhoto(false);
     }
@@ -394,10 +394,10 @@ export default function PlayerDetail() {
         await supabase.storage.from('player-photos').remove([fileName]);
       }
       setPhotoUrl(null);
-      toast.success('Foto eliminada');
+      toast.success(t('players.photoDeleted'));
     } catch (error) {
       console.error('Error removing photo:', error);
-      toast.error('Error al eliminar la foto');
+      toast.error(t('players.errorDeletingPhoto'));
     }
   };
 
@@ -405,15 +405,15 @@ export default function PlayerDetail() {
     if (!playerId) return;
 
     if (!name.trim()) {
-      toast.error('El nombre es obligatorio');
+      toast.error(t('auth.nameRequired'));
       return;
     }
     if (!phone.trim()) {
-      toast.error('El teléfono es obligatorio');
+      toast.error(t('players.phoneRequired'));
       return;
     }
     if (selectedTeams.length === 0) {
-      toast.error('Selecciona al menos un equipo');
+      toast.error(t('players.selectAtLeastOneTeam'));
       return;
     }
 
@@ -483,7 +483,7 @@ export default function PlayerDetail() {
   if (loading || teamsLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Cargando..." showBack />
+        <Header title={t('common.loading')} showBack />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -495,7 +495,7 @@ export default function PlayerDetail() {
   if (!player) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Jugadora no encontrada" showBack />
+        <Header title={t('players.playerNotFound')} showBack />
         <BottomNav />
       </div>
     );
@@ -509,7 +509,7 @@ export default function PlayerDetail() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Editar Jugadora" showBack />
+      <Header title={t('players.editPlayer')} showBack />
 
       <div className="p-4 space-y-4">
         {/* Player Header with Photo */}
@@ -546,7 +546,7 @@ export default function PlayerDetail() {
             <div className="flex-1">
               <h2 className="font-bold text-lg">{fullName}</h2>
               {player.birth_year && (
-                <p className="text-sm text-muted-foreground">Nacida en {player.birth_year}</p>
+                <p className="text-sm text-muted-foreground">{t('players.bornIn', { year: player.birth_year })}</p>
               )}
               {photoUrl && (
                 <Button
@@ -555,7 +555,7 @@ export default function PlayerDetail() {
                   className="text-destructive p-0 h-auto text-xs"
                   onClick={handleRemovePhoto}
                 >
-                  Eliminar foto
+                  {t('players.deletePhoto')}
                 </Button>
               )}
             </div>
@@ -796,38 +796,38 @@ export default function PlayerDetail() {
         {/* Edit Form */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Datos Personales</CardTitle>
+            <CardTitle className="text-base">{t('players.personalData')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre *</Label>
+              <Label htmlFor="name">{t('players.name')} *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="Nombre"
+                placeholder={t('players.namePlaceholder')}
                 disabled={saving}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="surname1">Primer Apellido</Label>
+                <Label htmlFor="surname1">{t('players.surname1')}</Label>
                 <Input
                   id="surname1"
                   value={surname1}
                   onChange={e => setSurname1(e.target.value)}
-                  placeholder="Opcional"
+                  placeholder={t('common.optional')}
                   disabled={saving}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="surname2">Segundo Apellido</Label>
+                <Label htmlFor="surname2">{t('players.surname2')}</Label>
                 <Input
                   id="surname2"
                   value={surname2}
                   onChange={e => setSurname2(e.target.value)}
-                  placeholder="Opcional"
+                  placeholder={t('common.optional')}
                   disabled={saving}
                 />
               </div>
@@ -887,18 +887,18 @@ export default function PlayerDetail() {
 
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="number">Nº Camiseta</Label>
+                <Label htmlFor="number">{t('players.number')}</Label>
                 <Input
                   id="number"
                   type="number"
                   value={number}
                   onChange={e => setNumber(e.target.value)}
-                  placeholder="Ej: 7"
+                  placeholder={t('players.jerseyNumberPlaceholder')}
                   disabled={saving}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="birthYear">Año Nac.</Label>
+                <Label htmlFor="birthYear">{t('players.birthYear')}</Label>
                 <Input
                   id="birthYear"
                   type="number"
@@ -909,7 +909,7 @@ export default function PlayerDetail() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="height">Altura (cm)</Label>
+                <Label htmlFor="height">{t('players.height')}</Label>
                 <Input
                   id="height"
                   type="number"
@@ -1016,7 +1016,7 @@ export default function PlayerDetail() {
                                   <Input
                                     value={entry.value}
                                     onChange={(e) => handleUpdateMeasurement(entry.index, 'value', e.target.value)}
-                                    placeholder="Ej: 285 cm"
+                                    placeholder={t('players.measurementValuePlaceholder')}
                                     disabled={saving}
                                     className="flex-1"
                                   />
@@ -1049,7 +1049,7 @@ export default function PlayerDetail() {
                               <Input
                                 value={latestEntry.value}
                                 onChange={(e) => handleUpdateMeasurement(latestEntry.index, 'value', e.target.value)}
-                                placeholder="Ej: 285 cm"
+                                placeholder={t('players.measurementValuePlaceholder')}
                                 disabled={saving}
                                 className="flex-1"
                               />
@@ -1152,7 +1152,7 @@ export default function PlayerDetail() {
         {/* Teams */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Equipos *</CardTitle>
+            <CardTitle className="text-base">{t('players.teams')} *</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {teams.map(team => (
@@ -1171,7 +1171,7 @@ export default function PlayerDetail() {
                 />
                 <div className="flex-1">
                   <p className="font-medium text-foreground">{team.name}</p>
-                  <p className="text-sm text-muted-foreground">Coach: {team.coach}</p>
+                  <p className="text-sm text-muted-foreground">{t('teams.coach')}: {team.coach}</p>
                 </div>
               </label>
             ))}
@@ -1182,26 +1182,26 @@ export default function PlayerDetail() {
         <div className="space-y-3">
           <Button onClick={handleSave} className="w-full gap-2" disabled={saving}>
             <Save className="h-4 w-4" />
-            {saving ? 'Guardando...' : 'Guardar Cambios'}
+            {saving ? t('players.saving') : t('players.saveChanges')}
           </Button>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" className="w-full gap-2 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground">
                 <Trash2 className="h-4 w-4" />
-                Eliminar Jugadora
+                {t('players.deletePlayerButton')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>¿Eliminar jugadora?</AlertDialogTitle>
+                <AlertDialogTitle>{t('players.deletePlayerConfirmTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Se eliminará a {fullName} de forma permanente. Esta acción no se puede deshacer.
+                  {t('players.deletePlayerConfirmDesc', { name: fullName })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

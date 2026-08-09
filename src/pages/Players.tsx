@@ -39,20 +39,20 @@ export default function Players() {
       return;
     }
     const exportData = players.map(p => ({
-      Nombre: p.name,
-      'Apellido 1': p.surname1 || '',
-      'Apellido 2': p.surname2 || '',
-      Teléfono: p.phone,
-      Equipos: (p.teams || []).join(', '),
-      Dorsal: p.number || '',
-      'Año Nacimiento': p.birth_year || '',
-      'Altura (cm)': p.height || ''
+      [t('players.name')]: p.name,
+      [t('players.surname1')]: p.surname1 || '',
+      [t('players.surname2')]: p.surname2 || '',
+      [t('players.phone')]: p.phone,
+      [t('players.teams')]: (p.teams || []).join(', '),
+      [t('players.number')]: p.number || '',
+      [t('players.birthYear')]: p.birth_year || '',
+      [t('players.height')]: p.height || ''
     }));
-    
+
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Jugadoras');
-    XLSX.writeFile(wb, 'jugadoras.xlsx');
+    XLSX.utils.book_append_sheet(wb, ws, t('players.title'));
+    XLSX.writeFile(wb, 'players.xlsx');
   };
 
   const filteredPlayers = players.filter(p => {
