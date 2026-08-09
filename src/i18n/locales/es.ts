@@ -786,6 +786,28 @@ export default {
     reloadToApply: 'Recarga la página para aplicar los cambios',
   },
 
+  chat: {
+    errorSendingMessage: 'No se pudo enviar el mensaje',
+    yesterdayPrefix: 'Ayer',
+    conversationFallback: 'Conversación',
+    you: 'Tú',
+    noConversations: 'No tienes conversaciones',
+    startNewConversationHint: 'Inicia una nueva conversación con un entrenador o director',
+    selectParticipantsForConv: 'Selecciona los participantes para la conversación',
+    groupNamePlaceholder: 'Ej: Coordinadores',
+    onlineCount: '{{count}} en línea',
+    selectedCount: '{{count}} seleccionado(s)',
+    create: 'Crear',
+    creating: 'Creando...',
+    participantsCount: '{{count}} participantes',
+    viewingNow: '{{count}} viendo ahora',
+    online: 'En línea',
+    offline: 'Desconectado',
+    noMessagesYet: 'No hay mensajes aún',
+    sendFirstMessage: 'Envía el primer mensaje',
+    typeMessagePlaceholder: 'Escribe un mensaje...',
+  },
+
   eventDetail: {
     eventNotFound: 'Evento no encontrado',
     deleteEventConfirmTitle: '¿Eliminar evento?',

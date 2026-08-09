@@ -786,6 +786,28 @@ export default {
     reloadToApply: 'Reload the page to apply changes',
   },
 
+  chat: {
+    errorSendingMessage: 'Could not send the message',
+    yesterdayPrefix: 'Yesterday',
+    conversationFallback: 'Conversation',
+    you: 'You',
+    noConversations: "You don't have any conversations",
+    startNewConversationHint: 'Start a new conversation with a coach or director',
+    selectParticipantsForConv: 'Select the participants for the conversation',
+    groupNamePlaceholder: 'E.g.: Coordinators',
+    onlineCount: '{{count}} online',
+    selectedCount: '{{count}} selected',
+    create: 'Create',
+    creating: 'Creating...',
+    participantsCount: '{{count}} participants',
+    viewingNow: '{{count}} viewing now',
+    online: 'Online',
+    offline: 'Offline',
+    noMessagesYet: 'No messages yet',
+    sendFirstMessage: 'Send the first message',
+    typeMessagePlaceholder: 'Type a message...',
+  },
+
   eventDetail: {
     eventNotFound: 'Event not found',
     deleteEventConfirmTitle: 'Delete event?',

@@ -32,7 +32,7 @@ import {
 import { Label } from '@/components/ui/label';
 
 export default function Messages() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { club, members: clubMembers } = useClub();
   const { conversations, loading, sendMessage, markAsRead, createConversation, refetch } = useConversations();
@@ -142,7 +142,7 @@ export default function Messages() {
     if (success) {
       setNewMessage('');
     } else {
-      toast.error('No se pudo enviar el mensaje');
+      toast.error(t('chat.errorSendingMessage'));
     }
     setSending(false);
   };
@@ -159,7 +159,7 @@ export default function Messages() {
     if (isToday(date)) {
       return format(date, 'HH:mm');
     } else if (isYesterday(date)) {
-      return 'Ayer ' + format(date, 'HH:mm');
+      return t('chat.yesterdayPrefix') + ' ' + format(date, 'HH:mm');
     }
     return format(date, 'd MMM HH:mm', { locale: getDateFnsLocale(i18n.language) });
   };
@@ -168,16 +168,16 @@ export default function Messages() {
     if (conv.title) return conv.title;
     if (!conv.is_group) {
       const otherParticipant = conv.participants.find(p => p.user_id !== user?.id);
-      return otherParticipant?.name || 'Conversación';
+      return otherParticipant?.name || t('chat.conversationFallback');
     }
     return conv.participants.filter(p => p.user_id !== user?.id).map(p => p.name).join(', ');
   };
 
   const getSenderName = (senderId: string) => {
-    if (senderId === user?.id) return 'Tú';
+    if (senderId === user?.id) return t('chat.you');
     const conv = selectedConversation;
     const participant = conv?.participants.find(p => p.user_id === senderId);
-    return participant?.name || 'Usuario';
+    return participant?.name || t('clubManagement.defaultUserName');
   };
 
   const toggleParticipant = (userId: string) => {
@@ -204,7 +204,7 @@ export default function Messages() {
       setConvTitle('');
       await refetch();
     } else {
-      toast.error(res.error || 'Error al crear la conversación');
+      toast.error(res.error || t('coachManagement.errorCreatingConversation'));
     }
     setCreatingConv(false);
   };
@@ -215,7 +215,7 @@ export default function Messages() {
   if (!selectedConversationId) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Mensajes" showBack backTo="/" />
+        <Header title={t('nav.messages')} showBack backTo="/" />
 
         <div className="p-4 space-y-4">
           <Button
@@ -223,7 +223,7 @@ export default function Messages() {
             className="w-full gap-2"
           >
             <Plus className="h-4 w-4" />
-            Nueva conversación
+            {t('coachManagement.newConversation')}
           </Button>
 
           {loading ? (
@@ -235,8 +235,8 @@ export default function Messages() {
             <Card>
               <CardContent className="p-6 text-center">
                 <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                <p className="text-muted-foreground">No tienes conversaciones</p>
-                <p className="text-sm text-muted-foreground">Inicia una nueva conversación con un entrenador o director</p>
+                <p className="text-muted-foreground">{t('chat.noConversations')}</p>
+                <p className="text-sm text-muted-foreground">{t('chat.startNewConversationHint')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -283,7 +283,7 @@ export default function Messages() {
                               <MessageReadStatus isRead={lastMsgIsRead} />
                             )}
                             <p className="text-sm text-muted-foreground truncate">
-                              {conv.lastMessage.sender_id === user?.id ? 'Tú: ' : ''}
+                              {conv.lastMessage.sender_id === user?.id ? `${t('chat.you')}: ` : ''}
                               {conv.lastMessage.content}
                             </p>
                           </div>
@@ -306,18 +306,18 @@ export default function Messages() {
         <Dialog open={newConvDialogOpen} onOpenChange={setNewConvDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Nueva conversación</DialogTitle>
+              <DialogTitle>{t('coachManagement.newConversation')}</DialogTitle>
               <DialogDescription>
-                Selecciona los participantes para la conversación
+                {t('chat.selectParticipantsForConv')}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               {selectedParticipants.length > 1 && (
                 <div className="space-y-2">
-                  <Label>Nombre del grupo (opcional)</Label>
+                  <Label>{t('coachManagement.groupNameOptional')}</Label>
                   <Input
-                    placeholder="Ej: Coordinadores"
+                    placeholder={t('chat.groupNamePlaceholder')}
                     value={convTitle}
                     onChange={(e) => setConvTitle(e.target.value)}
                   />
@@ -326,10 +326,10 @@ export default function Messages() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Participantes</Label>
+                  <Label>{t('coachManagement.participants')}</Label>
                   <span className="text-xs text-green-600 flex items-center gap-1">
                     <Circle className="h-2 w-2 fill-green-500 text-green-500" />
-                    {getOnlineUsersList().filter(u => u.id !== user?.id).length} en línea
+                    {t('chat.onlineCount', { count: getOnlineUsersList().filter(u => u.id !== user?.id).length })}
                   </span>
                 </div>
                 <div className="border rounded-lg p-3 max-h-60 overflow-y-auto space-y-2">
@@ -353,20 +353,20 @@ export default function Messages() {
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {selectedParticipants.length} seleccionado(s)
+                  {t('chat.selectedCount', { count: selectedParticipants.length })}
                 </p>
               </div>
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setNewConvDialogOpen(false)}>
-                Cancelar
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={handleCreateConversation}
                 disabled={selectedParticipants.length === 0 || creatingConv}
               >
-                {creatingConv ? 'Creando...' : 'Crear'}
+                {creatingConv ? t('chat.creating') : t('chat.create')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -404,14 +404,14 @@ export default function Messages() {
             </div>
             {selectedConversation?.is_group ? (
               <p className="text-xs text-muted-foreground">
-                {selectedConversation.participants.length} participantes
-                {viewingCount > 0 && ` · ${viewingCount} viendo ahora`}
+                {t('chat.participantsCount', { count: selectedConversation.participants.length })}
+                {viewingCount > 0 && ` · ${t('chat.viewingNow', { count: viewingCount })}`}
               </p>
             ) : selectedConversation && (
               <p className="text-xs text-muted-foreground">
-                {isOnline(selectedConversation.participants.find(p => p.user_id !== user?.id)?.user_id || '') 
-                  ? 'En línea' 
-                  : 'Desconectado'}
+                {isOnline(selectedConversation.participants.find(p => p.user_id !== user?.id)?.user_id || '')
+                  ? t('chat.online')
+                  : t('chat.offline')}
               </p>
             )}
           </div>
@@ -428,8 +428,8 @@ export default function Messages() {
         ) : messages.length === 0 ? (
           <div className="text-center py-8">
             <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">No hay mensajes aún</p>
-            <p className="text-sm text-muted-foreground">Envía el primer mensaje</p>
+            <p className="text-muted-foreground">{t('chat.noMessagesYet')}</p>
+            <p className="text-sm text-muted-foreground">{t('chat.sendFirstMessage')}</p>
           </div>
         ) : (
           messages.map((msg, index) => {
@@ -486,7 +486,7 @@ export default function Messages() {
       <div className="sticky bottom-0 bg-background border-t p-4">
         <div className="flex gap-2">
           <Input
-            placeholder="Escribe un mensaje..."
+            placeholder={t('chat.typeMessagePlaceholder')}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
