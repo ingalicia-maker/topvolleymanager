@@ -446,8 +446,7 @@ export default function Landing() {
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <Volleyball className="h-6 w-6 text-primary" />
-                <span className="font-bold">Top Volley Manager</span>
+                <img src={tvmLogo.url} alt="Top Volley Manager" className="h-10 w-auto" />
               </div>
               <p className="text-muted-foreground text-sm">
                 {t('landing.hero.subtitle')}
