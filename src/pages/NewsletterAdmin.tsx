@@ -58,8 +58,10 @@ export default function NewsletterAdmin() {
   const { data: articles } = useBlogArticles({ publishedOnly: true });
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!subLoading && subscription.isAdmin) {
+      fetchData();
+    }
+  }, [subLoading, subscription.isAdmin]);
 
   const fetchData = async () => {
     setLoading(true);
