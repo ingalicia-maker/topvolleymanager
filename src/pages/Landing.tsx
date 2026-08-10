@@ -7,6 +7,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { CookieBanner } from '@/components/CookieBanner';
 import { BlogCarousel } from '@/components/BlogCarousel';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
+import tvmLogo from '@/assets/tvm-logo.png.asset.json';
 import { 
   Users, 
   Calendar, 
