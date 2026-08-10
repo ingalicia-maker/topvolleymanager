@@ -17,8 +17,7 @@ import {
   Shield, 
   Smartphone,
   Check,
-  ChevronRight,
-  Volleyball
+  ChevronRight
 } from 'lucide-react';
 import demoDashboard from '@/assets/demo-dashboard-real.png';
 import demoEvents from '@/assets/demo-events-real.png';
@@ -26,6 +25,7 @@ import demoRatings from '@/assets/demo-ratings-real.png';
 import demoAusencias from '@/assets/demo-ausencias-real.png';
 import demoDesplazamiento from '@/assets/demo-desplazamiento-real.png';
 import demoEquipos from '@/assets/demo-equipos-real.png';
+import logoMark from '@/assets/logo-mark.png';
 
 export default function Landing() {
   const { t, i18n } = useTranslation();
@@ -125,7 +125,7 @@ export default function Landing() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Volleyball className="h-8 w-8 text-primary" />
+            <img src={logoMark} alt="Top Volley Manager" className="h-8 w-auto" />
             <span className="font-bold text-xl hidden sm:inline">Top Volley Manager</span>
             <span className="font-bold text-lg sm:hidden">TVM</span>
           </div>
@@ -447,7 +447,7 @@ export default function Landing() {
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <Volleyball className="h-6 w-6 text-primary" />
+                <img src={logoMark} alt="Top Volley Manager" className="h-6 w-auto" />
                 <span className="font-bold">Top Volley Manager</span>
               </div>
               <p className="text-muted-foreground text-sm">

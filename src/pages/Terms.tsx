@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Volleyball } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import logoMark from '@/assets/logo-mark.png';
 
 export default function Terms() {
   const { t, i18n } = useTranslation();
@@ -14,7 +15,7 @@ export default function Terms() {
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/landing" className="flex items-center gap-2">
-            <Volleyball className="h-8 w-8 text-primary" />
+            <img src={logoMark} alt="Top Volley Manager" className="h-8 w-auto" />
             <span className="font-bold text-xl">Top Volley Manager</span>
           </Link>
           <LanguageSelector />
