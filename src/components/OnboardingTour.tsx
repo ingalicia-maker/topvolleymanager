@@ -48,7 +48,7 @@ export function OnboardingTour() {
     },
     {
       id: 'events',
-      targetSelector: '[data-tour="events"]',
+      targetSelector: '[data-tour="profile"]',
       title: i18n.language === 'es' ? 'Crea eventos' : i18n.language === 'it' ? 'Crea eventi' : 'Create events',
       description: i18n.language === 'es' 
         ? 'Programa entrenamientos, partidos y torneos. Las jugadoras podrán confirmar su asistencia.'

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut, UsersRound, Plus } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut, UsersRound, Plus, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
@@ -28,6 +28,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useClubTheme } from '@/components/ClubThemeProvider';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useConversations } from '@/hooks/useConversations';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -45,6 +46,7 @@ export default function Index() {
   const { profile, isDirector, assignedTeams } = useUserRole();
   const { clubName, logoUrl } = useClubTheme();
   const { unreadCount } = useNotifications();
+  const { totalUnread: messageUnread } = useConversations();
   const { isPremium, subscription } = useSubscription();
   const { signOut } = useAuth();
 
@@ -138,11 +140,56 @@ export default function Index() {
             </DropdownMenuContent>
           </DropdownMenu>
           <NotificationBell />
-          <Link to="/profile" data-tour="profile">
-            <Button variant="ghost" size="icon" className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
-              <User className="h-5 w-5" />
-            </Button>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                data-tour="profile"
+              >
+                <User className="h-5 w-5" />
+                {(unreadCount > 0 || messageUnread > 0) && (
+                  <span className="absolute top-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-destructive" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/events" className="flex items-center justify-between cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {t('nav.events')}
+                  </span>
+                  {unreadCount > 0 && (
+                    <span className="h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center font-bold">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/messages" className="flex items-center justify-between cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    {t('nav.messages')}
+                  </span>
+                  {messageUnread > 0 && (
+                    <span className="h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center font-bold">
+                      {messageUnread > 9 ? '9+' : messageUnread}
+                    </span>
+                  )}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                  <User className="h-4 w-4" />
+                  {t('nav.profile')}
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
