@@ -7,6 +7,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { CookieBanner } from '@/components/CookieBanner';
 import { BlogCarousel } from '@/components/BlogCarousel';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
+import tvmLogo from '@/assets/tvm-logo.png.asset.json';
 import { 
   Users, 
   Calendar, 
@@ -125,9 +126,7 @@ export default function Landing() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Volleyball className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl hidden sm:inline">Top Volley Manager</span>
-            <span className="font-bold text-lg sm:hidden">TVM</span>
+            <img src={tvmLogo.url} alt="Top Volley Manager" className="h-10 w-auto" />
           </div>
           
           {/* Navigation Links - Content Website */}
@@ -447,8 +446,7 @@ export default function Landing() {
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <Volleyball className="h-6 w-6 text-primary" />
-                <span className="font-bold">Top Volley Manager</span>
+                <img src={tvmLogo.url} alt="Top Volley Manager" className="h-10 w-auto" />
               </div>
               <p className="text-muted-foreground text-sm">
                 {t('landing.hero.subtitle')}

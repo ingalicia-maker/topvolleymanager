@@ -4,6 +4,7 @@ import * as React from 'npm:react@18.3.1'
 
 import {
   Body,
+  Img,
   Container,
   Head,
   Heading,
@@ -22,6 +23,7 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
     <Preview>Tu código de verificación</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Img src="https://www.topvolleymanager.com/__l5e/assets-v1/0cf6ac33-4ab5-4ee2-a321-c637e79542bf/tvm-logo.png" alt="Top Volley Manager" width="200" style={logoStyle} />
         <Heading style={h1}>Confirma tu identidad</Heading>
         <Text style={text}>Usa el siguiente código para continuar:</Text>
         <Text style={codeStyle}>{token}</Text>
@@ -48,3 +50,5 @@ const codeStyle = {
   margin: '0 0 30px',
 }
 const footer = { fontSize: '12px', color: '#94a3b8', margin: '30px 0 0' }
+
+const logoStyle = { display: 'block', margin: '0 0 24px', height: 'auto' }

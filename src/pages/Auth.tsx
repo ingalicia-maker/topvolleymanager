@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import tvmLogo from '@/assets/tvm-logo.png.asset.json';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -777,7 +778,8 @@ export default function Auth() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">Top Volley Manager</CardTitle>
+          <img src={tvmLogo.url} alt="Top Volley Manager" className="mx-auto h-20 w-auto mb-2" />
+          <CardTitle className="sr-only">Top Volley Manager</CardTitle>
           <CardDescription>{t('auth.manageTeams', 'Gestiona tus equipos y convocatorias')}</CardDescription>
         </CardHeader>
         <CardContent>
