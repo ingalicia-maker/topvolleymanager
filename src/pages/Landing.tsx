@@ -125,9 +125,7 @@ export default function Landing() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Volleyball className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl hidden sm:inline">Top Volley Manager</span>
-            <span className="font-bold text-lg sm:hidden">TVM</span>
+            <img src={tvmLogo.url} alt="Top Volley Manager" className="h-10 w-auto" />
           </div>
           
           {/* Navigation Links - Content Website */}
