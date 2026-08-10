@@ -7,6 +7,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { ClubThemeProvider } from "@/components/ClubThemeProvider";
 import { LanguageRedirect } from "@/components/LanguageRedirect";
 import { SeoHead } from "@/components/SeoHead";
+import { PageViewTracker } from "@/components/PageViewTracker";
 import Auth from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
 
@@ -56,6 +57,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <SeoHead />
+           <PageViewTracker />
           <Routes>
           {/* Language-prefixed landing pages */}
           <Route path="/:lang" element={<LandingWrapper />} />
