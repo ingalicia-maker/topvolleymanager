@@ -100,7 +100,10 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Hero Header */}
-      <div className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground px-4 pt-8 pb-10">
+      <div
+        className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground px-4 pt-8 pb-10"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2rem)' }}
+      >
         <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {logoUrl && (
