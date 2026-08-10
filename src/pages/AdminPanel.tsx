@@ -50,6 +50,7 @@ import {
 import { RegistrationChart } from '@/components/admin/RegistrationChart';
 import { GoogleAnalyticsCard } from '@/components/admin/GoogleAnalyticsCard';
 import { RetentionMetrics } from '@/components/admin/RetentionMetrics';
+import { SiteAnalytics } from '@/components/admin/SiteAnalytics';
 
 interface VipUser {
   id: string;
@@ -321,6 +322,8 @@ export default function AdminPanel() {
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-4">
+            <SiteAnalytics />
+
             {/* Registration Charts */}
             <RegistrationChart registrations={registrations} />
             
