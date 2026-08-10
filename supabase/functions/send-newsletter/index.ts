@@ -66,7 +66,7 @@ serve(async (req) => {
       const digestHtml = `
         <div style="max-width:600px;margin:0 auto;font-family:Arial,sans-serif;">
           <div style="text-align:center;padding:20px;background:#2563eb;color:white;border-radius:8px 8px 0 0;">
-            <h1 style="margin:0;">🏐 Top Volley Manager</h1>
+            <img src="https://www.topvolleymanager.com/__l5e/assets-v1/0cf6ac33-4ab5-4ee2-a321-c637e79542bf/tvm-logo.png" alt="Top Volley Manager" width="200" style="display:block;margin:0 auto 16px;height:auto;" />
             <p style="margin:8px 0 0;">Monthly Newsletter</p>
           </div>
           <div style="padding:20px;">

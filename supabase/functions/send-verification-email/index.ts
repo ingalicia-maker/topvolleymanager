@@ -90,7 +90,7 @@ function getEmailContent(name: string, code: string, language: string) {
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9fafb;">
         <div style="background: white; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #3b82f6; font-size: 24px; margin: 0;">Top Volley Manager</h1>
+            <img src="https://www.topvolleymanager.com/__l5e/assets-v1/0cf6ac33-4ab5-4ee2-a321-c637e79542bf/tvm-logo.png" alt="Top Volley Manager" width="200" style="display:block;margin:0 auto 16px;height:auto;" />
           </div>
           
           <h2 style="color: #111827; font-size: 20px; margin-bottom: 16px;">${t.greeting}</h2>
