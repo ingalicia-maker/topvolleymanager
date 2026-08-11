@@ -9,6 +9,8 @@ project_id = "wjfrrtuupmxjxyhpprhh"
     verify_jwt = false
   [functions.customer-portal]
     verify_jwt = false
+  [functions.delete-account]
+    verify_jwt = false
   [functions.notify-coach-approved]
     verify_jwt = false
   [functions.notify-new-coach]

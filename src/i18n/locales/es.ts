@@ -710,6 +710,13 @@ export default {
     language: 'Idioma',
     clubManagement: 'Gestión del Club',
     coachManagement: 'Gestión de Entrenadores',
+    deleteAccount: 'Eliminar cuenta',
+    deleteAccountConfirmTitle: '¿Eliminar tu cuenta permanentemente?',
+    deleteAccountConfirmDesc: 'Esto eliminará tu cuenta y tus datos personales de forma permanente. Esta acción no se puede deshacer.',
+    deleteAccountDeleting: 'Eliminando...',
+    deleteAccountSuccess: 'Tu cuenta ha sido eliminada.',
+    deleteAccountError: 'Ha ocurrido un error al eliminar tu cuenta. Inténtalo de nuevo.',
+    deleteAccountSoleDirectorError: 'Eres el único director de un club con más entrenadores. Transfiere la dirección a otro entrenador antes de eliminar tu cuenta.',
   },
 
   // Subscription

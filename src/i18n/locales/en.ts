@@ -710,6 +710,13 @@ export default {
     language: 'Language',
     clubManagement: 'Club Management',
     coachManagement: 'Coach Management',
+    deleteAccount: 'Delete Account',
+    deleteAccountConfirmTitle: 'Delete your account permanently?',
+    deleteAccountConfirmDesc: 'This will permanently delete your account and personal data. This action cannot be undone.',
+    deleteAccountDeleting: 'Deleting...',
+    deleteAccountSuccess: 'Your account has been deleted.',
+    deleteAccountError: 'Something went wrong deleting your account. Please try again.',
+    deleteAccountSoleDirectorError: 'You are the only director of a club with other coaches. Transfer the director role to someone else before deleting your account.',
   },
 
   // Subscription
