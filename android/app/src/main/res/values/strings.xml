@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Top Volley Manager</string>
+    <string name="title_activity_main">Top Volley Manager</string>
+    <string name="package_name">app.lovable.topvolleymanager</string>
+    <string name="custom_url_scheme">app.lovable.topvolleymanager</string>
+</resources>

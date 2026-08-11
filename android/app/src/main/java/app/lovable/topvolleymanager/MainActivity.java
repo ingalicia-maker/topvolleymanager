@@ -1,0 +1,5 @@
+package app.lovable.topvolleymanager;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}
