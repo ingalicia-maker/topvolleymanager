@@ -18,14 +18,6 @@ serve(async (req) => {
       throw new Error("Email is required");
     }
 
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.log("No RESEND_API_KEY, skipping welcome email");
-      return new Response(
-        JSON.stringify({ success: true, skipped: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     const userName = name || "";
 
@@ -131,9 +123,9 @@ serve(async (req) => {
       <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.07);">
         <!-- Header -->
         <tr>
-          <td style="background:linear-gradient(135deg,#2563eb,#1d4ed8);padding:32px 24px;text-align:center;">
-            <h1 style="color:#ffffff;margin:0;font-size:28px;">🏐 Top Volley Manager</h1>
-            <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:14px;">${t.welcomeText}</p>
+          <td style="background:#ffffff;border-bottom:1px solid #e2e8f0;padding:28px 24px;text-align:center;">
+            <img src="https://www.topvolleymanager.com/__l5e/assets-v1/0cf6ac33-4ab5-4ee2-a321-c637e79542bf/tvm-logo.png" alt="Top Volley Manager" width="200" style="display:block;margin:0 auto;height:auto;" />
+            <p style="color:#64748b;margin:12px 0 0;font-size:14px;">${t.welcomeText}</p>
           </td>
         </tr>
         <!-- Greeting -->
@@ -176,22 +168,50 @@ serve(async (req) => {
 </body>
 </html>`;
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${resendApiKey}`,
-      },
-      body: JSON.stringify({
-        from: "Top Volley Manager <noreply@topvolleymanager.com>",
-        to: [email],
-        subject: t.subject,
-        html,
-      }),
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const messageId = `welcome-${crypto.randomUUID()}`;
+
+    await supabase.from("email_send_log").insert({
+      message_id: messageId,
+      template_name: "welcome",
+      recipient_email: email,
+      status: "pending",
     });
 
-    const result = await res.json();
-    console.log("Welcome email sent:", result);
+    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
+      queue_name: "transactional_emails",
+      payload: {
+        message_id: messageId,
+        idempotency_key: `welcome-${email.toLowerCase()}`,
+        to: email,
+        from: "Top Volley Manager <noreply@topvolleymanager.com>",
+        sender_domain: "notify.topvolleymanager.com",
+        subject: t.subject,
+        html,
+        purpose: "transactional",
+        label: "welcome",
+        queued_at: new Date().toISOString(),
+      },
+
+    });
+
+    if (enqueueError) {
+      console.error("Failed to enqueue welcome email:", enqueueError);
+      await supabase.from("email_send_log").insert({
+        message_id: messageId,
+        template_name: "welcome",
+        recipient_email: email,
+        status: "failed",
+        error_message: enqueueError.message,
+      });
+    } else {
+      console.log("Welcome email enqueued for", email);
+    }
+
 
     return new Response(
       JSON.stringify({ success: true }),

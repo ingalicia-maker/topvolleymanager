@@ -50,6 +50,7 @@ import {
 import { RegistrationChart } from '@/components/admin/RegistrationChart';
 import { GoogleAnalyticsCard } from '@/components/admin/GoogleAnalyticsCard';
 import { RetentionMetrics } from '@/components/admin/RetentionMetrics';
+import { SiteAnalytics } from '@/components/admin/SiteAnalytics';
 
 interface VipUser {
   id: string;
@@ -95,8 +96,10 @@ export default function AdminPanel() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!subLoading && subscription.isAdmin) {
+      fetchData();
+    }
+  }, [subLoading, subscription.isAdmin]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -110,9 +113,13 @@ export default function AdminPanel() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      setVipUsers(data);
+    if (error) {
+      console.error('[AdminPanel] VIP users error:', error);
+      toast.error(`No se pudieron cargar los usuarios VIP: ${error.message}`);
+      return;
     }
+
+    setVipUsers(data ?? []);
   };
 
   const fetchRegistrations = async () => {
@@ -121,9 +128,13 @@ export default function AdminPanel() {
       .select('*')
       .order('registered_at', { ascending: false });
 
-    if (!error && data) {
-      setRegistrations(data as UserRegistration[]);
+    if (error) {
+      console.error('[AdminPanel] registrations error:', error);
+      toast.error(`No se pudieron cargar las métricas: ${error.message}`);
+      return;
     }
+
+    setRegistrations((data ?? []) as UserRegistration[]);
   };
 
   const handleAddVip = async () => {
@@ -311,6 +322,8 @@ export default function AdminPanel() {
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-4">
+            <SiteAnalytics />
+
             {/* Registration Charts */}
             <RegistrationChart registrations={registrations} />
             

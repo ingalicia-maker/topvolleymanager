@@ -168,6 +168,7 @@ export default {
     securityVerificationPending: 'Por favor espera a que se complete la verificación de seguridad',
     securityVerificationFailed: 'Verificación de seguridad fallida. Por favor, recarga la página e inténtalo de nuevo.',
     errorJoiningClubWithReason: 'Error al unirse al club: {{reason}}',
+    accountCreatedJoinFailed: 'Cuenta creada, pero no se pudo unir al club: {{reason}}',
     clubFoundNamed: '¡Club encontrado: {{name}}!',
     youJoinedClubNamed: '¡Te has unido a {{name}}!',
     hidePassword: 'Ocultar contraseña',

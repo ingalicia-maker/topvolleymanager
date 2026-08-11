@@ -14,7 +14,8 @@ import { User, Shield, CheckCircle2, Mail, AlertCircle, Loader2, Building2 } fro
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
-import { TurnstileWidget, useTurnstile } from '@/components/TurnstileWidget';
+import { isExistingUserSignUp } from '@/lib/signupDetection';
+
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres');
@@ -67,9 +68,6 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
   const [verifying, setVerifying] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
   
-  // Turnstile bot protection
-  const turnstile = useTurnstile();
-
   // Fetch club info on mount
   useEffect(() => {
     fetchClubInfo();
@@ -166,23 +164,6 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
     }
   };
 
-  // Verify Turnstile token with backend
-  const verifyTurnstileToken = async (token: string): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-turnstile', {
-        body: { token }
-      });
-      if (error || !data?.success) {
-        console.error('Turnstile verification failed:', error || data);
-        return false;
-      }
-      return true;
-    } catch (err) {
-      console.error('Error verifying Turnstile:', err);
-      return false;
-    }
-  };
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateInputs()) return;
@@ -197,22 +178,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       return;
     }
 
-    // Verify Turnstile token
-    const turnstileToken = turnstile.getToken();
-    if (!turnstileToken) {
-      toast.error(t('auth.securityVerificationPending'));
-      return;
-    }
-
     setLoading(true);
-
-    const isHuman = await verifyTurnstileToken(turnstileToken);
-    if (!isHuman) {
-      toast.error(t('auth.securityVerificationFailed'));
-      turnstile.clearToken();
-      setLoading(false);
-      return;
-    }
 
     // Store pending role for post-verification
     localStorage.setItem('pending_signup_role', 'coach');
@@ -241,6 +207,14 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       } else {
         toast.error(error.message);
       }
+      setLoading(false);
+      return;
+    }
+
+    // Supabase devuelve éxito "falso" si el email ya existe
+    if (isExistingUserSignUp(data.user)) {
+
+      toast.error('Este email ya está registrado. Inicia sesión con tu cuenta.');
       setLoading(false);
       return;
     }
@@ -652,14 +626,6 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
               {t('invitation.emailVerificationNote')}
             </span>
           </div>
-
-          {/* Turnstile invisible widget */}
-          <TurnstileWidget
-            onVerify={turnstile.setToken}
-            onError={turnstile.clearToken}
-            onExpire={turnstile.clearToken}
-            invisible
-          />
 
           {/* Submit button */}
           <Button 

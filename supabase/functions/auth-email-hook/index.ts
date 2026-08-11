@@ -219,16 +219,33 @@ async function handleWebhook(req: Request): Promise<Response> {
   }
 
   // Build template props from payload.data (HookData structure)
+  // Prefer an app-hosted confirmation URL using token_hash: it works from any
+  // device/browser (no PKCE verifier needed) and shows a real page on click.
+  const tokenHash = payload.data.token_hash
+  const redirectTo = payload.data.redirect_to
+  let confirmationUrl = payload.data.url
+  if (tokenHash && redirectTo) {
+    try {
+      const target = new URL(redirectTo)
+      target.searchParams.set('token_hash', tokenHash)
+      target.searchParams.set('type', emailType)
+      confirmationUrl = target.toString()
+    } catch (_e) {
+      // keep default url
+    }
+  }
+
   const templateProps = {
     siteName: SITE_NAME,
     siteUrl: `https://${ROOT_DOMAIN}`,
     recipient: payload.data.email,
-    confirmationUrl: payload.data.url,
+    confirmationUrl,
     token: payload.data.token,
     email: payload.data.email,
     oldEmail: payload.data.old_email,
     newEmail: payload.data.new_email,
   }
+
 
   // Render React Email to HTML and plain text
   const html = await renderAsync(React.createElement(EmailTemplate, templateProps))

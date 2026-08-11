@@ -58,8 +58,10 @@ export default function NewsletterAdmin() {
   const { data: articles } = useBlogArticles({ publishedOnly: true });
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!subLoading && subscription.isAdmin) {
+      fetchData();
+    }
+  }, [subLoading, subscription.isAdmin]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -72,7 +74,12 @@ export default function NewsletterAdmin() {
       .from('newsletter_subscribers' as any)
       .select('*')
       .order('subscribed_at', { ascending: false });
-    if (!error && data) setSubscribers(data as any);
+    if (error) {
+      console.error('[NewsletterAdmin] subscribers error:', error);
+      toast.error(error.message);
+      return;
+    }
+    setSubscribers((data ?? []) as any);
   };
 
   const fetchNewsletters = async () => {
@@ -80,7 +87,12 @@ export default function NewsletterAdmin() {
       .from('newsletters' as any)
       .select('*')
       .order('created_at', { ascending: false });
-    if (!error && data) setNewsletters(data as any);
+    if (error) {
+      console.error('[NewsletterAdmin] newsletters error:', error);
+      toast.error(error.message);
+      return;
+    }
+    setNewsletters((data ?? []) as any);
   };
 
   const handleCreateNewsletter = () => {

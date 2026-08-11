@@ -44,8 +44,23 @@ export default function ResetPassword() {
         const url = new URL(window.location.href);
         const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
+        // Case 0: token_hash flow — ?token_hash=...&type=recovery (works cross-device)
+        const tokenHash = url.searchParams.get('token_hash');
+        if (tokenHash) {
+          const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+          if (cancelled) return;
+          if (error) {
+            setSessionError(error.message || 'Enlace inválido o expirado');
+            return;
+          }
+          window.history.replaceState({}, '', window.location.pathname);
+          setSessionReady(true);
+          return;
+        }
+
         // Case 1: PKCE flow — ?code=... in query string
         const code = url.searchParams.get('code');
+
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (cancelled) return;

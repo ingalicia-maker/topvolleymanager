@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import tvmLogo from '@/assets/tvm-logo.png.asset.json';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +16,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
 import { InvitationRegistrationForm } from '@/components/InvitationRegistrationForm';
-import { TurnstileWidget, useTurnstile } from '@/components/TurnstileWidget';
+import { isExistingUserSignUp } from '@/lib/signupDetection';
+
 import { 
   checkRateLimit, 
   resetRateLimit,
@@ -54,9 +56,6 @@ export default function Auth() {
   const [registrationMode, setRegistrationMode] = useState<'select' | 'director' | 'coach'>('select');
   const [responsibilityCodeAccepted, setResponsibilityCodeAccepted] = useState(false);
   
-  // Turnstile bot protection
-  const turnstile = useTurnstile();
-
   const redirectTo = searchParams.get('redirect') || '/';
 
   useEffect(() => {
@@ -340,7 +339,7 @@ export default function Auth() {
 
   const resendSignupEmail = async () => {
     try {
-      const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+      const redirectUrl = `${window.location.origin}/auth/confirm?redirect=/`;
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email.trim(),
@@ -413,24 +412,42 @@ export default function Auth() {
     }
   }, [invitationCode]);
 
-  // Verify Turnstile token with backend
-  const verifyTurnstileToken = async (token: string): Promise<boolean> => {
+  // Runs a promise with a hard timeout so the form never stays stuck in "loading"
+  const withTimeout = async <T,>(promise: PromiseLike<T>, ms = 20000, label = 'La operación'): Promise<T> => {
+    let timer: ReturnType<typeof setTimeout>;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`${label} ha tardado demasiado (${Math.round(ms / 1000)}s). Comprueba tu conexión e inténtalo de nuevo.`)),
+        ms,
+      );
+    });
     try {
-      const { data, error } = await supabase.functions.invoke('verify-turnstile', {
-        body: { token }
-      });
-      if (error || !data?.success) {
-        console.error('Turnstile verification failed:', error || data);
-        return false;
-      }
-      return true;
-    } catch (err) {
-      console.error('Error verifying Turnstile:', err);
-      return false;
+      return (await Promise.race([promise, timeout])) as T;
+    } finally {
+      clearTimeout(timer!);
     }
   };
 
-  // Sign up for coaches with invitation code
+  // Turns any signup failure into an exact, human-readable reason
+  const describeSignUpError = (error: unknown): string => {
+    const raw = error instanceof Error ? error.message : String(error ?? '');
+    const msg = raw.toLowerCase();
+    if (!navigator.onLine) return 'Sin conexión a internet. Conéctate y vuelve a intentarlo.';
+    if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already')) {
+      return 'Este email ya está registrado. Inicia sesión o recupera tu contraseña.';
+    }
+    if (msg.includes('invalid email') || msg.includes('email address') && msg.includes('invalid')) return 'El email introducido no es válido.';
+    if (msg.includes('password') && msg.includes('at least')) return 'La contraseña es demasiado corta (mínimo 6 caracteres).';
+    if (msg.includes('weak') || msg.includes('pwned') || msg.includes('compromised')) return 'Esa contraseña es demasiado débil o ha aparecido en filtraciones. Usa otra.';
+    if (msg.includes('rate limit') || msg.includes('too many') || msg.includes('429')) return 'Demasiados intentos. Espera unos minutos y vuelve a intentarlo.';
+    if (msg.includes('signups not allowed') || msg.includes('signup is disabled')) return 'Los registros están temporalmente desactivados.';
+    if (msg.includes('sending') && msg.includes('email')) return 'No se ha podido enviar el email de verificación. Inténtalo de nuevo en unos minutos.';
+    if (msg.includes('failed to fetch') || msg.includes('network')) return 'No se ha podido conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.';
+    if (msg.includes('tardado demasiado')) return raw;
+    return raw || 'Error desconocido al crear la cuenta. Inténtalo de nuevo.';
+  };
+
+
   const handleCoachSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateInputs(true)) return;
@@ -450,82 +467,79 @@ export default function Auth() {
       return;
     }
 
-    // Verify Turnstile token
-    const turnstileToken = turnstile.getToken();
-    if (!turnstileToken) {
-      toast.error(t('auth.securityVerificationPending'));
-      return;
-    }
-
     setLoading(true);
-    
-    const isHuman = await verifyTurnstileToken(turnstileToken);
-    if (!isHuman) {
-      toast.error(t('auth.securityVerificationFailed'));
-      turnstile.clearToken();
-      setLoading(false);
-      return;
-    }
 
-    localStorage.setItem('pending_signup_role', 'coach');
-    localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
-    const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+    try {
+      localStorage.setItem('pending_signup_role', 'coach');
+      localStorage.setItem('pending_invitation_code', invitationCode.toUpperCase());
+      const redirectUrl = `${window.location.origin}/auth/confirm?redirect=/`;
 
-    const { error, data } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          name: name.trim(),
-          is_director: false,
-          assigned_teams: [],
-          terms_accepted_at: new Date().toISOString(),
-          responsibility_code_accepted_at: new Date().toISOString(),
-        },
-      },
-    });
+      const { error, data } = await withTimeout(
+        supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: {
+              name: name.trim(),
+              is_director: false,
+              assigned_teams: [],
+              terms_accepted_at: new Date().toISOString(),
+              responsibility_code_accepted_at: new Date().toISOString(),
+            },
+          },
+        }),
+        20000,
+        'El registro',
+      );
 
-    if (error) {
-      if (error.message.includes('already registered')) {
+      if (error) {
+        console.error('[Auth] Coach signup error:', error);
+        toast.error(describeSignUpError(error));
+        return;
+      }
+
+      // Supabase returns a "fake success" if the email already exists
+      if (isExistingUserSignUp(data.user)) {
         toast.error(t('auth.emailAlreadyRegistered'));
-      } else {
-        toast.error(error.message);
+        return;
       }
-      setLoading(false);
-      return;
-    }
 
-    // If email confirmation is required, show "check your email" screen.
-    if (data.user && !data.session) {
-      setShowEmailConfirmation(true);
-      toast.success(t('auth.verificationEmailSentSuccess'));
-      // Send welcome email
-      supabase.functions.invoke('send-welcome-email', {
-        body: { email: email.trim(), name: name.trim(), language: i18n.language },
-      }).catch(console.error);
-      setLoading(false);
-      return;
-    }
+      if (data.user && !data.session) {
+        setShowEmailConfirmation(true);
+        toast.success(t('auth.verificationEmailSentSuccess'));
+        supabase.functions.invoke('send-welcome-email', {
+          body: { email: email.trim(), name: name.trim(), language: i18n.language },
+        }).catch(console.error);
+        return;
+      }
 
-    // If the backend auto-logged in (rare), auto-join immediately.
-    if (data.session) {
-      try {
-        const { error: joinError } = await supabase.rpc('accept_club_invitation_by_code', {
-          _code: invitationCode.toUpperCase(),
-        });
-        if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
-          window.dispatchEvent(new Event('club-membership-changed'));
-          triggerCoachWelcome();
-          toast.success(t('auth.youJoinedClubNamed', { name: verifiedClub.club_name }));
-          navigate('/', { replace: true });
+      if (data.session) {
+        try {
+          const { error: joinError } = await withTimeout(
+            supabase.rpc('accept_club_invitation_by_code', { _code: invitationCode.toUpperCase() }),
+            15000,
+            'La unión al club',
+          );
+          if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
+            window.dispatchEvent(new Event('club-membership-changed'));
+            triggerCoachWelcome();
+            toast.success(t('auth.youJoinedClubNamed', { name: verifiedClub.club_name }));
+            navigate('/', { replace: true });
+          } else {
+            toast.error(t('auth.accountCreatedJoinFailed', { reason: joinError.message }));
+          }
+        } catch (joinError) {
+          console.error('[Auth] Error joining club after coach signup:', joinError);
+          toast.error(t('auth.accountCreatedJoinFailed', { reason: describeSignUpError(joinError) }));
         }
-      } catch (joinError) {
-        console.error('[Auth] Error joining club after coach signup:', joinError);
       }
+    } catch (err) {
+      console.error('[Auth] Coach signup exception:', err);
+      toast.error(describeSignUpError(err));
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   // Sign up for directors
@@ -543,71 +557,66 @@ export default function Auth() {
       return;
     }
 
-    // Verify Turnstile token
-    const turnstileToken = turnstile.getToken();
-    if (!turnstileToken) {
-      toast.error(t('auth.securityVerificationPending'));
-      return;
-    }
-
     setLoading(true);
-    
-    const isHuman = await verifyTurnstileToken(turnstileToken);
-    if (!isHuman) {
-      toast.error(t('auth.securityVerificationFailed'));
-      turnstile.clearToken();
-      setLoading(false);
-      return;
-    }
 
-    localStorage.setItem('pending_signup_role', 'director');
+    try {
+      localStorage.setItem('pending_signup_role', 'director');
 
-    const redirectUrl = `${window.location.origin}/auth?redirect=/`;
+      const redirectUrl = `${window.location.origin}/auth/confirm?redirect=/`;
 
-    const { error, data } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          name: name.trim(),
-          is_director: true,
-          is_also_coach: alsoCoach,
-          assigned_teams: [],
-          director_declaration_accepted_at: new Date().toISOString(),
-          terms_accepted_at: new Date().toISOString(),
-        },
-      },
-    });
+      const { error, data } = await withTimeout(
+        supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: {
+              name: name.trim(),
+              is_director: true,
+              is_also_coach: alsoCoach,
+              assigned_teams: [],
+              director_declaration_accepted_at: new Date().toISOString(),
+              terms_accepted_at: new Date().toISOString(),
+            },
+          },
+        }),
+        20000,
+        'El registro',
+      );
 
-    if (error) {
-      if (error.message.includes('already registered')) {
-        toast.error(t('auth.emailAlreadyRegisteredShort'));
-      } else {
-        toast.error(error.message);
+      if (error) {
+        console.error('[Auth] Director signup error:', error);
+        toast.error(describeSignUpError(error));
+        return;
       }
+
+      // Supabase returns a "fake success" if the email already exists
+      if (isExistingUserSignUp(data.user)) {
+        toast.error(t('auth.emailAlreadyRegisteredShort'));
+        return;
+      }
+
+      if (data.user && !data.session) {
+        setShowEmailConfirmation(true);
+        toast.success(t('auth.verificationEmailSentSuccess'));
+        supabase.functions.invoke('send-welcome-email', {
+          body: { email: email.trim(), name: name.trim(), language: i18n.language },
+        }).catch(console.error);
+        return;
+      }
+
+      if (data.session) {
+        localStorage.setItem('is_new_director', 'true');
+        toast.success(t('auth.accountCreated'));
+      }
+    } catch (err) {
+      console.error('[Auth] Director signup exception:', err);
+      toast.error(describeSignUpError(err));
+    } finally {
       setLoading(false);
-      return;
     }
-
-    if (data.user && !data.session) {
-      setShowEmailConfirmation(true);
-      toast.success(t('auth.verificationEmailSentSuccess'));
-      // Send welcome email
-      supabase.functions.invoke('send-welcome-email', {
-        body: { email: email.trim(), name: name.trim(), language: i18n.language },
-      }).catch(console.error);
-      setLoading(false);
-      return;
-    }
-
-    if (data.session) {
-      localStorage.setItem('is_new_director', 'true');
-      toast.success(t('auth.accountCreated'));
-    }
-
-    setLoading(false);
   };
+
 
   // ============= RENDER =============
 
@@ -767,7 +776,8 @@ export default function Auth() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">Top Volley Manager</CardTitle>
+          <img src={tvmLogo.url} alt="Top Volley Manager" className="mx-auto h-20 w-auto mb-2" />
+          <CardTitle className="sr-only">Top Volley Manager</CardTitle>
           <CardDescription>{t('auth.manageTeams', 'Gestiona tus equipos y convocatorias')}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -1056,14 +1066,6 @@ export default function Auth() {
                     </div>
                   </div>
 
-                  {/* Turnstile invisible widget */}
-                  <TurnstileWidget
-                    onVerify={turnstile.setToken}
-                    onError={turnstile.clearToken}
-                    onExpire={turnstile.clearToken}
-                    invisible
-                  />
-
                   <Button 
                     type="submit" 
                     className="w-full" 
@@ -1280,14 +1282,6 @@ export default function Auth() {
                           </span>
                         </p>
                       </div>
-
-                      {/* Turnstile invisible widget */}
-                      <TurnstileWidget
-                        onVerify={turnstile.setToken}
-                        onError={turnstile.clearToken}
-                        onExpire={turnstile.clearToken}
-                        invisible
-                      />
 
                       <Button 
                         type="submit" 

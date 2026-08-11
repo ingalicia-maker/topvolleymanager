@@ -7,7 +7,10 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { ClubThemeProvider } from "@/components/ClubThemeProvider";
 import { LanguageRedirect } from "@/components/LanguageRedirect";
 import { SeoHead } from "@/components/SeoHead";
+import { PageViewTracker } from "@/components/PageViewTracker";
 import Auth from "./pages/Auth";
+import AuthConfirm from "./pages/AuthConfirm";
+
 import Index from "./pages/Index";
 import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
@@ -54,6 +57,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <SeoHead />
+           <PageViewTracker />
           <Routes>
           {/* Language-prefixed landing pages */}
           <Route path="/:lang" element={<LandingWrapper />} />
@@ -69,7 +73,9 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/confirm" element={<AuthConfirm />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+
           
           {/* Root: redirect unauthenticated to language-prefixed landing */}
           <Route

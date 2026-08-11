@@ -4,6 +4,7 @@ import * as React from 'npm:react@18.3.1'
 
 import {
   Body,
+  Img,
   Button,
   Container,
   Head,
@@ -32,6 +33,7 @@ export const SignupEmail = ({
     <Preview>Confirma tu email en Top Volley Manager</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Img src="https://www.topvolleymanager.com/__l5e/assets-v1/0cf6ac33-4ab5-4ee2-a321-c637e79542bf/tvm-logo.png" alt="Top Volley Manager" width="200" style={logoStyle} />
         <Heading style={h1}>Confirma tu email</Heading>
         <Text style={text}>
           ¡Gracias por unirte a{' '}
@@ -50,9 +52,17 @@ export const SignupEmail = ({
         <Button style={button} href={confirmationUrl}>
           Verificar email
         </Button>
+        <Text style={text}>
+          Si el botón no funciona, copia y pega este enlace en tu navegador:
+          <br />
+          <Link href={confirmationUrl} style={link}>
+            {confirmationUrl}
+          </Link>
+        </Text>
         <Text style={footer}>
           Si no creaste una cuenta, puedes ignorar este correo.
         </Text>
+
       </Container>
     </Body>
   </Html>
@@ -75,3 +85,5 @@ const button = {
   textDecoration: 'none',
 }
 const footer = { fontSize: '12px', color: '#94a3b8', margin: '30px 0 0' }
+
+const logoStyle = { display: 'block', margin: '0 0 24px', height: 'auto' }
