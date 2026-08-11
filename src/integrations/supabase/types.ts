@@ -1800,7 +1800,7 @@ export type Database = {
     Enums: {
       absence_type: "justified" | "unjustified"
       app_role: "coach" | "director"
-      subscription_status: "free" | "premium" | "vip"
+      subscription_status: "free" | "premium" | "vip" | "starter" | "pro" | "elite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1930,7 +1930,7 @@ export const Constants = {
     Enums: {
       absence_type: ["justified", "unjustified"],
       app_role: ["coach", "director"],
-      subscription_status: ["free", "premium", "vip"],
+      subscription_status: ["free", "premium", "vip", "starter", "pro", "elite"],
     },
   },
 } as const

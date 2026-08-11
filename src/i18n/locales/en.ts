@@ -724,6 +724,9 @@ export default {
   subscription: {
     title: 'Subscription',
     currentPlan: 'Your Current Plan',
+    planUnavailable: 'This plan is not available for purchase right now. Please try again shortly.',
+    purchaseSuccess: 'Purchase successful! Your plan has been updated.',
+    purchaseError: 'Something went wrong with the purchase. Please try again.',
     choosePlan: 'Choose your plan',
     planLimits: 'Your plan limits',
     free: 'Free',

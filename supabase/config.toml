@@ -19,6 +19,8 @@ project_id = "wjfrrtuupmxjxyhpprhh"
     verify_jwt = false
   [functions.process-email-queue]
     verify_jwt = true
+  [functions.revenuecat-webhook]
+    verify_jwt = false
   [functions.send-engagement-email]
     verify_jwt = false
   [functions.send-push-notification]

@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Capacitor } from '@capacitor/core';
 import { useSubscription } from '@/hooks/useSubscription';
+import { usePurchases } from '@/hooks/usePurchases';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -38,7 +40,8 @@ type PlanType = 'starter_monthly' | 'starter_yearly' | 'pro_monthly' | 'pro_year
 export default function Subscription() {
   const { t, i18n } = useTranslation();
   const { subscription, loading, isPaidPlan, canExport, canViewCharts, canUseBusStops, limits } = useSubscription();
-  
+  const { isNative, offerings, purchasePackage } = usePurchases();
+
   const [checkingStripe, setCheckingStripe] = useState(false);
   const [stripeSubscription, setStripeSubscription] = useState<{
     subscribed: boolean;
@@ -69,6 +72,30 @@ export default function Subscription() {
   };
 
   const handleCheckout = async (plan: PlanType) => {
+    // Inside the native app, purchases must go through Apple/Google's own
+    // in-app purchase system (App Store / Play Store review requirement),
+    // not Stripe. The web app keeps using Stripe checkout as before.
+    if (isNative) {
+      const pkg = offerings?.current?.availablePackages.find(p => p.identifier === plan);
+      if (!pkg) {
+        toast.error(t('subscription.planUnavailable'));
+        return;
+      }
+      setProcessingCheckout(true);
+      try {
+        await purchasePackage(pkg);
+        toast.success(t('subscription.purchaseSuccess'));
+      } catch (error: any) {
+        if (!error?.userCancelled) {
+          console.error('Error purchasing package:', error);
+          toast.error(t('subscription.purchaseError'));
+        }
+      } finally {
+        setProcessingCheckout(false);
+      }
+      return;
+    }
+
     setProcessingCheckout(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -90,8 +117,17 @@ export default function Subscription() {
     setShowYearlyOffer(true);
   };
 
-  const handleConfirmCancel = async () => {
-    setShowYearlyOffer(false);
+  const openSubscriptionManagement = async () => {
+    // Purchases made through the app can only be cancelled/managed from
+    // Apple's or Google's own subscription settings, not Stripe's portal.
+    if (isNative) {
+      const url = Capacitor.getPlatform() === 'ios'
+        ? 'https://apps.apple.com/account/subscriptions'
+        : 'https://play.google.com/store/account/subscriptions';
+      window.open(url, '_blank');
+      return;
+    }
+
     setOpeningPortal(true);
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
@@ -107,20 +143,13 @@ export default function Subscription() {
     }
   };
 
+  const handleConfirmCancel = async () => {
+    setShowYearlyOffer(false);
+    await openSubscriptionManagement();
+  };
+
   const handleManageSubscription = async () => {
-    setOpeningPortal(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (error) {
-      console.error('Error opening portal:', error);
-      toast.error('Error al abrir el portal de gestión');
-    } finally {
-      setOpeningPortal(false);
-    }
+    await openSubscriptionManagement();
   };
 
   const handleContactElite = () => {
