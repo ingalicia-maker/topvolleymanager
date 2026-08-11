@@ -1,65 +1,58 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications, type Token } from '@capacitor/push-notifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-
-// Generate VAPID keys for push notifications
-// This is a placeholder - in production you'd generate real keys
-const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
 
 export function usePushNotifications() {
   const { user } = useAuth();
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [permission, setPermission] = useState<'granted' | 'denied' | 'default'>('default');
+  const currentToken = useRef<string | null>(null);
 
   useEffect(() => {
-    const checkSupport = async () => {
-      const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-      setIsSupported(supported);
-      
-      if (supported) {
-        setPermission(Notification.permission);
-        
-        // Check if already subscribed
-        if (user) {
-          const registration = await navigator.serviceWorker.ready;
-          const subscription = await (registration as any).pushManager?.getSubscription();
-          setIsSubscribed(!!subscription);
-        }
-      }
-      
-      setIsLoading(false);
-    };
+    const supported = Capacitor.isNativePlatform();
+    setIsSupported(supported);
 
-    checkSupport();
+    if (!supported) {
+      setIsLoading(false);
+      return;
+    }
+
+    PushNotifications.checkPermissions().then(({ receive }) => {
+      setPermission(receive === 'prompt-with-rationale' ? 'default' : receive as 'granted' | 'denied' | 'default');
+      setIsSubscribed(receive === 'granted');
+      setIsLoading(false);
+    });
+
+    const registrationListener = PushNotifications.addListener('registration', async (token: Token) => {
+      currentToken.current = token.value;
+      if (user) {
+        await saveToken(user.id, token.value);
+      }
+      setIsSubscribed(true);
+    });
+
+    const registrationErrorListener = PushNotifications.addListener('registrationError', (err) => {
+      console.error('Push registration error:', err);
+      toast.error('Error al activar notificaciones');
+    });
+
+    return () => {
+      registrationListener.then(l => l.remove());
+      registrationErrorListener.then(l => l.remove());
+    };
   }, [user]);
 
-  const registerServiceWorker = async () => {
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
-      return registration;
-    } catch (error) {
-      console.error('Service Worker registration failed:', error);
-      throw error;
-    }
+  const saveToken = async (userId: string, token: string) => {
+    const { error } = await supabase.from('push_tokens').upsert(
+      { user_id: userId, token, platform: Capacitor.getPlatform() as 'ios' | 'android' },
+      { onConflict: 'token' }
+    );
+    if (error) console.error('Error saving push token:', error);
   };
 
   const subscribe = useCallback(async () => {
@@ -67,43 +60,15 @@ export function usePushNotifications() {
 
     try {
       setIsLoading(true);
-      
-      // Request permission
-      const permissionResult = await Notification.requestPermission();
-      setPermission(permissionResult);
-      
-      if (permissionResult !== 'granted') {
+      const { receive } = await PushNotifications.requestPermissions();
+      setPermission(receive === 'prompt-with-rationale' ? 'default' : receive as 'granted' | 'denied' | 'default');
+
+      if (receive !== 'granted') {
         toast.error('Necesitas permitir las notificaciones para activarlas');
         return false;
       }
 
-      // Register service worker
-      const registration = await registerServiceWorker();
-      
-      // Subscribe to push
-      const subscription = await (registration as any).pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
-
-      const subscriptionJson = subscription.toJSON();
-      
-      // Save to database
-      const { error } = await supabase.from('push_subscriptions').insert({
-        user_id: user.id,
-        endpoint: subscriptionJson.endpoint!,
-        p256dh: subscriptionJson.keys!.p256dh,
-        auth: subscriptionJson.keys!.auth
-      });
-
-      if (error) {
-        // If duplicate, that's fine
-        if (!error.message.includes('duplicate')) {
-          throw error;
-        }
-      }
-
-      setIsSubscribed(true);
+      await PushNotifications.register();
       toast.success('Notificaciones push activadas');
       return true;
     } catch (error) {
@@ -120,20 +85,10 @@ export function usePushNotifications() {
 
     try {
       setIsLoading(true);
-      
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager?.getSubscription();
-      
-      if (subscription) {
-        await subscription.unsubscribe();
-        
-        // Remove from database
-        await supabase.from('push_subscriptions')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('endpoint', subscription.endpoint);
+      if (currentToken.current) {
+        await supabase.from('push_tokens').delete().eq('token', currentToken.current);
       }
-
+      await PushNotifications.removeAllDeliveredNotifications();
       setIsSubscribed(false);
       toast.success('Notificaciones push desactivadas');
       return true;

@@ -21,6 +21,8 @@ project_id = "wjfrrtuupmxjxyhpprhh"
     verify_jwt = true
   [functions.send-engagement-email]
     verify_jwt = false
+  [functions.send-push-notification]
+    verify_jwt = false
   [functions.send-verification-email]
     verify_jwt = false
   [functions.verify-email-code]
