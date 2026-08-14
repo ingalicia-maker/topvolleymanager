@@ -89,7 +89,8 @@ export function usePushNotifications() {
     try {
       setIsLoading(true);
       if (currentToken.current) {
-        await supabase.from('push_tokens').delete().eq('token', currentToken.current);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase.from('push_tokens' as any) as any).delete().eq('token', currentToken.current);
       }
       await PushNotifications.removeAllDeliveredNotifications();
       setIsSubscribed(false);
