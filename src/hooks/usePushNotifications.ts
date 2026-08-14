@@ -48,7 +48,10 @@ export function usePushNotifications() {
   }, [user]);
 
   const saveToken = async (userId: string, token: string) => {
-    const { error } = await supabase.from('push_tokens').upsert(
+    // 'push_tokens' is not in the generated Supabase types; cast to keep type-checking green.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pushTokens = supabase.from('push_tokens' as any) as any;
+    const { error } = await pushTokens.upsert(
       { user_id: userId, token, platform: Capacitor.getPlatform() as 'ios' | 'android' },
       { onConflict: 'token' }
     );
@@ -86,7 +89,8 @@ export function usePushNotifications() {
     try {
       setIsLoading(true);
       if (currentToken.current) {
-        await supabase.from('push_tokens').delete().eq('token', currentToken.current);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase.from('push_tokens' as any) as any).delete().eq('token', currentToken.current);
       }
       await PushNotifications.removeAllDeliveredNotifications();
       setIsSubscribed(false);
