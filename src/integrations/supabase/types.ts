@@ -1340,30 +1340,6 @@ export type Database = {
         }
         Relationships: []
       }
-      push_tokens: {
-        Row: {
-          created_at: string
-          id: string
-          platform: string
-          token: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          platform: string
-          token: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          platform?: string
-          token?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       resources: {
         Row: {
           category: string
@@ -1800,7 +1776,7 @@ export type Database = {
     Enums: {
       absence_type: "justified" | "unjustified"
       app_role: "coach" | "director"
-      subscription_status: "free" | "premium" | "vip" | "starter" | "pro" | "elite"
+      subscription_status: "free" | "premium" | "vip"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1930,7 +1906,7 @@ export const Constants = {
     Enums: {
       absence_type: ["justified", "unjustified"],
       app_role: ["coach", "director"],
-      subscription_status: ["free", "premium", "vip", "starter", "pro", "elite"],
+      subscription_status: ["free", "premium", "vip"],
     },
   },
 } as const
