@@ -1,0 +1,1 @@
+ALTER TABLE public.players ADD COLUMN IF NOT EXISTS dni text, ADD COLUMN IF NOT EXISTS birth_day integer, ADD COLUMN IF NOT EXISTS birth_month integer;
