@@ -49,7 +49,8 @@ export function usePushNotifications() {
 
   const saveToken = async (userId: string, token: string) => {
     // 'push_tokens' is not in the generated Supabase types; cast to keep type-checking green.
-    const pushTokens = supabase.from('push_tokens') as unknown as ReturnType<typeof supabase.from<'push_subscriptions'>>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pushTokens = supabase.from('push_tokens' as any) as any;
     const { error } = await pushTokens.upsert(
       { user_id: userId, token, platform: Capacitor.getPlatform() as 'ios' | 'android' },
       { onConflict: 'token' }
