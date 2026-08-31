@@ -121,6 +121,13 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
       setPlayerTeamAssignments({});
     } else {
       setSelectedPlayers(new Set(unassignedPlayers.map(p => p.id)));
+      setPlayerTeamAssignments(prev => {
+        const next = { ...prev };
+        unassignedPlayers.forEach(p => {
+          if (!next[p.id]) next[p.id] = (p.teams || []).filter(t => currentTeamIds.includes(t));
+        });
+        return next;
+      });
     }
   };
 
