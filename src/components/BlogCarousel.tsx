@@ -118,12 +118,10 @@ export function BlogCarousel() {
                           {getCategoryName(article.category, currentLang)}
                         </Badge>
                       )}
-                      <h3 className="font-semibold text-sm line-clamp-2 mb-1">
+                      <h3 className="font-semibold text-sm line-clamp-2">
                         {article.title}
                       </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {article.published_at && format(new Date(article.published_at), 'PP', { locale: getLocale() })}
-                      </p>
+
                     </div>
                   </div>
                 </CardContent>
