@@ -331,7 +331,9 @@ export default function SeasonManagement() {
                         </span>
                         <span className="flex items-center gap-1">
                           <User className="h-4 w-4" />
-                          {stats.playersRated} jugadoras
+                          {season.is_active
+                            ? `${players.length} jugadoras`
+                            : `${stats.playersRated} jugadoras valoradas`}
                         </span>
                       </div>
 
