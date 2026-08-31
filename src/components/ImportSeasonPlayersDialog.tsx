@@ -228,7 +228,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
             <div className="text-center py-8">
               <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-muted-foreground">
-                {t('seasons.noUnassignedPlayers', 'Todas las jugadoras ya están asignadas a equipos')}
+                {t('seasons.noPlayersFound', 'No se han encontrado jugadoras con este filtro')}
               </p>
             </div>
           ) : (
