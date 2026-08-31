@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // This edge function generates and publishes a new blog article using AI
-// It's triggered by a cron job every Thursday at 13:00 UTC (15:00 CET)
+// It's triggered by a cron job on the 1st of every month at 13:00 UTC (15:00 CET)
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,15 +17,34 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Monthly deduplication: skip if an article was already published this month
+    const nowDate = new Date();
+    const monthStart = new Date(Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth(), 1));
+    const nextMonthStart = new Date(Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth() + 1, 1));
+
+    const { count: monthCount } = await supabase
+      .from("blog_articles")
+      .select("*", { count: "exact", head: true })
+      .gte("published_at", monthStart.toISOString())
+      .lt("published_at", nextMonthStart.toISOString());
+
+    if ((monthCount || 0) > 0) {
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: "Article already published this month" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Get existing article count to determine the topic
     const { count } = await supabase
       .from("blog_articles")
       .select("*", { count: "exact", head: true });
 
-    const articleNumber = (count || 0) + 1;
+    const articleNumber = Math.floor((count || 0) / 3) + 1;
+
 
     // Volleyball & coaching topics rotation
     const topics = [
@@ -88,14 +107,14 @@ Return a JSON object with these fields:
 
 Return ONLY valid JSON, no markdown fencing.`;
 
-    const aiResponse = await fetch("https://api.lovable.dev/v1/chat/completions", {
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${lovableApiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.6-flash",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
       }),
@@ -132,11 +151,17 @@ Return ONLY valid JSON, no markdown fencing.`;
 
     const categoryId = categories?.id || null;
 
-    // Calculate next Thursday at 15:00 CET
-    const now = new Date();
-    const publishedAt = new Date(now);
-    // Set to 13:00 UTC (15:00 CET)
+    // Publish now (13:00 UTC reference time)
+    const publishedAt = new Date();
     publishedAt.setUTCHours(13, 0, 0, 0);
+
+    // Ensure all 3 languages were returned before inserting anything
+    const missing = ["title", "content", "title_es", "content_es", "title_it", "content_it"].filter(
+      (k) => !articleData[k]
+    );
+    if (missing.length > 0) {
+      throw new Error(`AI response missing translated fields: ${missing.join(", ")}`);
+    }
 
     // Insert articles in all 3 languages
     const articles = [

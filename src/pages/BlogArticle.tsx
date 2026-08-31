@@ -198,10 +198,6 @@ export default function BlogArticle() {
               )}
               <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
               {article.excerpt && <p className="text-xl text-muted-foreground mb-4">{article.excerpt}</p>}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                {article.published_at && format(new Date(article.published_at), "d MMMM yyyy", { locale: getDateLocale() })}
-              </div>
             </header>
 
             {article.featured_image && (

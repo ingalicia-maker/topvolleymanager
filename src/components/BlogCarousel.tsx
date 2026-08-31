@@ -92,10 +92,8 @@ export function BlogCarousel() {
                             {article.excerpt}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto">
-                          <Calendar className="h-3 w-3" />
-                          {article.published_at && format(new Date(article.published_at), 'PPP', { locale: getLocale() })}
-                        </div>
+                        <div className="mt-auto" />
+
                       </CardContent>
                     </Card>
                   </Link>
@@ -120,12 +118,10 @@ export function BlogCarousel() {
                           {getCategoryName(article.category, currentLang)}
                         </Badge>
                       )}
-                      <h3 className="font-semibold text-sm line-clamp-2 mb-1">
+                      <h3 className="font-semibold text-sm line-clamp-2">
                         {article.title}
                       </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {article.published_at && format(new Date(article.published_at), 'PP', { locale: getLocale() })}
-                      </p>
+
                     </div>
                   </div>
                 </CardContent>
