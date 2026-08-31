@@ -282,6 +282,13 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
           </DialogDescription>
         </DialogHeader>
 
+        <Tabs defaultValue="players">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="players">{t('nav.players', 'Jugadoras')}</TabsTrigger>
+            <TabsTrigger value="coaches">{t('seasons.reassignCoaches', 'Entrenadores')}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="players" className="mt-0">
         <div className="py-4">
           <div className="flex items-center gap-2 mb-3">
             <Input
