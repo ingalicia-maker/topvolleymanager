@@ -428,6 +428,99 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
             )}
           </Button>
         </DialogFooter>
+          </TabsContent>
+
+          <TabsContent value="coaches" className="mt-0">
+            <div className="py-4">
+              <p className="text-sm text-muted-foreground mb-3">
+                {t('seasons.reassignCoachesDescription', 'Revisa y actualiza los equipos asignados a cada entrenador para la nueva temporada')}
+              </p>
+
+              {loadingCoaches ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : coaches.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-muted-foreground">
+                    {t('seasons.noCoaches', 'No hay entrenadores en el club')}
+                  </p>
+                </div>
+              ) : (
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-3">
+                    {coaches.map((coach) => {
+                      const assigned = coachTeams[coach.id] || [];
+                      return (
+                        <div key={coach.id} className="p-3 rounded-lg border border-border">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{coach.name}</p>
+                              <p className="text-xs text-muted-foreground truncate">{coach.email}</p>
+                            </div>
+                            <Badge variant="outline" className="text-xs shrink-0">
+                              {coach.role === 'director'
+                                ? t('roles.director', 'Director')
+                                : t('roles.coach', 'Entrenador')}
+                            </Badge>
+                          </div>
+
+                          <div className="mt-3 pt-3 border-t">
+                            <Label className="text-xs flex items-center gap-1 mb-2">
+                              <ArrowRight className="h-3 w-3" />
+                              {t('seasons.assignToTeams', 'Asignar a equipos')}:
+                            </Label>
+                            <div className="flex flex-wrap gap-2">
+                              {teams.map((team) => (
+                                <label
+                                  key={team.id}
+                                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
+                                    assigned.includes(team.id)
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'bg-muted hover:bg-muted/80'
+                                  }`}
+                                >
+                                  <Checkbox
+                                    checked={assigned.includes(team.id)}
+                                    onCheckedChange={(checked) =>
+                                      handleCoachTeam(coach.id, team.id, !!checked)
+                                    }
+                                    className="h-3 w-3"
+                                  />
+                                  {team.name}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                {t('common.cancel', 'Cancelar')}
+              </Button>
+              <Button onClick={handleSaveCoaches} disabled={savingCoaches || coaches.length === 0}>
+                {savingCoaches ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    {t('common.saving', 'Guardando...')}
+                  </>
+                ) : (
+                  <>
+                    <Users className="h-4 w-4 mr-2" />
+                    {t('seasons.saveCoachAssignments', 'Guardar asignaciones')}
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
