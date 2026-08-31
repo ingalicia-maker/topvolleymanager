@@ -275,7 +275,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            {t('seasons.importPlayers', 'Importar Jugadoras')}
+            {t('seasons.importPlayersAndCoaches', 'Importar Jugadoras y Entrenadores')}
           </DialogTitle>
           <DialogDescription>
             {t('seasons.importDescription', 'Selecciona jugadoras de temporadas anteriores y asígnalas a equipos actuales')}
