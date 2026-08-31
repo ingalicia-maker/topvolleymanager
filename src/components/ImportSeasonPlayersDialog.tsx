@@ -38,6 +38,8 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
   const [playerTeamAssignments, setPlayerTeamAssignments] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [onlyUnassigned, setOnlyUnassigned] = useState(false);
+  const [search, setSearch] = useState('');
 
   // Fetch all players from the club (including those not in current season teams)
   useEffect(() => {
