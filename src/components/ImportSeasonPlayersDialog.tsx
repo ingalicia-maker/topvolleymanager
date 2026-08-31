@@ -195,6 +195,23 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
         </DialogHeader>
 
         <div className="py-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('seasons.searchPlayer', 'Buscar jugadora...')}
+              className="h-9"
+            />
+            <Button
+              type="button"
+              variant={onlyUnassigned ? 'default' : 'outline'}
+              size="sm"
+              className="shrink-0"
+              onClick={() => setOnlyUnassigned(v => !v)}
+            >
+              {t('seasons.onlyUnassigned', 'Sin equipo')}
+            </Button>
+          </div>
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
