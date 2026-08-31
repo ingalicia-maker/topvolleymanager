@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +39,8 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
   const [playerTeamAssignments, setPlayerTeamAssignments] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [onlyUnassigned, setOnlyUnassigned] = useState(false);
+  const [search, setSearch] = useState('');
 
   // Fetch all players from the club (including those not in current season teams)
   useEffect(() => {
@@ -62,17 +65,30 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
     fetchAllPlayers();
   }, [club?.id, open]);
 
-  // Find players not assigned to any current team
+  const currentTeamIds = teams.map(t => t.id);
+  const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Players available to bring into the new season
   const unassignedPlayers = allPlayers.filter(player => {
     const playerTeams = player.teams || [];
-    const currentTeamIds = teams.map(t => t.id);
-    return !playerTeams.some(teamId => currentTeamIds.includes(teamId));
+    if (onlyUnassigned && playerTeams.some(teamId => currentTeamIds.includes(teamId))) return false;
+    if (search.trim()) {
+      const q = normalize(search.trim());
+      const full = normalize(`${player.name} ${player.surname1 || ''}`);
+      if (!full.includes(q)) return false;
+    }
+    return true;
   });
 
   const handlePlayerSelect = (playerId: string, checked: boolean) => {
     const newSelected = new Set(selectedPlayers);
     if (checked) {
       newSelected.add(playerId);
+      // Pre-fill with the player's existing teams so it's a quick edit
+      if (!playerTeamAssignments[playerId]) {
+        const existing = (allPlayers.find(p => p.id === playerId)?.teams || []).filter(t => currentTeamIds.includes(t));
+        setPlayerTeamAssignments(prev => ({ ...prev, [playerId]: existing }));
+      }
     } else {
       newSelected.delete(playerId);
       // Also remove team assignment
@@ -105,6 +121,13 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
       setPlayerTeamAssignments({});
     } else {
       setSelectedPlayers(new Set(unassignedPlayers.map(p => p.id)));
+      setPlayerTeamAssignments(prev => {
+        const next = { ...prev };
+        unassignedPlayers.forEach(p => {
+          if (!next[p.id]) next[p.id] = (p.teams || []).filter(t => currentTeamIds.includes(t));
+        });
+        return next;
+      });
     }
   };
 
@@ -180,6 +203,23 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
         </DialogHeader>
 
         <div className="py-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('seasons.searchPlayer', 'Buscar jugadora...')}
+              className="h-9"
+            />
+            <Button
+              type="button"
+              variant={onlyUnassigned ? 'default' : 'outline'}
+              size="sm"
+              className="shrink-0"
+              onClick={() => setOnlyUnassigned(v => !v)}
+            >
+              {t('seasons.onlyUnassigned', 'Sin equipo')}
+            </Button>
+          </div>
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -188,7 +228,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
             <div className="text-center py-8">
               <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-muted-foreground">
-                {t('seasons.noUnassignedPlayers', 'Todas las jugadoras ya están asignadas a equipos')}
+                {t('seasons.noPlayersFound', 'No se han encontrado jugadoras con este filtro')}
               </p>
             </div>
           ) : (
