@@ -92,10 +92,8 @@ export function BlogCarousel() {
                             {article.excerpt}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto">
-                          <Calendar className="h-3 w-3" />
-                          {article.published_at && format(new Date(article.published_at), 'PPP', { locale: getLocale() })}
-                        </div>
+                        <div className="mt-auto" />
+
                       </CardContent>
                     </Card>
                   </Link>
