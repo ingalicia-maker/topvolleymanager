@@ -107,14 +107,14 @@ Return a JSON object with these fields:
 
 Return ONLY valid JSON, no markdown fencing.`;
 
-    const aiResponse = await fetch("https://api.lovable.dev/v1/chat/completions", {
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${lovableApiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.6-flash",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
       }),
@@ -151,11 +151,17 @@ Return ONLY valid JSON, no markdown fencing.`;
 
     const categoryId = categories?.id || null;
 
-    // Calculate next Thursday at 15:00 CET
-    const now = new Date();
-    const publishedAt = new Date(now);
-    // Set to 13:00 UTC (15:00 CET)
+    // Publish now (13:00 UTC reference time)
+    const publishedAt = new Date();
     publishedAt.setUTCHours(13, 0, 0, 0);
+
+    // Ensure all 3 languages were returned before inserting anything
+    const missing = ["title", "content", "title_es", "content_es", "title_it", "content_it"].filter(
+      (k) => !articleData[k]
+    );
+    if (missing.length > 0) {
+      throw new Error(`AI response missing translated fields: ${missing.join(", ")}`);
+    }
 
     // Insert articles in all 3 languages
     const articles = [
