@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // This edge function generates and publishes a new blog article using AI
-// It's triggered by a cron job every Thursday at 13:00 UTC (15:00 CET)
+// It's triggered by a cron job on the 1st of every month at 13:00 UTC (15:00 CET)
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,15 +17,34 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Monthly deduplication: skip if an article was already published this month
+    const nowDate = new Date();
+    const monthStart = new Date(Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth(), 1));
+    const nextMonthStart = new Date(Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth() + 1, 1));
+
+    const { count: monthCount } = await supabase
+      .from("blog_articles")
+      .select("*", { count: "exact", head: true })
+      .gte("published_at", monthStart.toISOString())
+      .lt("published_at", nextMonthStart.toISOString());
+
+    if ((monthCount || 0) > 0) {
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: "Article already published this month" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Get existing article count to determine the topic
     const { count } = await supabase
       .from("blog_articles")
       .select("*", { count: "exact", head: true });
 
-    const articleNumber = (count || 0) + 1;
+    const articleNumber = Math.floor((count || 0) / 3) + 1;
+
 
     // Volleyball & coaching topics rotation
     const topics = [
