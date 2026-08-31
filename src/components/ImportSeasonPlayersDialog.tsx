@@ -64,17 +64,30 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
     fetchAllPlayers();
   }, [club?.id, open]);
 
-  // Find players not assigned to any current team
+  const currentTeamIds = teams.map(t => t.id);
+  const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Players available to bring into the new season
   const unassignedPlayers = allPlayers.filter(player => {
     const playerTeams = player.teams || [];
-    const currentTeamIds = teams.map(t => t.id);
-    return !playerTeams.some(teamId => currentTeamIds.includes(teamId));
+    if (onlyUnassigned && playerTeams.some(teamId => currentTeamIds.includes(teamId))) return false;
+    if (search.trim()) {
+      const q = normalize(search.trim());
+      const full = normalize(`${player.name} ${player.surname1 || ''}`);
+      if (!full.includes(q)) return false;
+    }
+    return true;
   });
 
   const handlePlayerSelect = (playerId: string, checked: boolean) => {
     const newSelected = new Set(selectedPlayers);
     if (checked) {
       newSelected.add(playerId);
+      // Pre-fill with the player's existing teams so it's a quick edit
+      if (!playerTeamAssignments[playerId]) {
+        const existing = (allPlayers.find(p => p.id === playerId)?.teams || []).filter(t => currentTeamIds.includes(t));
+        setPlayerTeamAssignments(prev => ({ ...prev, [playerId]: existing }));
+      }
     } else {
       newSelected.delete(playerId);
       // Also remove team assignment
