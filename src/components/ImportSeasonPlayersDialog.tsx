@@ -12,6 +12,7 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useClub } from '@/hooks/useClub';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, UserPlus, ArrowRight, RefreshCw } from 'lucide-react';
 
 interface Player {
@@ -20,6 +21,14 @@ interface Player {
   surname1: string | null;
   phone: string;
   teams: string[] | null;
+}
+
+interface Coach {
+  id: string;
+  name: string;
+  email: string;
+  assigned_teams: string[] | null;
+  role: string;
 }
 
 interface ImportSeasonPlayersDialogProps {
@@ -32,7 +41,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
   const { t } = useTranslation();
   const { teams } = useTeams();
   const { players: currentPlayers, refetch } = usePlayers();
-  const { club } = useClub();
+  const { club, members } = useClub();
   
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
@@ -41,6 +50,11 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
   const [importing, setImporting] = useState(false);
   const [onlyUnassigned, setOnlyUnassigned] = useState(false);
   const [search, setSearch] = useState('');
+
+  const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [coachTeams, setCoachTeams] = useState<Record<string, string[]>>({});
+  const [loadingCoaches, setLoadingCoaches] = useState(false);
+  const [savingCoaches, setSavingCoaches] = useState(false);
 
   // Fetch all players from the club (including those not in current season teams)
   useEffect(() => {
@@ -64,6 +78,72 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
 
     fetchAllPlayers();
   }, [club?.id, open]);
+
+  // Fetch club coaches/directors so their teams can be reassigned for the new season
+  useEffect(() => {
+    const fetchCoaches = async () => {
+      if (!club?.id || !open || members.length === 0) return;
+      setLoadingCoaches(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name, email, assigned_teams')
+        .in('id', members.map(m => m.user_id))
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching coaches:', error);
+      } else {
+        const enriched = (data || []).map(p => ({
+          ...p,
+          role: members.find(m => m.user_id === p.id)?.role || 'coach',
+        })) as Coach[];
+        setCoaches(enriched);
+        setCoachTeams(
+          Object.fromEntries(enriched.map(c => [c.id, (c.assigned_teams || [])]))
+        );
+      }
+      setLoadingCoaches(false);
+    };
+
+    fetchCoaches();
+  }, [club?.id, open, members]);
+
+  const handleCoachTeam = (coachId: string, teamId: string, checked: boolean) => {
+    setCoachTeams(prev => {
+      const current = prev[coachId] || [];
+      return {
+        ...prev,
+        [coachId]: checked ? [...current, teamId] : current.filter(t => t !== teamId),
+      };
+    });
+  };
+
+  const handleSaveCoaches = async () => {
+    setSavingCoaches(true);
+    try {
+      for (const coach of coaches) {
+        const next = coachTeams[coach.id] || [];
+        const prev = coach.assigned_teams || [];
+        const unchanged = next.length === prev.length && next.every(t => prev.includes(t));
+        if (unchanged) continue;
+
+        const { error } = await supabase
+          .from('profiles')
+          .update({ assigned_teams: next })
+          .eq('id', coach.id);
+        if (error) throw error;
+      }
+
+      setCoaches(prev => prev.map(c => ({ ...c, assigned_teams: coachTeams[c.id] || [] })));
+      toast.success(t('seasons.coachesUpdated', 'Entrenadores reasignados correctamente'));
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error updating coaches:', error);
+      toast.error(t('seasons.coachesUpdateError', 'Error al reasignar entrenadores'));
+    } finally {
+      setSavingCoaches(false);
+    }
+  };
 
   const currentTeamIds = teams.map(t => t.id);
   const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
