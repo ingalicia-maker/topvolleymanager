@@ -7,7 +7,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { TeamCard } from '@/components/TeamCard';
 import { Button } from '@/components/ui/button';
 import { usePlayers } from '@/hooks/usePlayers';
-import { useTeams } from '@/hooks/useTeams';
+import { useTeams, DbTeam } from '@/hooks/useTeams';
+import { useClub } from '@/hooks/useClub';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -27,6 +28,16 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const TEAM_COLORS = [
   'hsl(25, 95%, 53%)',
@@ -42,7 +53,8 @@ const TEAM_COLORS = [
 export default function Teams() {
   const { t } = useTranslation();
   const { players } = usePlayers();
-  const { teams, loading, addTeam } = useTeams();
+  const { teams, loading, addTeam, deleteTeam } = useTeams();
+  const { isDirector } = useClub();
   const { maxTeams, isPremium } = useSubscription();
   const [open, setOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
@@ -50,6 +62,8 @@ export default function Teams() {
   const [newTeamColor, setNewTeamColor] = useState(TEAM_COLORS[0]);
   const [newTeamGender, setNewTeamGender] = useState<'male' | 'female'>('female');
   const [saving, setSaving] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState<DbTeam | null>(null);
+  const [deleting, setDeleting] = useState(false);
   
   const canAddTeam = isPremium || teams.length < maxTeams;
 
@@ -94,6 +108,14 @@ export default function Teams() {
       setOpen(false);
     }
     setSaving(false);
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!teamToDelete) return;
+    setDeleting(true);
+    await deleteTeam(teamToDelete.id);
+    setDeleting(false);
+    setTeamToDelete(null);
   };
 
   if (loading) {
@@ -210,11 +232,31 @@ export default function Teams() {
             <TeamCard 
               key={team.id} 
               team={team} 
-              playerCount={getPlayerCount(team.id)} 
+              playerCount={getPlayerCount(team.id)}
+              onDelete={isDirector ? setTeamToDelete : undefined}
+              deleteLabel={t('common.delete')}
             />
           ))
         )}
       </main>
+      <AlertDialog open={!!teamToDelete} onOpenChange={(o) => !o && setTeamToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('teams.deleteConfirm')}</AlertDialogTitle>
+            <AlertDialogDescription>{teamToDelete?.name}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTeam}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? t('common.loading') : t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <BottomNav />
     </div>
   );
