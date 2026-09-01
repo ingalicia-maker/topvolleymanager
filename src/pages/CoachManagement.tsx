@@ -32,6 +32,17 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useConversations } from '@/hooks/useConversations';
 import { CoachDetailDialog } from '@/components/CoachDetailDialog';
+import { Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface CoachProfile {
   id: string;
@@ -54,7 +65,7 @@ export default function CoachManagement() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { loading: roleLoading, profile: currentUserProfile, isDirector } = useUserRole();
-  const { club, members: clubMembers, loading: clubLoading } = useClub();
+  const { club, members: clubMembers, loading: clubLoading, removeMember, isDirector: isClubDirector } = useClub();
   const { user } = useAuth();
   const { teams } = useTeams();
   const { maxCoaches, isPaidPlan } = useSubscription();
@@ -74,6 +85,36 @@ export default function CoachManagement() {
   // Coach detail dialog
   const [selectedCoach, setSelectedCoach] = useState<CoachProfile | null>(null);
   const [coachDetailOpen, setCoachDetailOpen] = useState(false);
+  const [coachToRemove, setCoachToRemove] = useState<CoachProfile | null>(null);
+  const [removing, setRemoving] = useState(false);
+
+  const handleRemoveFromClub = async () => {
+    if (!coachToRemove) return;
+    setRemoving(true);
+    try {
+      const member = clubMembers.find(m => m.user_id === coachToRemove.id);
+      if (!member) throw new Error('member not found');
+
+      const ok = await removeMember(member.id);
+      if (!ok) throw new Error('remove failed');
+
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', coachToRemove.id)
+        .eq('role', 'coach');
+
+      toast.success(t('coachManagement.removedFromClub'));
+      queryClient.invalidateQueries({ queryKey: ['all-user-roles'] });
+      queryClient.invalidateQueries({ queryKey: ['club-member-profiles'] });
+      refetch();
+      setCoachToRemove(null);
+    } catch (error) {
+      console.error('Error removing coach from club:', error);
+      toast.error(t('coachManagement.errorRemovingFromClub'));
+    }
+    setRemoving(false);
+  };
 
   const handleDirectMessage = async (userId: string) => {
     try {
@@ -587,6 +628,20 @@ export default function CoachManagement() {
                           {t('coachManagement.revoke')}
                         </Button>
                       )}
+                      {isClubDirector && coach.id !== user?.id && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          aria-label={t('coachManagement.removeFromClub')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCoachToRemove(coach);
+                          }}
+                          className="gap-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
@@ -595,6 +650,27 @@ export default function CoachManagement() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!coachToRemove} onOpenChange={(o) => !o && setCoachToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('coachManagement.removeFromClubTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('coachManagement.removeFromClubDesc', { name: coachToRemove?.name || '' })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removing}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveFromClub}
+              disabled={removing}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {removing ? t('common.loading') : t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Message Dialog */}
       <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
