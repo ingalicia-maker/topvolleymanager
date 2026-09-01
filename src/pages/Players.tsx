@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Trash2, Upload, Star, Download, Lock } from 'lucide-react';
+import { Plus, Search, Trash2, Upload, Star, Download, Lock, Archive } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -26,12 +26,14 @@ import {
 
 export default function Players() {
   const { t } = useTranslation();
-  const { players, loading, deletePlayer, refetch } = usePlayers();
+  const { players, archivedPlayers, loading, deletePlayer, archivePlayer, unarchivePlayer, refetch } = usePlayers();
   const { canExport, isPremium } = useSubscription();
   const [search, setSearch] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
 
   const exportToExcel = () => {
     if (!canExport) {
@@ -55,7 +57,9 @@ export default function Players() {
     XLSX.writeFile(wb, 'players.xlsx');
   };
 
-  const filteredPlayers = players.filter(p => {
+  const visiblePlayers = showArchived ? archivedPlayers : players;
+
+  const filteredPlayers = visiblePlayers.filter(p => {
     const q = search.toLowerCase();
     const fullName = [p.name, p.surname1, p.surname2].filter(Boolean).join(' ').toLowerCase();
     return fullName.includes(q) || p.name.toLowerCase().includes(q);
@@ -130,6 +134,14 @@ export default function Players() {
                     <Star className="h-4 w-4" />
                   </Button>
                 </Link>
+                <Button
+                  variant={showArchived ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setShowArchived(v => !v)}
+                  aria-label={t('players.archived')}
+                >
+                  <Archive className="h-4 w-4" />
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => setIsSelecting(true)}>
                   {t('common.edit')}
                 </Button>
@@ -156,6 +168,13 @@ export default function Players() {
         }
       />
       <div className="p-4 space-y-4">
+        {showArchived && (
+          <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+            <Archive className="h-4 w-4 shrink-0" />
+            <span>{t('players.archivedHint')}</span>
+          </div>
+        )}
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -169,7 +188,11 @@ export default function Players() {
         <div className="space-y-2">
           {filteredPlayers.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              {players.length === 0 ? t('players.noPlayers') : t('players.notFound')}
+              {showArchived
+                ? t('players.noArchived')
+                : players.length === 0
+                  ? t('players.noPlayers')
+                  : t('players.notFound')}
             </p>
           ) : (
             filteredPlayers.map(player => (
@@ -179,12 +202,38 @@ export default function Players() {
                 selectable={isSelecting}
                 selected={selectedPlayers.includes(player.id)}
                 onSelect={togglePlayer}
+                onArchive={showArchived ? undefined : archivePlayer}
+                onUnarchive={showArchived ? unarchivePlayer : undefined}
+                onDelete={setPlayerToDelete}
+                archiveLabel={t('players.archive')}
+                unarchiveLabel={t('players.unarchive')}
+                deleteLabel={t('common.delete')}
               />
             ))
           )}
         </div>
       </div>
       
+      <AlertDialog open={!!playerToDelete} onOpenChange={(open) => !open && setPlayerToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('players.deleteConfirm')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('players.deleteCount', { count: 1 })}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (playerToDelete) await deletePlayer(playerToDelete);
+                setPlayerToDelete(null);
+              }}
+            >
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ImportPlayersDialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
