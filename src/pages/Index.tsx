@@ -50,6 +50,7 @@ export default function Index() {
   const { totalUnread: messageUnread } = useConversations();
   const { isPremium, subscription } = useSubscription();
   const { signOut } = useAuth();
+  const { activeSeason } = useSeasons();
 
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
