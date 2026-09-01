@@ -548,6 +548,20 @@ export default function PlayerDetail() {
               {player.birth_year && (
                 <p className="text-sm text-muted-foreground">{t('players.bornIn', { year: player.birth_year })}</p>
               )}
+              {playerTeamOptions.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {playerTeamOptions.map(team => (
+                    <Badge
+                      key={team.id}
+                      variant="secondary"
+                      className="text-[10px] px-1.5 py-0"
+                      style={{ backgroundColor: `${team.color}20`, color: team.color }}
+                    >
+                      {team.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
               {photoUrl && (
                 <Button
                   variant="link"
