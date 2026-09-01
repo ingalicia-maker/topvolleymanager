@@ -113,6 +113,9 @@ export default function Index() {
           )}
           <div>
             <h1 className="text-2xl font-bold mb-1">{clubName}</h1>
+            {activeSeason && (
+              <p className="text-primary-foreground/90 text-sm font-medium">{activeSeason.name}</p>
+            )}
             <p className="text-primary-foreground/80 text-sm">{t('common.manageTeams')}</p>
           </div>
         </div>
