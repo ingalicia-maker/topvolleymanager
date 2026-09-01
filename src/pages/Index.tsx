@@ -31,6 +31,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useConversations } from '@/hooks/useConversations';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
+import { useSeasons } from '@/hooks/useSeasons';
 
 const LANGUAGES = [
   { code: 'es', name: 'Español', flag: '🇪🇸' },
