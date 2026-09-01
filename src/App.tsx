@@ -47,6 +47,8 @@ import Resources from "./pages/Resources";
 import ResourcesAdmin from "./pages/ResourcesAdmin";
 import Exercises from "./pages/Exercises";
 import NewsletterAdmin from "./pages/NewsletterAdmin";
+import CoachHub from "./pages/CoachHub";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -242,6 +244,15 @@ const App = () => (
             }
           />
           <Route
+            path="/coach"
+            element={
+              <AuthGuard>
+                <CoachHub />
+              </AuthGuard>
+            }
+          />
+          <Route
+
             path="/admin"
             element={
               <AuthGuard>

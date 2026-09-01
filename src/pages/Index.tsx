@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut, UsersRound, Plus, MessageSquare } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut, UsersRound, Plus, MessageSquare, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
@@ -190,6 +190,14 @@ export default function Index() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              {subscription.isAdmin && (
+                <DropdownMenuItem asChild>
+                  <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                    <Shield className="h-4 w-4" />
+                    {t('nav.admin')}
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
                   <User className="h-4 w-4" />
@@ -197,6 +205,7 @@ export default function Index() {
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
+
           </DropdownMenu>
         </div>
       </div>
