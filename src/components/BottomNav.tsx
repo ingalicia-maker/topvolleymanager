@@ -1,4 +1,4 @@
-import { Home, UserCircle, AlertTriangle, Star, Whistle } from 'lucide-react';
+import { Home, UserCircle, AlertTriangle, Star, ClipboardList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from './NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -10,7 +10,7 @@ export function BottomNav() {
   // Admin moved to the profile dropdown in the top header.
   const navItems = [
     { to: '/', icon: Home, labelKey: 'nav.home', tourId: 'home' },
-    { to: '/coach', icon: Whistle, labelKey: 'nav.coach', tourId: 'coach' },
+    { to: '/coach', icon: ClipboardList, labelKey: 'nav.coach', tourId: 'coach' },
     ...(isDirector ? [{ to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' }] : []),
     { to: '/ratings', icon: Star, labelKey: 'nav.ratings', tourId: 'ratings' },
     { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences', tourId: 'absences' },
