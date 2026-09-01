@@ -35,6 +35,7 @@ export default {
 
   // Navigation
   nav: {
+    coach: 'Entrenador',
     home: 'Inicio',
     players: 'Jugadoras',
     teams: 'Equipos',
@@ -46,6 +47,19 @@ export default {
     ratings: 'Valoraciones',
     messages: 'Mensajes',
     admin: 'Admin',
+  },
+
+  coachHub: {
+    title: 'Zona Entrenador',
+    subtitle: 'Gestiona tus equipos y tu día a día',
+    myTeams: 'Mis equipos',
+    noTeams: 'Todavía no tienes equipos asignados',
+    management: 'Gestiones',
+    trainings: 'Entrenamientos y partidos',
+    trainingsDesc: 'Consulta y gestiona el calendario',
+    createEventDesc: 'Añade un entrenamiento o partido',
+    absencesDesc: 'Controla las ausencias de tus jugadoras',
+    ratingsDesc: 'Valora la evolución de tus jugadoras',
   },
 
   // Auth

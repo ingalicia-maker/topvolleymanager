@@ -35,6 +35,7 @@ export default {
 
   // Navigation
   nav: {
+    coach: 'Coach',
     home: 'Home',
     players: 'Players',
     teams: 'Teams',
@@ -46,6 +47,19 @@ export default {
     ratings: 'Ratings',
     messages: 'Messages',
     admin: 'Admin',
+  },
+
+  coachHub: {
+    title: 'Coach Zone',
+    subtitle: 'Manage your teams and daily work',
+    myTeams: 'My teams',
+    noTeams: 'You have no teams assigned yet',
+    management: 'Management',
+    trainings: 'Trainings and matches',
+    trainingsDesc: 'View and manage the calendar',
+    createEventDesc: 'Add a training or match',
+    absencesDesc: 'Track your players absences',
+    ratingsDesc: 'Rate your players progress',
   },
 
   // Auth
