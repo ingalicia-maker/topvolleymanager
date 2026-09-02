@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Search, Trash2, Upload, Star, Download, Lock, Archive } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -28,11 +28,16 @@ export default function Players() {
   const { t } = useTranslation();
   const { players, archivedPlayers, loading, deletePlayer, archivePlayer, unarchivePlayer, refetch } = usePlayers();
   const { canExport, isPremium } = useSubscription();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
-  const [showArchived, setShowArchived] = useState(false);
+  const showArchived = searchParams.get('archived') === '1';
+  const setShowArchived = (value: boolean | ((v: boolean) => boolean)) => {
+    const next = typeof value === 'function' ? value(showArchived) : value;
+    setSearchParams(next ? { archived: '1' } : {}, { replace: true });
+  };
   const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
 
   const exportToExcel = () => {

@@ -447,6 +447,7 @@ export default {
     unarchive: 'Restaurar',
     noArchived: 'No hay jugadoras archivadas',
     archivedHint: 'Las jugadoras archivadas se conservan para otras temporadas, pero no aparecen en la temporada actual.',
+    viewArchived: 'Ver archivo de jugadoras',
     importExcel: 'Importar desde Excel',
     exportExcel: 'Exportar a Excel',
     search: 'Buscar jugadora...',
