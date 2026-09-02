@@ -61,7 +61,16 @@ export default {
     absencesDesc: 'Track your players absences',
     ratingsDesc: 'Rate your players progress',
     addTeam: 'Add team',
-    swipeHint: 'Swipe left on a player to edit, archive or delete',
+    swipeHint: 'Swipe left on a player to edit, move to another team or remove from this team',
+    moveToTeam: 'Move',
+    removeFromTeam: 'Remove',
+    moveDialogTitle: 'Move player to another team',
+    moveDialogDesc: 'The player will leave this team and join the one you choose. She is not deleted from the app.',
+    removeConfirmTitle: 'Remove from team?',
+    removeConfirmDesc: 'The player will leave this team but stays in the app and in her other teams.',
+    noOtherTeams: 'No other teams available',
+    playerMoved: 'Player moved to another team',
+    playerRemoved: 'Player removed from team',
   },
 
   // Auth
