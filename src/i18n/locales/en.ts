@@ -60,6 +60,8 @@ export default {
     createEventDesc: 'Add a training or match',
     absencesDesc: 'Track your players absences',
     ratingsDesc: 'Rate your players progress',
+    addTeam: 'Add team',
+    swipeHint: 'Swipe left on a player to edit, archive or delete',
   },
 
   // Auth
