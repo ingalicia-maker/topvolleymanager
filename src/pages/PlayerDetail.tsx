@@ -573,9 +573,9 @@ export default function PlayerDetail() {
                   {playerTeamOptions.map(team => (
                     <Badge
                       key={team.id}
-                      variant="secondary"
-                      className="text-[10px] px-1.5 py-0"
-                      style={{ backgroundColor: `${team.color}20`, color: team.color }}
+                      variant="outline"
+                      className="text-[10px] px-2 py-0 bg-white border-[1.5px] whitespace-nowrap"
+                      style={{ borderColor: team.color, color: team.color }}
                     >
                       {team.name}
                     </Badge>
