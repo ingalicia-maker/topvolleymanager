@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react';
-import { Pencil, Archive, Trash2 } from 'lucide-react';
+import { Pencil, Archive, Trash2, ArrowRightLeft } from 'lucide-react';
 
 interface SwipeableRowProps {
   children: React.ReactNode;
   onEdit?: () => void;
+  onMove?: () => void;
   onArchive?: () => void;
   onDelete?: () => void;
   editLabel?: string;
+  moveLabel?: string;
   archiveLabel?: string;
   deleteLabel?: string;
 }
@@ -16,14 +18,17 @@ const ACTION_WIDTH = 72;
 export function SwipeableRow({
   children,
   onEdit,
+  onMove,
   onArchive,
   onDelete,
   editLabel = 'Editar',
+  moveLabel = 'Mover',
   archiveLabel = 'Archivar',
   deleteLabel = 'Eliminar',
 }: SwipeableRowProps) {
   const actions = [
     onEdit && { key: 'edit', icon: Pencil, label: editLabel, run: onEdit, className: 'bg-secondary text-secondary-foreground' },
+    onMove && { key: 'move', icon: ArrowRightLeft, label: moveLabel, run: onMove, className: 'bg-accent text-accent-foreground' },
     onArchive && { key: 'archive', icon: Archive, label: archiveLabel, run: onArchive, className: 'bg-muted text-foreground' },
     onDelete && { key: 'delete', icon: Trash2, label: deleteLabel, run: onDelete, className: 'bg-destructive text-destructive-foreground' },
   ].filter(Boolean) as {

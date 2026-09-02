@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
@@ -17,6 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
 
@@ -24,12 +32,33 @@ export default function TeamDetail() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId: string }>();
-  const { players, archivePlayer, deletePlayer } = usePlayers();
+  const { players, updatePlayer } = usePlayers();
   const { teams, loading } = useTeams();
-  const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
+  const [playerToRemove, setPlayerToRemove] = useState<string | null>(null);
+  const [playerToMove, setPlayerToMove] = useState<string | null>(null);
 
   const team = teams.find(t => t.id === teamId);
   const teamPlayers = players.filter(p => p.teams?.includes(teamId || ''));
+
+  const removeFromTeam = async (playerId: string) => {
+    const player = players.find(p => p.id === playerId);
+    if (!player || !teamId) return;
+    const ok = await updatePlayer(playerId, {
+      teams: (player.teams || []).filter(id => id !== teamId),
+    });
+    if (ok) toast.success(t('coachHub.playerRemoved'));
+  };
+
+  const moveToTeam = async (playerId: string, targetTeamId: string) => {
+    const player = players.find(p => p.id === playerId);
+    if (!player || !teamId) return;
+    const next = Array.from(
+      new Set([...(player.teams || []).filter(id => id !== teamId), targetTeamId])
+    );
+    const ok = await updatePlayer(playerId, { teams: next });
+    if (ok) toast.success(t('coachHub.playerMoved'));
+    setPlayerToMove(null);
+  };
 
   if (loading) {
     return (
@@ -51,6 +80,8 @@ export default function TeamDetail() {
       </div>
     );
   }
+
+  const otherTeams = teams.filter(tm => tm.id !== teamId);
 
   return (
     <div className="min-h-screen bg-background pb-28">
@@ -92,11 +123,11 @@ export default function TeamDetail() {
               <SwipeableRow
                 key={player.id}
                 editLabel={t('common.edit')}
-                archiveLabel={t('players.archive')}
-                deleteLabel={t('common.delete')}
+                moveLabel={t('coachHub.moveToTeam')}
+                deleteLabel={t('coachHub.removeFromTeam')}
                 onEdit={() => navigate(`/players/${player.id}`)}
-                onArchive={() => archivePlayer(player.id)}
-                onDelete={() => setPlayerToDelete(player.id)}
+                onMove={() => setPlayerToMove(player.id)}
+                onDelete={() => setPlayerToRemove(player.id)}
               >
                 <PlayerCard player={player} showTeams={false} />
               </SwipeableRow>
@@ -105,25 +136,53 @@ export default function TeamDetail() {
         </div>
       </div>
 
-      <AlertDialog open={!!playerToDelete} onOpenChange={(open) => !open && setPlayerToDelete(null)}>
+      <AlertDialog open={!!playerToRemove} onOpenChange={(open) => !open && setPlayerToRemove(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('players.deleteConfirm')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('players.deleteCount', { count: 1 })}</AlertDialogDescription>
+            <AlertDialogTitle>{t('coachHub.removeConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('coachHub.removeConfirmDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (playerToDelete) deletePlayer(playerToDelete);
-                setPlayerToDelete(null);
+                if (playerToRemove) removeFromTeam(playerToRemove);
+                setPlayerToRemove(null);
               }}
             >
-              {t('common.delete')}
+              {t('coachHub.removeFromTeam')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!playerToMove} onOpenChange={(open) => !open && setPlayerToMove(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('coachHub.moveDialogTitle')}</DialogTitle>
+            <DialogDescription>{t('coachHub.moveDialogDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+            {otherTeams.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                {t('coachHub.noOtherTeams')}
+              </p>
+            ) : (
+              otherTeams.map(tm => (
+                <Button
+                  key={tm.id}
+                  variant="outline"
+                  className="w-full justify-start"
+                  style={{ borderColor: tm.color, color: tm.color }}
+                  onClick={() => playerToMove && moveToTeam(playerToMove, tm.id)}
+                >
+                  {tm.name}
+                </Button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

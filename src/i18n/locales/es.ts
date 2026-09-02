@@ -61,7 +61,16 @@ export default {
     absencesDesc: 'Controla las ausencias de tus jugadoras',
     ratingsDesc: 'Valora la evolución de tus jugadoras',
     addTeam: 'Añadir equipo',
-    swipeHint: 'Desliza a la izquierda sobre una jugadora para editar, archivar o eliminar',
+    swipeHint: 'Desliza a la izquierda sobre una jugadora para editar, mover de equipo o quitarla del equipo',
+    moveToTeam: 'Mover',
+    removeFromTeam: 'Quitar',
+    moveDialogTitle: 'Mover jugadora a otro equipo',
+    moveDialogDesc: 'La jugadora dejará este equipo y pasará al equipo que elijas. No se elimina de la app.',
+    removeConfirmTitle: '¿Quitar del equipo?',
+    removeConfirmDesc: 'La jugadora saldrá de este equipo pero seguirá en la app y en sus otros equipos.',
+    noOtherTeams: 'No hay otros equipos disponibles',
+    playerMoved: 'Jugadora movida de equipo',
+    playerRemoved: 'Jugadora quitada del equipo',
   },
 
   // Auth
