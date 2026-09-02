@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight,
@@ -9,22 +9,25 @@ import {
   Star,
   Calendar,
   TrendingUp,
+  ArrowLeft,
+  Plus,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { CoachTeamSelector } from '@/components/CoachTeamSelector';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 
 export default function CoachHub() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { teams } = useTeams();
   const { isDirector, assignedTeams } = useUserRole();
 
-  const myTeams =
-    isDirector || assignedTeams.length === 0
-      ? teams
-      : teams.filter((team) => assignedTeams.includes(team.id));
+  const myTeams = isDirector
+    ? teams
+    : teams.filter((team) => assignedTeams.includes(team.id));
 
   const actions = [
     { to: '/events', icon: Calendar, title: t('coachHub.trainings'), subtitle: t('coachHub.trainingsDesc') },
