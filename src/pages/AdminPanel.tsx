@@ -229,7 +229,7 @@ export default function AdminPanel() {
   // This prevents the "restricted access" flash while admin status is being determined
   if (subLoading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('admin.title')} showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -242,7 +242,7 @@ export default function AdminPanel() {
 
   if (!subscription.isAdmin) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('admin.title')} showBack backTo="/profile" />
 
         <div className="p-4">
@@ -281,7 +281,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header title={t('admin.title')} showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">

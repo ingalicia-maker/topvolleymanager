@@ -60,7 +60,7 @@ export default function Events() {
 
   if (loading || teamsLoading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('events.title')} />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -71,7 +71,7 @@ export default function Events() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header
         title={t('events.title')}
         rightAction={

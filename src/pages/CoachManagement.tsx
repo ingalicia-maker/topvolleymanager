@@ -348,7 +348,7 @@ export default function CoachManagement() {
 
   if (roleLoading || clubLoading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('coachManagement.title')} showBack backTo="/profile" />
         <div className="p-4 space-y-4">
           <Skeleton className="h-32 w-full" />
@@ -361,7 +361,7 @@ export default function CoachManagement() {
 
   if (!isDirector) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('coachManagement.title')} showBack />
         <div className="p-4">
           <Card>
@@ -383,7 +383,7 @@ export default function CoachManagement() {
   const directors = profiles?.filter(p => p.role === 'director') || [];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header title={t('coachManagement.title')} showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">

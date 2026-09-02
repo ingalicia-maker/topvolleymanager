@@ -90,7 +90,7 @@ export default function EventDetail() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('eventDetail.eventNotFound')} showBack />
         <BottomNav />
       </div>
@@ -333,7 +333,7 @@ export default function EventDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header title={event.title} showBack />
 
       <div className="p-4 space-y-4">

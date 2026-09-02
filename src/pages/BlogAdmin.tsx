@@ -172,7 +172,7 @@ export default function BlogAdmin() {
 
   if (isLoading || isLoadingAdmin) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title="Blog Admin" showBack />
         <div className="p-4 flex justify-center">
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -182,7 +182,7 @@ export default function BlogAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header title="Blog Admin" showBack />
 
       <div className="p-4 space-y-4">
