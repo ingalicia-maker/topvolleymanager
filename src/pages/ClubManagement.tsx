@@ -403,6 +403,19 @@ export default function ClubManagement() {
     }
   };
 
+  const handleRemoveResponsibilityCode = async () => {
+    const success = await updateClub({
+      responsibility_code: null,
+      responsibility_code_updated_at: new Date().toISOString(),
+    });
+    if (success) {
+      setResponsibilityCode('');
+      toast.success(t('clubManagement.responsibilityCodeRemoved'));
+    } else {
+      toast.error(t('clubManagement.errorSavingLegal'));
+    }
+  };
+
   const handleSaveLegalSettings = async () => {
     setSavingLegal(true);
     const success = await updateClub({
@@ -760,6 +773,35 @@ export default function ClubManagement() {
                     <p className="text-xs text-muted-foreground mt-2">
                       {t('clubManagement.responsibilityCodeHint')}
                     </p>
+                    {club?.responsibility_code && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="mt-3 text-destructive hover:text-destructive gap-2"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            {t('clubManagement.removeResponsibilityCode')}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t('clubManagement.removeResponsibilityCodeConfirmTitle')}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t('clubManagement.removeResponsibilityCodeConfirmDesc')}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleRemoveResponsibilityCode} className="bg-destructive hover:bg-destructive/90">
+                              {t('clubManagement.removeResponsibilityCode')}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </CardContent>
                 </Card>
 

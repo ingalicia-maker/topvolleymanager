@@ -207,7 +207,7 @@ export default function NewPlayer() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="min-h-screen bg-background" style={{ paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))' }}>
       <Header title={t('players.newPlayer')} showBack />
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
         {/* Basic Info */}
