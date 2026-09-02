@@ -82,7 +82,7 @@ export default function Players() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-28">
-        <Header title={t('nav.players')} />
+        <Header title={t('nav.players')} showBack />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>

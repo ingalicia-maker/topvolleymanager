@@ -163,7 +163,7 @@ export default function Ausencias() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title={t('ausencias.title')} />
+      <Header title={t('ausencias.title')} showBack />
 
       <div className="p-4 space-y-4">
         {/* Team Selector */}
