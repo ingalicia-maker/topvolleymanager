@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Search, Trash2, Upload, Star, Download, Lock, Archive } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
