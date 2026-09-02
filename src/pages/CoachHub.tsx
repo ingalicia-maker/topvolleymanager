@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight,
@@ -9,22 +9,25 @@ import {
   Star,
   Calendar,
   TrendingUp,
+  ArrowLeft,
+  Plus,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { CoachTeamSelector } from '@/components/CoachTeamSelector';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 
 export default function CoachHub() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { teams } = useTeams();
   const { isDirector, assignedTeams } = useUserRole();
 
-  const myTeams =
-    isDirector || assignedTeams.length === 0
-      ? teams
-      : teams.filter((team) => assignedTeams.includes(team.id));
+  const myTeams = isDirector
+    ? teams
+    : teams.filter((team) => assignedTeams.includes(team.id));
 
   const actions = [
     { to: '/events', icon: Calendar, title: t('coachHub.trainings'), subtitle: t('coachHub.trainingsDesc') },
@@ -36,13 +39,26 @@ export default function CoachHub() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <div
         className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground px-4 pt-8 pb-6"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
       >
-        <h1 className="text-2xl font-bold">{t('coachHub.title')}</h1>
-        <p className="text-primary-foreground/80 text-sm">{t('coachHub.subtitle')}</p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t('common.back')}
+            className="-ml-2 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground"
+            onClick={() => (window.history.length > 2 ? navigate(-1) : navigate('/'))}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{t('coachHub.title')}</h1>
+            <p className="text-primary-foreground/80 text-sm">{t('coachHub.subtitle')}</p>
+          </div>
+        </div>
       </div>
 
       <div className="px-4 mt-4 space-y-6">
@@ -52,8 +68,14 @@ export default function CoachHub() {
           <h2 className="font-bold text-foreground mb-3">{t('coachHub.myTeams')}</h2>
           {myTeams.length === 0 ? (
             <Card>
-              <CardContent className="p-6 text-center text-sm text-muted-foreground">
-                {t('coachHub.noTeams')}
+              <CardContent className="p-6 text-center space-y-3">
+                <p className="text-sm text-muted-foreground">{t('coachHub.noTeams')}</p>
+                <Link to="/teams">
+                  <Button size="sm" className="gap-1">
+                    <Plus className="h-4 w-4" />
+                    {t('coachHub.addTeam')}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ) : (

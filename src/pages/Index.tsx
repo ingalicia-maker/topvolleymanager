@@ -100,7 +100,7 @@ export default function Index() {
   const totalPendingTasks = pendingDisplacements + unreadCount;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       {/* Hero Header */}
       <div
         className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground px-4 pt-8 pb-6"

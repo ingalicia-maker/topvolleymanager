@@ -180,13 +180,15 @@ export default function Ratings() {
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header
         title={t('ratings.title')}
-        showBack={activeTab === 'add' && step !== 'select-team'}
+        showBack
         onBack={() => {
-          if (step === 'rate') setStep('select-player');
-          else if (step === 'select-player') setStep('select-team');
+          if (activeTab === 'add' && step === 'rate') setStep('select-player');
+          else if (activeTab === 'add' && step === 'select-player') setStep('select-team');
+          else if (window.history.length > 2) window.history.back();
+          else window.location.assign('/');
         }}
       />
 

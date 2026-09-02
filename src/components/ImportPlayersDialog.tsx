@@ -269,6 +269,9 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
         birth_year: row.año_nacimiento ? parseInt(row.año_nacimiento.toString()) || null : null,
         height: row.altura ? parseInt(row.altura.toString()) || null : null,
         photo_url: null,
+        dni: null,
+        birth_day: null,
+        birth_month: null,
       });
       if (result) imported++;
     }

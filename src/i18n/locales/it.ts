@@ -60,6 +60,8 @@ export default {
     createEventDesc: 'Aggiungi un allenamento o una partita',
     absencesDesc: 'Controlla le assenze delle tue giocatrici',
     ratingsDesc: 'Valuta la crescita delle tue giocatrici',
+    addTeam: 'Aggiungi squadra',
+    swipeHint: 'Scorri a sinistra su una giocatrice per modificare, archiviare o eliminare',
   },
 
   // Auth

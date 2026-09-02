@@ -1,26 +1,39 @@
-import { useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
+import { SwipeableRow } from '@/components/SwipeableRow';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
-import { Link } from 'react-router-dom';
 
 export default function TeamDetail() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { teamId } = useParams<{ teamId: string }>();
-  const { players } = usePlayers();
+  const { players, archivePlayer, deletePlayer } = usePlayers();
   const { teams, loading } = useTeams();
+  const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
 
   const team = teams.find(t => t.id === teamId);
   const teamPlayers = players.filter(p => p.teams?.includes(teamId || ''));
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('common.loading')} showBack backTo="/teams" />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -32,7 +45,7 @@ export default function TeamDetail() {
 
   if (!team) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('teams.teamNotFound')} showBack />
         <BottomNav />
       </div>
@@ -40,7 +53,7 @@ export default function TeamDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header
         title={team.name}
         showBack
@@ -65,6 +78,10 @@ export default function TeamDetail() {
           </p>
         </div>
 
+        {teamPlayers.length > 0 && (
+          <p className="text-xs text-muted-foreground mb-2">{t('coachHub.swipeHint')}</p>
+        )}
+
         <div className="space-y-2">
           {teamPlayers.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
@@ -72,11 +89,42 @@ export default function TeamDetail() {
             </p>
           ) : (
             teamPlayers.map(player => (
-              <PlayerCard key={player.id} player={player} showTeams={false} />
+              <SwipeableRow
+                key={player.id}
+                editLabel={t('common.edit')}
+                archiveLabel={t('players.archive')}
+                deleteLabel={t('common.delete')}
+                onEdit={() => navigate(`/players/${player.id}`)}
+                onArchive={() => archivePlayer(player.id)}
+                onDelete={() => setPlayerToDelete(player.id)}
+              >
+                <PlayerCard player={player} showTeams={false} />
+              </SwipeableRow>
             ))
           )}
         </div>
       </div>
+
+      <AlertDialog open={!!playerToDelete} onOpenChange={(open) => !open && setPlayerToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('players.deleteConfirm')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('players.deleteCount', { count: 1 })}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (playerToDelete) deletePlayer(playerToDelete);
+                setPlayerToDelete(null);
+              }}
+            >
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <BottomNav />
     </div>
   );

@@ -216,7 +216,7 @@ export default function NewsletterAdmin() {
 
   if (subLoading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title="Newsletter" showBack backTo="/admin" />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -228,7 +228,7 @@ export default function NewsletterAdmin() {
 
   if (!subscription.isAdmin) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title="Newsletter" showBack backTo="/admin" />
         <div className="p-4 text-center text-muted-foreground">Acceso restringido</div>
         <BottomNav />
@@ -237,7 +237,7 @@ export default function NewsletterAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header title="Newsletter Management" showBack backTo="/admin" />
 
       <div className="p-4 space-y-4">

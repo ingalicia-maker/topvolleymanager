@@ -379,7 +379,7 @@ export default function NewEvent() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <Header title={t('events.newEvent')} showBack />
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
         <div className="space-y-2">

@@ -162,8 +162,8 @@ export default function Ausencias() {
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <Header title={t('ausencias.title')} />
+    <div className="min-h-screen bg-background pb-28">
+      <Header title={t('ausencias.title')} showBack />
 
       <div className="p-4 space-y-4">
         {/* Team Selector */}

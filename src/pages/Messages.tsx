@@ -214,7 +214,7 @@ export default function Messages() {
   // Conversation list view
   if (!selectedConversationId) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         <Header title={t('nav.messages')} showBack backTo="/" />
 
         <div className="p-4 space-y-4">
