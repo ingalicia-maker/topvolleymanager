@@ -68,8 +68,14 @@ export default function CoachHub() {
           <h2 className="font-bold text-foreground mb-3">{t('coachHub.myTeams')}</h2>
           {myTeams.length === 0 ? (
             <Card>
-              <CardContent className="p-6 text-center text-sm text-muted-foreground">
-                {t('coachHub.noTeams')}
+              <CardContent className="p-6 text-center space-y-3">
+                <p className="text-sm text-muted-foreground">{t('coachHub.noTeams')}</p>
+                <Link to="/teams">
+                  <Button size="sm" className="gap-1">
+                    <Plus className="h-4 w-4" />
+                    {t('coachHub.addTeam')}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ) : (
