@@ -76,10 +76,7 @@ export function HomeBlogSection() {
                       </Badge>
                     )}
                     <h3 className="font-medium text-sm line-clamp-2">{article.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {article.published_at && format(new Date(article.published_at), 'PP', { locale: getLocale() })}
-                    </p>
+
                   </div>
                 </div>
               </CardContent>

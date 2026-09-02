@@ -1,4 +1,4 @@
-import { MessageCircle, User } from 'lucide-react';
+import { MessageCircle, User, MoreVertical, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DbPlayer } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
@@ -7,6 +7,12 @@ import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 interface PlayerCardProps {
   player: DbPlayer;
@@ -15,9 +21,28 @@ interface PlayerCardProps {
   onSelect?: (id: string) => void;
   showTeams?: boolean;
   clickable?: boolean;
+  onArchive?: (id: string) => void;
+  onUnarchive?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  archiveLabel?: string;
+  unarchiveLabel?: string;
+  deleteLabel?: string;
 }
 
-export function PlayerCard({ player, selectable, selected, onSelect, showTeams = true, clickable = true }: PlayerCardProps) {
+export function PlayerCard({
+  player,
+  selectable,
+  selected,
+  onSelect,
+  showTeams = true,
+  clickable = true,
+  onArchive,
+  onUnarchive,
+  onDelete,
+  archiveLabel = 'Archivar',
+  unarchiveLabel = 'Restaurar',
+  deleteLabel = 'Eliminar',
+}: PlayerCardProps) {
   const { teams } = useTeams();
   const navigate = useNavigate();
   const { signedUrl } = useSignedUrl(player.photo_url);
@@ -101,6 +126,43 @@ export function PlayerCard({ player, selectable, selected, onSelect, showTeams =
           >
             <MessageCircle className="h-5 w-5" />
           </Button>
+          {(onArchive || onUnarchive || onDelete) && !selectable && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 text-muted-foreground"
+                  aria-label={`Acciones para ${fullName}`}
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                {onArchive && (
+                  <DropdownMenuItem onClick={() => onArchive(player.id)}>
+                    <Archive className="h-4 w-4 mr-2" />
+                    {archiveLabel}
+                  </DropdownMenuItem>
+                )}
+                {onUnarchive && (
+                  <DropdownMenuItem onClick={() => onUnarchive(player.id)}>
+                    <ArchiveRestore className="h-4 w-4 mr-2" />
+                    {unarchiveLabel}
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => onDelete(player.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {deleteLabel}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardContent>
     </Card>

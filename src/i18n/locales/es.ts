@@ -35,6 +35,7 @@ export default {
 
   // Navigation
   nav: {
+    coach: 'Entrenador',
     home: 'Inicio',
     players: 'Jugadoras',
     teams: 'Equipos',
@@ -46,6 +47,19 @@ export default {
     ratings: 'Valoraciones',
     messages: 'Mensajes',
     admin: 'Admin',
+  },
+
+  coachHub: {
+    title: 'Zona Entrenador',
+    subtitle: 'Gestiona tus equipos y tu día a día',
+    myTeams: 'Mis equipos',
+    noTeams: 'Todavía no tienes equipos asignados',
+    management: 'Gestiones',
+    trainings: 'Entrenamientos y partidos',
+    trainingsDesc: 'Consulta y gestiona el calendario',
+    createEventDesc: 'Añade un entrenamiento o partido',
+    absencesDesc: 'Controla las ausencias de tus jugadoras',
+    ratingsDesc: 'Valora la evolución de tus jugadoras',
   },
 
   // Auth
@@ -234,6 +248,11 @@ export default {
     message: 'Mensaje',
     approve: 'Aprobar',
     revoke: 'Revocar',
+    removeFromClub: 'Eliminar del club',
+    removeFromClubTitle: '¿Eliminar entrenador del club?',
+    removeFromClubDesc: 'Se eliminará a {{name}} del club y perderá el acceso a los datos del club. Podrás volver a invitarlo más adelante.',
+    removedFromClub: 'Entrenador eliminado del club',
+    errorRemovingFromClub: 'Error al eliminar del club',
     coachesRegistered: 'Entrenadores Registrados',
     sendCommunication: 'Enviar comunicación',
     sendCommunicationDesc: 'Envía un mensaje a los entrenadores seleccionados. Aparecerá en sus notificaciones.',
@@ -421,6 +440,11 @@ export default {
     deleteConfirmMale: '¿Eliminar jugadores?',
     deleteCount: 'Se eliminarán {{count}} jugadora(s). Esta acción no se puede deshacer.',
     deleteCountMale: 'Se eliminarán {{count}} jugador(es). Esta acción no se puede deshacer.',
+    archived: 'Archivadas',
+    archive: 'Archivar',
+    unarchive: 'Restaurar',
+    noArchived: 'No hay jugadoras archivadas',
+    archivedHint: 'Las jugadoras archivadas se conservan para otras temporadas, pero no aparecen en la temporada actual.',
     importExcel: 'Importar desde Excel',
     exportExcel: 'Exportar a Excel',
     search: 'Buscar jugadora...',

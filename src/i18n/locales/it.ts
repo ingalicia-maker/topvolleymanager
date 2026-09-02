@@ -35,6 +35,7 @@ export default {
 
   // Navigation
   nav: {
+    coach: 'Allenatore',
     home: 'Home',
     players: 'Giocatrici',
     teams: 'Squadre',
@@ -46,6 +47,19 @@ export default {
     ratings: 'Valutazioni',
     messages: 'Messaggi',
     admin: 'Admin',
+  },
+
+  coachHub: {
+    title: 'Area Allenatore',
+    subtitle: 'Gestisci le tue squadre e il lavoro quotidiano',
+    myTeams: 'Le mie squadre',
+    noTeams: 'Non hai ancora squadre assegnate',
+    management: 'Gestioni',
+    trainings: 'Allenamenti e partite',
+    trainingsDesc: 'Consulta e gestisci il calendario',
+    createEventDesc: 'Aggiungi un allenamento o una partita',
+    absencesDesc: 'Controlla le assenze delle tue giocatrici',
+    ratingsDesc: 'Valuta la crescita delle tue giocatrici',
   },
 
   // Auth
@@ -234,6 +248,11 @@ export default {
     message: 'Messaggio',
     approve: 'Approva',
     revoke: 'Revoca',
+    removeFromClub: 'Rimuovi dal club',
+    removeFromClubTitle: 'Rimuovere l\'allenatore dal club?',
+    removeFromClubDesc: '{{name}} sarà rimosso dal club e perderà l\'accesso ai dati. Potrai invitarlo di nuovo più tardi.',
+    removedFromClub: 'Allenatore rimosso dal club',
+    errorRemovingFromClub: 'Errore durante la rimozione dal club',
     coachesRegistered: 'Allenatori Registrati',
     sendCommunication: 'Invia comunicazione',
     sendCommunicationDesc: 'Invia un messaggio agli allenatori selezionati. Apparirà nelle loro notifiche.',
@@ -421,6 +440,11 @@ export default {
     deleteConfirmMale: 'Eliminare giocatori?',
     deleteCount: 'Verranno eliminate {{count}} giocatrice(i). Questa azione non può essere annullata.',
     deleteCountMale: 'Verranno eliminati {{count}} giocatore(i). Questa azione non può essere annullata.',
+    archived: 'Archiviate',
+    archive: 'Archivia',
+    unarchive: 'Ripristina',
+    noArchived: 'Nessuna giocatrice archiviata',
+    archivedHint: 'Le giocatrici archiviate restano disponibili per altre stagioni ma non compaiono in quella attuale.',
     importExcel: 'Importa da Excel',
     exportExcel: 'Esporta in Excel',
     search: 'Cerca giocatrice...',

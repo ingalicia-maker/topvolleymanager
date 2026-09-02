@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut, UsersRound, Plus, MessageSquare } from 'lucide-react';
+import { Users, Calendar, UserPlus, CalendarPlus, Trophy, Dumbbell, User, AlertTriangle, ChevronRight, TrendingUp, Crown, Sparkles, Globe, LogOut, UsersRound, Plus, MessageSquare, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from '@/components/BottomNav';
 import { EventCard } from '@/components/EventCard';
@@ -31,6 +31,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useConversations } from '@/hooks/useConversations';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
+import { useSeasons } from '@/hooks/useSeasons';
 
 const LANGUAGES = [
   { code: 'es', name: 'Español', flag: '🇪🇸' },
@@ -49,6 +50,7 @@ export default function Index() {
   const { totalUnread: messageUnread } = useConversations();
   const { isPremium, subscription } = useSubscription();
   const { signOut } = useAuth();
+  const { activeSeason } = useSeasons();
 
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
@@ -111,6 +113,9 @@ export default function Index() {
           )}
           <div>
             <h1 className="text-2xl font-bold mb-1">{clubName}</h1>
+            {activeSeason && (
+              <p className="text-primary-foreground/90 text-sm font-medium">{activeSeason.name}</p>
+            )}
             <p className="text-primary-foreground/80 text-sm">{t('common.manageTeams')}</p>
           </div>
         </div>
@@ -185,6 +190,14 @@ export default function Index() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              {subscription.isAdmin && (
+                <DropdownMenuItem asChild>
+                  <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                    <Shield className="h-4 w-4" />
+                    {t('nav.admin')}
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
                   <User className="h-4 w-4" />
@@ -192,6 +205,7 @@ export default function Index() {
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
+
           </DropdownMenu>
         </div>
       </div>

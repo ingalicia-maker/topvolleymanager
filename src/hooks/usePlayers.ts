@@ -20,10 +20,12 @@ export interface DbPlayer {
   created_at: string;
   updated_at: string;
   club_id: string | null;
+  is_archived?: boolean | null;
+  archived_at?: string | null;
 }
 
 export function usePlayers() {
-  const [players, setPlayers] = useState<DbPlayer[]>([]);
+  const [allPlayers, setAllPlayers] = useState<DbPlayer[]>([]);
   const [loading, setLoading] = useState(true);
   const { club } = useClub();
 
@@ -37,7 +39,7 @@ export function usePlayers() {
       console.error('Error fetching players:', error);
       toast.error('Error al cargar jugadoras');
     } else {
-      setPlayers(data || []);
+      setAllPlayers((data || []) as DbPlayer[]);
     }
     setLoading(false);
   };
@@ -58,7 +60,7 @@ export function usePlayers() {
       return null;
     }
     
-    setPlayers(prev => [...prev, data]);
+    setAllPlayers(prev => [...prev, data as DbPlayer]);
     toast.success('Jugadora añadida');
     return data;
   };
@@ -74,7 +76,7 @@ export function usePlayers() {
       return false;
     }
 
-    setPlayers(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    setAllPlayers(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     toast.success('Jugadora actualizada');
     return true;
   };
@@ -90,10 +92,48 @@ export function usePlayers() {
       return false;
     }
 
-    setPlayers(prev => prev.filter(p => p.id !== id));
+    setAllPlayers(prev => prev.filter(p => p.id !== id));
     toast.success('Jugadora eliminada');
     return true;
   };
 
-  return { players, loading, addPlayer, updatePlayer, deletePlayer, refetch: fetchPlayers };
+  const setArchived = async (id: string, archived: boolean) => {
+    const updates = {
+      is_archived: archived,
+      archived_at: archived ? new Date().toISOString() : null,
+    };
+
+    const { error } = await supabase
+      .from('players')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) {
+      toast.error(archived ? 'Error al archivar jugadora' : 'Error al restaurar jugadora');
+      return false;
+    }
+
+    setAllPlayers(prev => prev.map(p => (p.id === id ? { ...p, ...updates } : p)));
+    toast.success(archived ? 'Jugadora archivada' : 'Jugadora restaurada');
+    return true;
+  };
+
+  const archivePlayer = (id: string) => setArchived(id, true);
+  const unarchivePlayer = (id: string) => setArchived(id, false);
+
+  const players = allPlayers.filter(p => !p.is_archived);
+  const archivedPlayers = allPlayers.filter(p => !!p.is_archived);
+
+  return {
+    players,
+    archivedPlayers,
+    allPlayers,
+    loading,
+    addPlayer,
+    updatePlayer,
+    deletePlayer,
+    archivePlayer,
+    unarchivePlayer,
+    refetch: fetchPlayers,
+  };
 }

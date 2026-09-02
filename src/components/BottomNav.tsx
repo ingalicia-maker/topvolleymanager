@@ -1,23 +1,21 @@
-import { Home, UserCircle, AlertTriangle, Star, Shield } from 'lucide-react';
+import { Home, UserCircle, AlertTriangle, Star, ClipboardList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from './NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useSubscription } from '@/hooks/useSubscription';
 
 export function BottomNav() {
   const { t } = useTranslation();
   const { isDirector } = useUserRole();
-  const { subscription } = useSubscription();
 
-  // Base nav items - Players only shown for directors, Admin only for app admins
-  // Events and Messages moved to the profile dropdown menu (top header) as notification-style entries
+  // Admin moved to the profile dropdown in the top header.
   const navItems = [
     { to: '/', icon: Home, labelKey: 'nav.home', tourId: 'home' },
+    { to: '/coach', icon: ClipboardList, labelKey: 'nav.coach', tourId: 'coach' },
     ...(isDirector ? [{ to: '/players', icon: UserCircle, labelKey: 'nav.players', tourId: 'players' }] : []),
     { to: '/ratings', icon: Star, labelKey: 'nav.ratings', tourId: 'ratings' },
-    ...(subscription.isAdmin ? [{ to: '/admin', icon: Shield, labelKey: 'nav.admin', tourId: 'admin' }] : []),
     { to: '/ausencias', icon: AlertTriangle, labelKey: 'nav.absences', tourId: 'absences' },
   ];
+
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">

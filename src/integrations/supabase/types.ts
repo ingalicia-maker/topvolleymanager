@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -1206,6 +1206,7 @@ export type Database = {
       players: {
         Row: {
           additional_measurements: Json | null
+          archived_at: string | null
           birth_day: number | null
           birth_month: number | null
           birth_year: number | null
@@ -1215,6 +1216,7 @@ export type Database = {
           height: number | null
           height_measured_at: string | null
           id: string
+          is_archived: boolean
           name: string
           number: number | null
           phone: string
@@ -1229,6 +1231,7 @@ export type Database = {
         }
         Insert: {
           additional_measurements?: Json | null
+          archived_at?: string | null
           birth_day?: number | null
           birth_month?: number | null
           birth_year?: number | null
@@ -1238,6 +1241,7 @@ export type Database = {
           height?: number | null
           height_measured_at?: string | null
           id?: string
+          is_archived?: boolean
           name: string
           number?: number | null
           phone: string
@@ -1252,6 +1256,7 @@ export type Database = {
         }
         Update: {
           additional_measurements?: Json | null
+          archived_at?: string | null
           birth_day?: number | null
           birth_month?: number | null
           birth_year?: number | null
@@ -1261,6 +1266,7 @@ export type Database = {
           height?: number | null
           height_measured_at?: string | null
           id?: string
+          is_archived?: boolean
           name?: string
           number?: number | null
           phone?: string

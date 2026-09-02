@@ -35,6 +35,7 @@ export default {
 
   // Navigation
   nav: {
+    coach: 'Coach',
     home: 'Home',
     players: 'Players',
     teams: 'Teams',
@@ -46,6 +47,19 @@ export default {
     ratings: 'Ratings',
     messages: 'Messages',
     admin: 'Admin',
+  },
+
+  coachHub: {
+    title: 'Coach Zone',
+    subtitle: 'Manage your teams and daily work',
+    myTeams: 'My teams',
+    noTeams: 'You have no teams assigned yet',
+    management: 'Management',
+    trainings: 'Trainings and matches',
+    trainingsDesc: 'View and manage the calendar',
+    createEventDesc: 'Add a training or match',
+    absencesDesc: 'Track your players absences',
+    ratingsDesc: 'Rate your players progress',
   },
 
   // Auth
@@ -234,6 +248,11 @@ export default {
     message: 'Message',
     approve: 'Approve',
     revoke: 'Revoke',
+    removeFromClub: 'Remove from club',
+    removeFromClubTitle: 'Remove coach from club?',
+    removeFromClubDesc: '{{name}} will be removed from the club and will lose access to club data. You can invite them again later.',
+    removedFromClub: 'Coach removed from club',
+    errorRemovingFromClub: 'Error removing from club',
     coachesRegistered: 'Registered Coaches',
     sendCommunication: 'Send communication',
     sendCommunicationDesc: 'Send a message to the selected coaches. It will appear in their notifications.',
@@ -421,6 +440,11 @@ export default {
     deleteConfirmMale: 'Delete players?',
     deleteCount: '{{count}} player(s) will be deleted. This cannot be undone.',
     deleteCountMale: '{{count}} player(s) will be deleted. This cannot be undone.',
+    archived: 'Archived',
+    archive: 'Archive',
+    unarchive: 'Restore',
+    noArchived: 'No archived players',
+    archivedHint: 'Archived players are kept for other seasons but don\'t appear in the current one.',
     importExcel: 'Import from Excel',
     exportExcel: 'Export to Excel',
     search: 'Search player...',
