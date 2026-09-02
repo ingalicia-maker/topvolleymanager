@@ -38,7 +38,9 @@ import {
   Shield,
   FileText,
   ExternalLink,
+  Archive,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog,
