@@ -39,13 +39,26 @@ export default function CoachHub() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-28">
       <div
         className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground px-4 pt-8 pb-6"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
       >
-        <h1 className="text-2xl font-bold">{t('coachHub.title')}</h1>
-        <p className="text-primary-foreground/80 text-sm">{t('coachHub.subtitle')}</p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t('common.back')}
+            className="-ml-2 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground"
+            onClick={() => (window.history.length > 2 ? navigate(-1) : navigate('/'))}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{t('coachHub.title')}</h1>
+            <p className="text-primary-foreground/80 text-sm">{t('coachHub.subtitle')}</p>
+          </div>
+        </div>
       </div>
 
       <div className="px-4 mt-4 space-y-6">
