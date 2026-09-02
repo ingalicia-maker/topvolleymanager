@@ -447,6 +447,7 @@ export default {
     unarchive: 'Restore',
     noArchived: 'No archived players',
     archivedHint: 'Archived players are kept for other seasons but don\'t appear in the current one.',
+    viewArchived: 'View players archive',
     importExcel: 'Import from Excel',
     exportExcel: 'Export to Excel',
     search: 'Search player...',
