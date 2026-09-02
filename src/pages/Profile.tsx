@@ -356,7 +356,7 @@ export default function Profile() {
                 className="w-full gap-2"
               >
                 {isPremium ? <Crown className="h-4 w-4 text-amber-500" /> : <Zap className="h-4 w-4" />}
-                {t('subscription.title')} - {isPremium ? t('subscription.premium') : `${subscription.creditsRemaining} ${t('subscription.creditsRemaining')}`}
+                {t('subscription.title')} - {isPremium ? t(`subscription.${subscription.status}`) : `${subscription.creditsRemaining} ${t('subscription.creditsRemaining')}`}
               </Button>
             )}
             

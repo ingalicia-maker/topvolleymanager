@@ -92,6 +92,14 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html,
+  body,
+  #root {
+    /* Prevent any wide child (e.g. the weekly schedule grid) from causing
+       the whole page to pan/scroll sideways on mobile. */
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
   }

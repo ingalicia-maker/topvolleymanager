@@ -81,11 +81,11 @@ export function PlayerCard({ player, selectable, selected, onSelect, showTeams =
             {showTeams && playerTeams.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {playerTeams.map(team => (
-                  <Badge 
-                    key={team.id} 
-                    variant="secondary" 
-                    className="text-[10px] px-1.5 py-0"
-                    style={{ backgroundColor: `${team.color}20`, color: team.color }}
+                  <Badge
+                    key={team.id}
+                    variant="outline"
+                    className="text-[10px] px-2 py-0 bg-white border-[1.5px] whitespace-nowrap"
+                    style={{ borderColor: team.color, color: team.color }}
                   >
                     {team.name}
                   </Badge>

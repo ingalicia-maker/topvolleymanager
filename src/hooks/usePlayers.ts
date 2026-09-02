@@ -12,6 +12,9 @@ export interface DbPlayer {
   teams: string[];
   number: number | null;
   birth_year: number | null;
+  birth_day: number | null;
+  birth_month: number | null;
+  dni: string | null;
   height: number | null;
   photo_url: string | null;
   created_at: string;

@@ -33,7 +33,8 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { RatingInput } from '@/components/RatingInput';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight, Edit2, Calendar, Plus, History, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight, Edit2, Calendar, Plus, History, ChevronDown, ChevronUp, Copy, Phone } from 'lucide-react';
+import { getBirthDateFieldOrder, formatBirthDate } from '@/lib/dateLocale';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,7 +58,7 @@ const RATING_EMOJIS: Record<string, string> = {
 export default function PlayerDetail() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { players, updatePlayer, deletePlayer, loading } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
   const { ratings, addRating, updateRating, deleteRating, refetch: refetchRatings } = usePlayerRatings();
@@ -78,6 +79,9 @@ export default function PlayerDetail() {
   const [phone2Type, setPhone2Type] = useState<'player' | 'parent' | 'tutor'>('player');
   const [number, setNumber] = useState('');
   const [birthYear, setBirthYear] = useState('');
+  const [birthDay, setBirthDay] = useState('');
+  const [birthMonth, setBirthMonth] = useState('');
+  const [dni, setDni] = useState('');
   const [height, setHeight] = useState('');
   const [heightMeasuredAt, setHeightMeasuredAt] = useState('');
   const [additionalMeasurements, setAdditionalMeasurements] = useState<Array<{type: string, value: string, measured_at: string}>>([]);
@@ -155,6 +159,9 @@ export default function PlayerDetail() {
       setPhone2Type(((player as any).phone2_type as 'player' | 'parent' | 'tutor') || 'player');
       setNumber(player.number?.toString() || '');
       setBirthYear(player.birth_year?.toString() || '');
+      setBirthDay(player.birth_day?.toString() || '');
+      setBirthMonth(player.birth_month?.toString() || '');
+      setDni(player.dni || '');
       setHeight(player.height?.toString() || '');
       setHeightMeasuredAt((player as any).height_measured_at || '');
       const measurements = (player as any).additional_measurements;
@@ -429,6 +436,9 @@ export default function PlayerDetail() {
       teams: selectedTeams,
       number: number ? parseInt(number) : null,
       birth_year: birthYear ? parseInt(birthYear) : null,
+      birth_day: birthDay ? parseInt(birthDay) : null,
+      birth_month: birthMonth ? parseInt(birthMonth) : null,
+      dni: dni.trim() || null,
       height: height ? parseInt(height) : null,
       height_measured_at: heightMeasuredAt || null,
       additional_measurements: additionalMeasurements,
@@ -478,6 +488,12 @@ export default function PlayerDetail() {
       const phoneNumber = player.phone.replace(/\D/g, '');
       window.open(`https://wa.me/${phoneNumber}`, '_blank');
     }
+  };
+
+  const handleCopyPhone = async (phoneValue: string) => {
+    if (!phoneValue.trim()) return;
+    await navigator.clipboard.writeText(phoneValue.trim());
+    toast.success(t('players.phoneCopied'));
   };
 
   if (loading || teamsLoading) {
@@ -546,7 +562,11 @@ export default function PlayerDetail() {
             <div className="flex-1">
               <h2 className="font-bold text-lg">{fullName}</h2>
               {player.birth_year && (
-                <p className="text-sm text-muted-foreground">{t('players.bornIn', { year: player.birth_year })}</p>
+                <p className="text-sm text-muted-foreground">
+                  {player.birth_day && player.birth_month
+                    ? t('players.bornOn', { date: formatBirthDate(player.birth_day, player.birth_month, player.birth_year, i18n.language) })
+                    : t('players.bornIn', { year: player.birth_year })}
+                </p>
               )}
               {photoUrl && (
                 <Button
@@ -833,6 +853,18 @@ export default function PlayerDetail() {
               </div>
             </div>
 
+            {/* DNI (optional) */}
+            <div className="space-y-2">
+              <Label htmlFor="dni">{t('players.dni')} ({t('common.optional')})</Label>
+              <Input
+                id="dni"
+                value={dni}
+                onChange={e => setDni(e.target.value)}
+                placeholder="12345678A"
+                disabled={saving}
+              />
+            </div>
+
             {/* Phone 1 with type */}
             <div className="space-y-2">
               <Label htmlFor="phone">{t('players.phone')} (WhatsApp) *</Label>
@@ -846,6 +878,32 @@ export default function PlayerDetail() {
                   disabled={saving}
                   className="flex-1"
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  title={t('players.copyPhone')}
+                  onClick={() => handleCopyPhone(phone)}
+                  disabled={!phone.trim()}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  title={t('players.callPhone')}
+                  disabled={!phone.trim()}
+                  asChild={!!phone.trim()}
+                >
+                  {phone.trim() ? (
+                    <a href={`tel:${phone.replace(/\s+/g, '')}`}>
+                      <Phone className="h-4 w-4" />
+                    </a>
+                  ) : (
+                    <Phone className="h-4 w-4" />
+                  )}
+                </Button>
                 <Select value={phoneType} onValueChange={(v) => setPhoneType(v as 'player' | 'parent' | 'tutor')}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
@@ -872,6 +930,32 @@ export default function PlayerDetail() {
                   disabled={saving}
                   className="flex-1"
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  title={t('players.copyPhone')}
+                  onClick={() => handleCopyPhone(phone2)}
+                  disabled={!phone2.trim()}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  title={t('players.callPhone')}
+                  disabled={!phone2.trim()}
+                  asChild={!!phone2.trim()}
+                >
+                  {phone2.trim() ? (
+                    <a href={`tel:${phone2.replace(/\s+/g, '')}`}>
+                      <Phone className="h-4 w-4" />
+                    </a>
+                  ) : (
+                    <Phone className="h-4 w-4" />
+                  )}
+                </Button>
                 <Select value={phone2Type} onValueChange={(v) => setPhone2Type(v as 'player' | 'parent' | 'tutor')}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
@@ -885,7 +969,7 @@ export default function PlayerDetail() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="number">{t('players.number')}</Label>
                 <Input
@@ -894,17 +978,6 @@ export default function PlayerDetail() {
                   value={number}
                   onChange={e => setNumber(e.target.value)}
                   placeholder={t('players.jerseyNumberPlaceholder')}
-                  disabled={saving}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="birthYear">{t('players.birthYear')}</Label>
-                <Input
-                  id="birthYear"
-                  type="number"
-                  value={birthYear}
-                  onChange={e => setBirthYear(e.target.value)}
-                  placeholder="2010"
                   disabled={saving}
                 />
               </div>
@@ -918,6 +991,59 @@ export default function PlayerDetail() {
                   placeholder="165"
                   disabled={saving}
                 />
+              </div>
+            </div>
+
+            {/* Birth date: Day / Month / Year, field order follows locale (MM/DD for English) */}
+            <div className="space-y-2">
+              <Label>{t('players.birthDate')}</Label>
+              <div className="grid grid-cols-3 gap-4">
+                {getBirthDateFieldOrder(i18n.language).map(field => {
+                  if (field === 'day') {
+                    return (
+                      <Input
+                        key="day"
+                        id="birthDay"
+                        type="number"
+                        min={1}
+                        max={31}
+                        value={birthDay}
+                        onChange={e => setBirthDay(e.target.value)}
+                        placeholder={t('players.birthDay')}
+                        aria-label={t('players.birthDay')}
+                        disabled={saving}
+                      />
+                    );
+                  }
+                  if (field === 'month') {
+                    return (
+                      <Input
+                        key="month"
+                        id="birthMonth"
+                        type="number"
+                        min={1}
+                        max={12}
+                        value={birthMonth}
+                        onChange={e => setBirthMonth(e.target.value)}
+                        placeholder={t('players.birthMonth')}
+                        aria-label={t('players.birthMonth')}
+                        disabled={saving}
+                      />
+                    );
+                  }
+                  return (
+                    <Input
+                      key="year"
+                      id="birthYear"
+                      type="number"
+                      value={birthYear}
+                      onChange={e => setBirthYear(e.target.value)}
+                      placeholder="2010"
+                      aria-label={t('players.birthYearField')}
+                      disabled={saving}
+                    />
+                  );
+                })}
               </div>
             </div>
 
