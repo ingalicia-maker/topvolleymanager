@@ -506,6 +506,27 @@ export default function ClubManagement() {
               </CardContent>
             </Card>
 
+            {/* Archived players */}
+            {isDirector && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Archive className="h-5 w-5" />
+                    {t('players.archived')}
+                  </CardTitle>
+                  <CardDescription>{t('players.archivedHint')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link to="/players?archived=1">
+                    <Button variant="outline" className="w-full gap-2">
+                      <Archive className="h-4 w-4" />
+                      {t('players.viewArchived')}
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Bus Stops */}
             {isDirector && (
               <Card>
