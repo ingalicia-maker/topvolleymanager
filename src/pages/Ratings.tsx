@@ -183,10 +183,12 @@ export default function Ratings() {
     <div className="min-h-screen bg-background pb-28">
       <Header
         title={t('ratings.title')}
-        showBack={activeTab === 'add' && step !== 'select-team'}
+        showBack
         onBack={() => {
-          if (step === 'rate') setStep('select-player');
-          else if (step === 'select-player') setStep('select-team');
+          if (activeTab === 'add' && step === 'rate') setStep('select-player');
+          else if (activeTab === 'add' && step === 'select-player') setStep('select-team');
+          else if (window.history.length > 2) window.history.back();
+          else window.location.assign('/');
         }}
       />
 

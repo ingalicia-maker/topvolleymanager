@@ -134,6 +134,7 @@ export default function Teams() {
     <div className="min-h-screen bg-background pb-28">
       <Header
         title={t('nav.teams')}
+        showBack
         rightAction={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>

@@ -95,6 +95,7 @@ export default function Players() {
     <div className="min-h-screen bg-background pb-28">
       <Header
         title={t('nav.players')}
+        showBack
         rightAction={
           <div className="flex gap-2">
             {isSelecting ? (
