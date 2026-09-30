@@ -1,17 +1,22 @@
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday, startOfWeek, endOfWeek } from 'date-fns';
 import { es, enUS, it } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin, Clock, Dumbbell, Trophy, Bus, AlertTriangle, CalendarOff, Megaphone } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin, Clock, Dumbbell, Trophy, Bus, AlertTriangle, CalendarOff, Megaphone, Cake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DbEvent } from '@/hooks/useEvents';
 import { useTeams } from '@/hooks/useTeams';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
-type EventType = 'training' | 'match' | 'displacement' | 'incident' | 'holiday' | 'communication';
+type EventType = 'training' | 'match' | 'displacement' | 'incident' | 'holiday' | 'communication' | 'birthday';
+
+interface Birthday { id: string; name: string; kind: 'player' | 'coach'; teams: string[]; }
 
 interface EventCalendarProps {
   events: DbEvent[];
@@ -22,7 +27,35 @@ export function EventCalendar({ events }: EventCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { teams } = useTeams();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [activeFilters, setActiveFilters] = useState<EventType[]>(['training', 'match', 'displacement', 'incident', 'holiday', 'communication']);
+  const [activeFilters, setActiveFilters] = useState<EventType[]>(['training', 'match', 'displacement', 'incident', 'holiday', 'communication', 'birthday']);
+  const { players } = usePlayers();
+  const { data: coachProfiles = [] } = useQuery({
+    queryKey: ['calendar-coach-birthdays'],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('*');
+      return (data || []) as any[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+  const bdLabels: Record<string, { label: string; player: string; coach: string }> = {
+    es: { label: 'Cumpleaños', player: 'Jugadora', coach: 'Entrenador/a' },
+    it: { label: 'Compleanni', player: 'Giocatrice', coach: 'Allenatore' },
+    en: { label: 'Birthdays', player: 'Player', coach: 'Coach' },
+  };
+  const bdText = bdLabels[i18n.language] || bdLabels.en;
+  const birthdaysByKey = useMemo(() => {
+    const map: Record<string, Birthday[]> = {};
+    const add = (d: number | null | undefined, m: number | null | undefined, b: Birthday) => {
+      if (!d || !m) return;
+      const k = `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      (map[k] ||= []).push(b);
+    };
+    players.forEach(p => add(p.birth_day, p.birth_month, { id: p.id, name: [p.name, p.surname1].filter(Boolean).join(' '), kind: 'player', teams: p.teams || [] }));
+    coachProfiles.forEach((c: any) => add(c.birth_day, c.birth_month, { id: c.id, name: c.name, kind: 'coach', teams: c.assigned_teams || [] }));
+    return map;
+  }, [players, coachProfiles]);
+  const getBirthdaysForDate = (date: Date): Birthday[] =>
+    activeFilters.includes('birthday') ? birthdaysByKey[format(date, 'MM-dd')] || [] : [];
 
   const getLocale = () => {
     switch (i18n.language) {
@@ -126,6 +159,13 @@ export function EventCalendar({ events }: EventCalendarProps) {
           label: t('events.communication'),
           dotColor: 'bg-sky-500'
         };
+      case 'birthday':
+        return {
+          color: 'bg-pink-500',
+          icon: Cake,
+          label: bdText.label,
+          dotColor: 'bg-pink-500'
+        };
       default: 
         return { 
           color: 'bg-gray-500', 
@@ -202,6 +242,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
         <div className="grid grid-cols-7">
           {daysInCalendar.map((day, index) => {
             const dayEvents = getEventsForDate(day);
+            const dayBirthdays = getBirthdaysForDate(day);
             const isSelected = selectedDate && isSameDay(day, selectedDate);
             const isTodayDate = isToday(day);
             const isCurrentMonth = format(day, 'M') === format(currentMonth, 'M');
@@ -227,6 +268,9 @@ export function EventCalendar({ events }: EventCalendarProps) {
                   {format(day, 'd')}
                 </div>
                 
+                {dayBirthdays.length > 0 && (
+                  <Cake className="absolute top-0.5 right-0.5 h-3 w-3 text-pink-500" />
+                )}
                 {/* Event indicators - dots for mobile */}
                 {dayEvents.length > 0 && (
                   <div className="flex justify-center gap-0.5 flex-wrap max-w-full px-0.5">
@@ -252,7 +296,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
 
       {/* Filter Buttons - Scrollable horizontally on mobile */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        {(['training', 'match', 'displacement', 'incident', 'holiday', 'communication'] as EventType[]).map(type => {
+        {(['training', 'match', 'displacement', 'incident', 'holiday', 'communication', 'birthday'] as EventType[]).map(type => {
           const config = getEventTypeConfig(type);
           const isActive = activeFilters.includes(type);
           return (
@@ -284,7 +328,20 @@ export function EventCalendar({ events }: EventCalendarProps) {
               <CalendarIcon className="h-4 w-4 text-primary" />
               {format(selectedDate, "EEEE, d MMMM", { locale: getLocale() })}
             </h3>
-            {selectedDateEvents.length === 0 ? (
+            {getBirthdaysForDate(selectedDate).length > 0 && (
+              <div className="space-y-2 mb-2">
+                {getBirthdaysForDate(selectedDate).map(b => (
+                  <Link key={b.kind + b.id} to={b.kind === 'player' ? `/players/${b.id}` : '#'} className="flex items-center gap-2 p-2.5 rounded-lg border border-pink-500/30 bg-pink-500/10">
+                    <div className="p-1.5 rounded-md text-white bg-pink-500"><Cake className="h-3.5 w-3.5" /></div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm truncate">🎂 {b.name}</div>
+                      <div className="text-xs text-muted-foreground">{b.kind === 'player' ? bdText.player : bdText.coach}{b.teams.length > 0 && ` · ${b.teams.map(getTeamName).join(', ')}`}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+            {selectedDateEvents.length === 0 && getBirthdaysForDate(selectedDate).length > 0 ? null : selectedDateEvents.length === 0 ? (
               <div className="text-center py-4">
                 <CalendarIcon className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
                 <p className="text-sm text-muted-foreground">{t('events.noEvents')}</p>
