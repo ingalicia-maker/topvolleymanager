@@ -1,5 +1,13 @@
 apply plugin: 'com.android.application'
 
+// Google Play upload key. It lives outside the repository (APP BUILDER/android-keys) and is
+// never committed; without it the release build is simply left unsigned.
+def uploadKeyProperties = new Properties()
+def uploadKeyFile = rootProject.file("../../android-keys/topvolleymanager-key.properties")
+if (uploadKeyFile.exists()) {
+    uploadKeyFile.withInputStream { uploadKeyProperties.load(it) }
+}
+
 android {
     namespace = "app.lovable.topvolleymanager"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +24,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (uploadKeyFile.exists()) {
+                storeFile file(uploadKeyProperties['storeFile'])
+                storePassword uploadKeyProperties['storePassword']
+                keyAlias uploadKeyProperties['keyAlias']
+                keyPassword uploadKeyProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            if (uploadKeyFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
