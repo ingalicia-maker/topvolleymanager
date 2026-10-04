@@ -2,6 +2,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ClubThemeProvider } from "@/components/ClubThemeProvider";
@@ -79,11 +80,11 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
 
           
-          {/* Root: redirect unauthenticated to language-prefixed landing */}
+          {/* Root: redirect unauthenticated to language-prefixed landing (the app goes straight to sign-in) */}
           <Route
             path="/"
             element={
-              <AuthGuard unauthenticatedRedirect="/__lang_redirect__">
+              <AuthGuard unauthenticatedRedirect={Capacitor.isNativePlatform() ? "/auth" : "/__lang_redirect__"}>
                 <Index />
               </AuthGuard>
             }
