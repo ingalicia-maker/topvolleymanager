@@ -224,10 +224,10 @@ export default function Profile() {
               </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Cumpleaños (día / mes)</Label>
+              <Label className="text-sm text-muted-foreground">{tr('Cumpleaños (día / mes)')}</Label>
               <div className="flex gap-2 mt-1">
-                <Input type="number" min={1} max={31} placeholder="Día" value={bDay} onChange={(e) => setBDay(e.target.value)} />
-                <Input type="number" min={1} max={12} placeholder="Mes" value={bMonth} onChange={(e) => setBMonth(e.target.value)} />
+                <Input type="number" min={1} max={31} placeholder={tr('Día')} value={bDay} onChange={(e) => setBDay(e.target.value)} />
+                <Input type="number" min={1} max={12} placeholder={tr('Mes')} value={bMonth} onChange={(e) => setBMonth(e.target.value)} />
               </div>
             </div>
             <div className="space-y-2">
