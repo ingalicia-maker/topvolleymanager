@@ -16,6 +16,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { CoachTeamSelector } from '@/components/CoachTeamSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { UpcomingBirthdays } from '@/components/UpcomingBirthdays';
 import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 
@@ -63,6 +64,8 @@ export default function CoachHub() {
 
       <div className="px-4 mt-4 space-y-6">
         <CoachTeamSelector />
+
+        <UpcomingBirthdays teamIds={isDirector ? undefined : myTeams.map((tm) => tm.id)} />
 
         <section>
           <h2 className="font-bold text-foreground mb-3">{t('coachHub.myTeams')}</h2>
