@@ -45,6 +45,8 @@ export default function Profile() {
   const { subscription, isPremium } = useSubscription();
   const [selectedTeams, setSelectedTeams] = useState<string[]>(assignedTeams);
   const [phone, setPhone] = useState('');
+  const [bDay, setBDay] = useState('');
+  const [bMonth, setBMonth] = useState('');
   const [saving, setSaving] = useState(false);
   const [showResponsibilityDialog, setShowResponsibilityDialog] = useState(false);
   const [acceptingCode, setAcceptingCode] = useState(false);
@@ -55,6 +57,8 @@ export default function Profile() {
     if (profile?.phone) {
       setPhone(profile.phone);
     }
+    setBDay((profile as any)?.birth_day?.toString() || '');
+    setBMonth((profile as any)?.birth_month?.toString() || '');
   }, [profile]);
 
   const handleAcceptResponsibilityCode = async () => {
@@ -154,7 +158,7 @@ export default function Profile() {
     // Update phone in profile
     const { error: phoneError } = await supabase
       .from('profiles')
-      .update({ phone: phone.trim() || null })
+      .update({ phone: phone.trim() || null, birth_day: bDay ? parseInt(bDay) : null, birth_month: bMonth ? parseInt(bMonth) : null } as any)
       .eq('id', user.id);
     
     if (teamsSuccess && !phoneError) {
@@ -165,7 +169,7 @@ export default function Profile() {
     setSaving(false);
   };
 
-  const hasChanges = JSON.stringify(selectedTeams.sort()) !== JSON.stringify(assignedTeams.sort()) || phone !== (profile?.phone || '');
+  const hasChanges = JSON.stringify(selectedTeams.sort()) !== JSON.stringify(assignedTeams.sort()) || phone !== (profile?.phone || '') || bDay !== ((profile as any)?.birth_day?.toString() || '') || bMonth !== ((profile as any)?.birth_month?.toString() || '');
 
   if (loading || teamsLoading) {
     return (
@@ -217,6 +221,13 @@ export default function Profile() {
               <p className="text-xs text-muted-foreground mt-1">
                 Visible para el Director Deportivo
               </p>
+            </div>
+            <div>
+              <Label className="text-sm text-muted-foreground">Cumpleaños (día / mes)</Label>
+              <div className="flex gap-2 mt-1">
+                <Input type="number" min={1} max={31} placeholder="Día" value={bDay} onChange={(e) => setBDay(e.target.value)} />
+                <Input type="number" min={1} max={12} placeholder="Mes" value={bMonth} onChange={(e) => setBMonth(e.target.value)} />
+              </div>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Roles actuales:</p>

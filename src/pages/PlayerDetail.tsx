@@ -34,7 +34,7 @@ import { RatingInput } from '@/components/RatingInput';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User, Save, Trash2, MessageCircle, Camera, Loader2, Star, TrendingUp, TrendingDown, Minus, ChevronRight, Edit2, Calendar, Plus, History, ChevronDown, ChevronUp, Copy, Phone } from 'lucide-react';
-import { getBirthDateFieldOrder, formatBirthDate } from '@/lib/dateLocale';
+import { getBirthDateFieldOrder, formatBirthDate, daysUntilBirthday, birthdayLabel } from '@/lib/dateLocale';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -568,6 +568,9 @@ export default function PlayerDetail() {
                     : t('players.bornIn', { year: player.birth_year })}
                 </p>
               )}
+              {(() => { const d = daysUntilBirthday(player.birth_day, player.birth_month); return d !== null && d <= 14 ? (
+                <p className={`text-xs mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${d === 0 ? 'bg-pink-500 text-white' : 'bg-pink-500/10 text-pink-600'}`}>🎂 {birthdayLabel(d, i18n.language)}</p>
+              ) : null; })()}
               {playerTeamOptions.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1.5">
                   {playerTeamOptions.map(team => (

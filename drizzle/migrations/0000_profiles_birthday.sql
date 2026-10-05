@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS birth_day integer, ADD COLUMN IF NOT EXISTS birth_month integer;
