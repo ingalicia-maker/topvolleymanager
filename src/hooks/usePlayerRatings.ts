@@ -61,7 +61,7 @@ export function usePlayerRatings() {
       console.error('Error fetching ratings:', error);
       toast.error(tr('Error al cargar puntuaciones'));
     } else {
-      setAllRatings(data || []);
+      setAllRatings((data as unknown as PlayerRating[]) || []);
     }
     setLoading(false);
   };
@@ -98,7 +98,7 @@ export function usePlayerRatings() {
       toast.error(tr('Error al guardar puntuación'));
     }
 
-    setAllRatings(prev => [data, ...prev]);
+    setAllRatings(prev => [data as unknown as PlayerRating, ...prev]);
     toast.success(tr('Puntuación guardada'));
     return data;
   };
@@ -116,7 +116,7 @@ export function usePlayerRatings() {
       return null;
     }
 
-    setAllRatings(prev => prev.map(r => r.id === id ? data : r));
+    setAllRatings(prev => prev.map(r => r.id === id ? (data as unknown as PlayerRating) : r));
     toast.success(tr('Puntuación actualizada'));
     return data;
   };
