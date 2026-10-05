@@ -1292,6 +1292,8 @@ export type Database = {
       profiles: {
         Row: {
           assigned_teams: string[] | null
+          birth_day: number | null
+          birth_month: number | null
           created_at: string | null
           director_declaration_accepted_at: string | null
           email: string
@@ -1304,6 +1306,8 @@ export type Database = {
         }
         Insert: {
           assigned_teams?: string[] | null
+          birth_day?: number | null
+          birth_month?: number | null
           created_at?: string | null
           director_declaration_accepted_at?: string | null
           email: string
@@ -1316,6 +1320,8 @@ export type Database = {
         }
         Update: {
           assigned_teams?: string[] | null
+          birth_day?: number | null
+          birth_month?: number | null
           created_at?: string | null
           director_declaration_accepted_at?: string | null
           email?: string
