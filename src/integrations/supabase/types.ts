@@ -1123,54 +1123,57 @@ export type Database = {
       player_ratings: {
         Row: {
           club_id: string | null
-          communication_cooperation: number
+          communication_cooperation: number | null
           created_at: string | null
-          decision_making: number
-          effort_attitude: number
+          decision_making: number | null
+          effort_attitude: number | null
           event_id: string | null
+          extra_scores: Json
           id: string
-          leadership_initiative: number
+          leadership_initiative: number | null
           notes: string | null
           player_id: string
           rated_by: string | null
           rating_date: string
           season_id: string | null
           team_id: string
-          technical_execution: number
+          technical_execution: number | null
         }
         Insert: {
           club_id?: string | null
-          communication_cooperation: number
+          communication_cooperation?: number | null
           created_at?: string | null
-          decision_making: number
-          effort_attitude: number
+          decision_making?: number | null
+          effort_attitude?: number | null
           event_id?: string | null
+          extra_scores?: Json
           id?: string
-          leadership_initiative: number
+          leadership_initiative?: number | null
           notes?: string | null
           player_id: string
           rated_by?: string | null
           rating_date?: string
           season_id?: string | null
           team_id: string
-          technical_execution: number
+          technical_execution?: number | null
         }
         Update: {
           club_id?: string | null
-          communication_cooperation?: number
+          communication_cooperation?: number | null
           created_at?: string | null
-          decision_making?: number
-          effort_attitude?: number
+          decision_making?: number | null
+          effort_attitude?: number | null
           event_id?: string | null
+          extra_scores?: Json
           id?: string
-          leadership_initiative?: number
+          leadership_initiative?: number | null
           notes?: string | null
           player_id?: string
           rated_by?: string | null
           rating_date?: string
           season_id?: string | null
           team_id?: string
-          technical_execution?: number
+          technical_execution?: number | null
         }
         Relationships: [
           {
@@ -1360,6 +1363,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      rating_criteria: {
+        Row: {
+          builtin_key: string | null
+          club_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string | null
+          position: number
+        }
+        Insert: {
+          builtin_key?: string | null
+          club_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          position?: number
+        }
+        Update: {
+          builtin_key?: string | null
+          club_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rating_criteria_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       resources: {
         Row: {
