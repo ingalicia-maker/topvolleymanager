@@ -1,4 +1,5 @@
 {
+  "1 equipo": "1 team",
   "1 jugadora importada": "1 player imported",
   "1 pendiente": "1 pending",
   "120€/año": "€120/year",
@@ -418,6 +419,7 @@
   "tu período de pago actual. Tus datos podrían no estar disponibles.": "your current billing period. Your data may no longer be available.",
   "{count} con errores": "{count} with errors",
   "{count} de {total} jugadoras con ausencias": "{count} of {total} players with absences",
+  "{count} equipos": "{count} teams",
   "{count} jugadoras": "{count} players",
   "{count} jugadoras importadas": "{count} players imported",
   "{count} jugadoras importadas correctamente": "{count} players imported successfully",

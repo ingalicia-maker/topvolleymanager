@@ -109,7 +109,7 @@ export function MonthlyAbsenceSummary() {
                   {t('absences.title')} - {currentMonthName}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {visibleTeams.length} {visibleTeams.length === 1 ? 'equipo' : 'equipos'}
+                  {visibleTeams.length === 1 ? tr('1 equipo') : tr('{count} equipos', { count: visibleTeams.length })}
                 </p>
               </div>
             </div>

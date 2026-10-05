@@ -1,4 +1,5 @@
 {
+  "1 equipo": "1 squadra",
   "1 jugadora importada": "1 giocatrice importata",
   "1 pendiente": "1 in sospeso",
   "120€/año": "120€/anno",
@@ -418,6 +419,7 @@
   "tu período de pago actual. Tus datos podrían no estar disponibles.": "tuo periodo di pagamento attuale. I tuoi dati potrebbero non essere più disponibili.",
   "{count} con errores": "{count} con errori",
   "{count} de {total} jugadoras con ausencias": "{count} di {total} giocatrici con assenze",
+  "{count} equipos": "{count} squadre",
   "{count} jugadoras": "{count} giocatrici",
   "{count} jugadoras importadas": "{count} giocatrici importate",
   "{count} jugadoras importadas correctamente": "{count} giocatrici importate correttamente",
