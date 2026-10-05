@@ -8,18 +8,20 @@ import { useTeams } from '@/hooks/useTeams';
 import { useEvents } from '@/hooks/useEvents';
 import { usePlayers } from '@/hooks/usePlayers';
 import { usePlayerRatings } from '@/hooks/usePlayerRatings';
+import { averageByCriterion, overallAverage } from '@/lib/ratingCriteria';
 import { useUserRole } from '@/hooks/useUserRole';
 import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '@/lib/dateLocale';
 import { Trophy, Dumbbell, Users, Star, TrendingUp, Calendar } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 export default function WeeklySummary() {
   const { i18n } = useTranslation();
   const { teams } = useTeams();
   const { events } = useEvents();
   const { players } = usePlayers();
-  const { ratings } = usePlayerRatings();
+  const { ratings, criteria } = usePlayerRatings();
   const { isDirector, assignedTeams } = useUserRole();
   
   const [weeksAgo, setWeeksAgo] = useState('0');
@@ -69,11 +71,7 @@ export default function WeeklySummary() {
     });
     
     const avgRating = weekRatings.length > 0
-      ? weekRatings.reduce((sum, r) => {
-          const avg = (r.technical_execution + r.decision_making + r.effort_attitude + 
-                       r.communication_cooperation + r.leadership_initiative) / 5;
-          return sum + avg;
-        }, 0) / weekRatings.length
+      ? overallAverage(averageByCriterion(weekRatings, criteria))
       : null;
     
     return {
@@ -104,11 +102,11 @@ export default function WeeklySummary() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">Esta semana</SelectItem>
-                    <SelectItem value="1">Semana pasada</SelectItem>
-                    <SelectItem value="2">Hace 2 semanas</SelectItem>
-                    <SelectItem value="3">Hace 3 semanas</SelectItem>
-                    <SelectItem value="4">Hace 4 semanas</SelectItem>
+                    <SelectItem value="0">{tr('Esta semana')}</SelectItem>
+                    <SelectItem value="1">{tr('Semana pasada')}</SelectItem>
+                    <SelectItem value="2">{tr('Hace {n} semanas', { n: 2 })}</SelectItem>
+                    <SelectItem value="3">{tr('Hace {n} semanas', { n: 3 })}</SelectItem>
+                    <SelectItem value="4">{tr('Hace {n} semanas', { n: 4 })}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -122,7 +120,7 @@ export default function WeeklySummary() {
           <Card>
             <CardContent className="p-6 text-center">
               <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-              <p className="text-muted-foreground">No tienes equipos asignados</p>
+              <p className="text-muted-foreground">{tr('No tienes equipos asignados')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -134,7 +132,7 @@ export default function WeeklySummary() {
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center justify-between">
                     <span className="text-lg">{team.name}</span>
-                    <Badge variant="secondary">{stats.playerCount} jugadoras</Badge>
+                    <Badge variant="secondary">{tr('{count} jugadoras', { count: stats.playerCount })}</Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -143,17 +141,17 @@ export default function WeeklySummary() {
                     <div className="text-center p-3 bg-amber-500/10 rounded-lg">
                       <Trophy className="h-5 w-5 mx-auto text-amber-500 mb-1" />
                       <p className="text-xl font-bold">{stats.matches}</p>
-                      <p className="text-xs text-muted-foreground">Partidos</p>
+                      <p className="text-xs text-muted-foreground">{tr('Partidos')}</p>
                     </div>
                     <div className="text-center p-3 bg-primary/10 rounded-lg">
                       <Dumbbell className="h-5 w-5 mx-auto text-primary mb-1" />
                       <p className="text-xl font-bold">{stats.trainings}</p>
-                      <p className="text-xs text-muted-foreground">Entrenos</p>
+                      <p className="text-xs text-muted-foreground">{tr('Entrenos')}</p>
                     </div>
                     <div className="text-center p-3 bg-secondary/50 rounded-lg">
                       <Calendar className="h-5 w-5 mx-auto text-secondary-foreground mb-1" />
                       <p className="text-xl font-bold">{stats.displacements}</p>
-                      <p className="text-xs text-muted-foreground">Viajes</p>
+                      <p className="text-xs text-muted-foreground">{tr('Viajes')}</p>
                     </div>
                   </div>
                   
@@ -164,7 +162,7 @@ export default function WeeklySummary() {
                         <TrendingUp className="h-5 w-5 text-green-500" />
                         <div>
                           <p className="text-lg font-bold">{stats.avgAttendance.toFixed(0)}%</p>
-                          <p className="text-xs text-muted-foreground">Asistencia</p>
+                          <p className="text-xs text-muted-foreground">{tr('Asistencia')}</p>
                         </div>
                       </div>
                     )}
@@ -173,7 +171,7 @@ export default function WeeklySummary() {
                         <Star className="h-5 w-5 text-amber-500" />
                         <div>
                           <p className="text-lg font-bold">{stats.avgRating.toFixed(1)}</p>
-                          <p className="text-xs text-muted-foreground">{stats.ratingsCount} valoraciones</p>
+                          <p className="text-xs text-muted-foreground">{tr('{count} valoraciones', { count: stats.ratingsCount })}</p>
                         </div>
                       </div>
                     )}
@@ -181,7 +179,7 @@ export default function WeeklySummary() {
                   
                   {stats.totalEvents === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-2">
-                      Sin actividad esta semana
+                      {tr('Sin actividad esta semana')}
                     </p>
                   )}
                 </CardContent>

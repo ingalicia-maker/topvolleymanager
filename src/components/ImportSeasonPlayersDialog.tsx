@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, UserPlus, ArrowRight, RefreshCw } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 interface Player {
   id: string;
@@ -135,11 +136,11 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
       }
 
       setCoaches(prev => prev.map(c => ({ ...c, assigned_teams: coachTeams[c.id] || [] })));
-      toast.success(t('seasons.coachesUpdated', 'Entrenadores reasignados correctamente'));
+      toast.success(t('seasons.coachesUpdated', tr('Entrenadores reasignados correctamente')));
       onSuccess?.();
     } catch (error) {
       console.error('Error updating coaches:', error);
-      toast.error(t('seasons.coachesUpdateError', 'Error al reasignar entrenadores'));
+      toast.error(t('seasons.coachesUpdateError', tr('Error al reasignar entrenadores')));
     } finally {
       setSavingCoaches(false);
     }
@@ -215,7 +216,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
     const playersToImport = Array.from(selectedPlayers);
     
     if (playersToImport.length === 0) {
-      toast.error(t('seasons.selectPlayersToImport', 'Selecciona al menos una jugadora'));
+      toast.error(t('seasons.selectPlayersToImport', tr('Selecciona al menos una jugadora')));
       return;
     }
 
@@ -225,7 +226,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
     );
 
     if (playersWithoutTeam.length > 0) {
-      toast.error(t('seasons.assignTeamsToAll', 'Asigna al menos un equipo a cada jugadora seleccionada'));
+      toast.error(t('seasons.assignTeamsToAll', tr('Asigna al menos un equipo a cada jugadora seleccionada')));
       return;
     }
 
@@ -246,7 +247,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
         }
       }
 
-      toast.success(t('seasons.playersImported', '{{count}} jugadoras importadas correctamente', { count: playersToImport.length }));
+      toast.success(t('seasons.playersImported', tr('{count} jugadoras importadas correctamente'), { count: playersToImport.length }));
       
       // Reset state
       setSelectedPlayers(new Set());
@@ -258,7 +259,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
       onSuccess?.();
       onOpenChange(false);
     } catch (error) {
-      toast.error(t('seasons.importError', 'Error al importar jugadoras'));
+      toast.error(t('seasons.importError', tr('Error al importar jugadoras')));
     } finally {
       setImporting(false);
     }
@@ -275,17 +276,17 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            {t('seasons.importPlayersAndCoaches', 'Importar Jugadoras y Entrenadores')}
+            {t('seasons.importPlayersAndCoaches', tr('Importar Jugadoras y Entrenadores'))}
           </DialogTitle>
           <DialogDescription>
-            {t('seasons.importDescription', 'Selecciona jugadoras de temporadas anteriores y asígnalas a equipos actuales')}
+            {t('seasons.importDescription', tr('Selecciona jugadoras de temporadas anteriores y asígnalas a equipos actuales'))}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="players">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="players">{t('nav.players', 'Jugadoras')}</TabsTrigger>
-            <TabsTrigger value="coaches">{t('seasons.reassignCoaches', 'Entrenadores')}</TabsTrigger>
+            <TabsTrigger value="players">{t('nav.players', tr('Jugadoras'))}</TabsTrigger>
+            <TabsTrigger value="coaches">{t('seasons.reassignCoaches', tr('Entrenadores'))}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="players" className="mt-0">
@@ -294,7 +295,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('seasons.searchPlayer', 'Buscar jugadora...')}
+              placeholder={t('seasons.searchPlayer', tr('Buscar jugadora...'))}
               className="h-9"
             />
             <Button
@@ -304,7 +305,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
               className="shrink-0"
               onClick={() => setOnlyUnassigned(v => !v)}
             >
-              {t('seasons.onlyUnassigned', 'Sin equipo')}
+              {t('seasons.onlyUnassigned', tr('Sin equipo'))}
             </Button>
           </div>
           {loading ? (
@@ -315,14 +316,14 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
             <div className="text-center py-8">
               <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-muted-foreground">
-                {t('seasons.noPlayersFound', 'No se han encontrado jugadoras con este filtro')}
+                {t('seasons.noPlayersFound', tr('No se han encontrado jugadoras con este filtro'))}
               </p>
             </div>
           ) : (
             <>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-muted-foreground">
-                  {unassignedPlayers.length} {t('seasons.playersAvailable', 'jugadoras disponibles')}
+                  {unassignedPlayers.length} {t('seasons.playersAvailable', tr('jugadoras disponibles'))}
                 </span>
                 <Button variant="ghost" size="sm" onClick={handleSelectAll}>
                   {selectedPlayers.size === unassignedPlayers.length 
@@ -358,7 +359,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
                             
                             {previousTeams.length > 0 && (
                               <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                                <span>{t('seasons.previousTeams', 'Equipos anteriores')}:</span>
+                                <span>{t('seasons.previousTeams', tr('Equipos anteriores'))}:</span>
                                 {previousTeams.map(teamId => (
                                   <Badge key={teamId} variant="outline" className="text-xs">
                                     {getTeamName(teamId)}
@@ -371,7 +372,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
                               <div className="mt-3 pt-3 border-t">
                                 <Label className="text-xs flex items-center gap-1 mb-2">
                                   <ArrowRight className="h-3 w-3" />
-                                  {t('seasons.assignToTeams', 'Asignar a equipos')}:
+                                  {t('seasons.assignToTeams', tr('Asignar a equipos'))}:
                                 </Label>
                                 <div className="flex flex-wrap gap-2">
                                   {teams.map((team) => (
@@ -409,7 +410,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t('common.cancel', 'Cancelar')}
+            {t('common.cancel', tr('Cancelar'))}
           </Button>
           <Button 
             onClick={handleImport} 
@@ -418,12 +419,12 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
             {importing ? (
               <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                {t('seasons.importing', 'Importando...')}
+                {t('seasons.importing', tr('Importando...'))}
               </>
             ) : (
               <>
                 <UserPlus className="h-4 w-4 mr-2" />
-                {t('seasons.importSelected', 'Importar {{count}} jugadoras', { count: selectedPlayers.size })}
+                {t('seasons.importSelected', tr('Importar {count} jugadoras'), { count: selectedPlayers.size })}
               </>
             )}
           </Button>
@@ -433,7 +434,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
           <TabsContent value="coaches" className="mt-0">
             <div className="py-4">
               <p className="text-sm text-muted-foreground mb-3">
-                {t('seasons.reassignCoachesDescription', 'Revisa y actualiza los equipos asignados a cada entrenador para la nueva temporada')}
+                {t('seasons.reassignCoachesDescription', tr('Revisa y actualiza los equipos asignados a cada entrenador para la nueva temporada'))}
               </p>
 
               {loadingCoaches ? (
@@ -444,7 +445,7 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
                 <div className="text-center py-8">
                   <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
                   <p className="text-muted-foreground">
-                    {t('seasons.noCoaches', 'No hay entrenadores en el club')}
+                    {t('seasons.noCoaches', tr('No hay entrenadores en el club'))}
                   </p>
                 </div>
               ) : (
@@ -461,15 +462,15 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
                             </div>
                             <Badge variant="outline" className="text-xs shrink-0">
                               {coach.role === 'director'
-                                ? t('roles.director', 'Director')
-                                : t('roles.coach', 'Entrenador')}
+                                ? t('roles.director', tr('Director'))
+                                : t('roles.coach', tr('Entrenador'))}
                             </Badge>
                           </div>
 
                           <div className="mt-3 pt-3 border-t">
                             <Label className="text-xs flex items-center gap-1 mb-2">
                               <ArrowRight className="h-3 w-3" />
-                              {t('seasons.assignToTeams', 'Asignar a equipos')}:
+                              {t('seasons.assignToTeams', tr('Asignar a equipos'))}:
                             </Label>
                             <div className="flex flex-wrap gap-2">
                               {teams.map((team) => (
@@ -503,18 +504,18 @@ export function ImportSeasonPlayersDialog({ open, onOpenChange, onSuccess }: Imp
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                {t('common.cancel', 'Cancelar')}
+                {t('common.cancel', tr('Cancelar'))}
               </Button>
               <Button onClick={handleSaveCoaches} disabled={savingCoaches || coaches.length === 0}>
                 {savingCoaches ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    {t('common.saving', 'Guardando...')}
+                    {t('common.saving', tr('Guardando...'))}
                   </>
                 ) : (
                   <>
                     <Users className="h-4 w-4 mr-2" />
-                    {t('seasons.saveCoachAssignments', 'Guardar asignaciones')}
+                    {t('seasons.saveCoachAssignments', tr('Guardar asignaciones'))}
                   </>
                 )}
               </Button>

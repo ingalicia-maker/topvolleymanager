@@ -22,6 +22,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Bus, MapPin, Clock, Users, ChevronDown, ChevronUp, AlertTriangle, Repeat, Shield, Calendar, Info, Bell, CalendarOff, Megaphone } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 type EventType = 'training' | 'match' | 'displacement' | 'incident' | 'holiday' | 'communication';
 
@@ -301,7 +302,7 @@ export default function NewEvent() {
           .select('id, name, assigned_teams');
 
         if (coaches) {
-          const senderName = profile?.name || 'Un director';
+          const senderName = profile?.name || tr('Un director');
           
           for (const coach of coaches) {
             if (coach.id === user?.id) continue;
@@ -339,7 +340,7 @@ export default function NewEvent() {
             .select('id, assigned_teams');
 
           if (coaches) {
-            const senderName = profile?.name || 'Un entrenador';
+            const senderName = profile?.name || tr('Un entrenador');
             
             for (const coach of coaches) {
               if (coach.id === user?.id) continue;

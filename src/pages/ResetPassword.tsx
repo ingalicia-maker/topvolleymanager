@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
 import { resetRateLimit } from '@/lib/security';
 import { useTranslation } from 'react-i18next';
+import { tr } from '@/lib/tr';
 
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
@@ -50,7 +51,7 @@ export default function ResetPassword() {
           const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
           if (cancelled) return;
           if (error) {
-            setSessionError(error.message || 'Enlace inválido o expirado');
+            setSessionError(error.message || tr('Enlace inválido o expirado'));
             return;
           }
           window.history.replaceState({}, '', window.location.pathname);

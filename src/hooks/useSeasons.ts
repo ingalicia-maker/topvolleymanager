@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useClub } from './useClub';
 import { toast } from 'sonner';
+import { tr } from '@/lib/tr';
 
 export interface Season {
   id: string;
@@ -66,11 +67,11 @@ export function useSeasons() {
 
     if (error) {
       console.error('Error creating season:', error);
-      toast.error('Error al crear la temporada');
+      toast.error(tr('Error al crear la temporada'));
       return null;
     }
 
-    toast.success('Nueva temporada creada');
+    toast.success(tr('Nueva temporada creada'));
     await fetchSeasons();
     return data as Season;
   };
@@ -83,11 +84,11 @@ export function useSeasons() {
 
     if (error) {
       console.error('Error updating season:', error);
-      toast.error('Error al actualizar la temporada');
+      toast.error(tr('Error al actualizar la temporada'));
       return false;
     }
 
-    toast.success('Temporada actualizada');
+    toast.success(tr('Temporada actualizada'));
     await fetchSeasons();
     return true;
   };
@@ -113,7 +114,7 @@ export function useSeasons() {
 
     if (error) {
       console.error('Error setting active season:', error);
-      toast.error('Error al activar la temporada');
+      toast.error(tr('Error al activar la temporada'));
       return false;
     }
 

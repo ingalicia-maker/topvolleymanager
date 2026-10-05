@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/lib/dateLocale';
+import { tr } from '@/lib/tr';
 
 type PlanType = 'starter_monthly' | 'starter_yearly' | 'pro_monthly' | 'pro_yearly';
 
@@ -107,7 +108,7 @@ export default function Subscription() {
       }
     } catch (error) {
       console.error('Error creating checkout:', error);
-      toast.error('Error al procesar el pago');
+      toast.error(tr('Error al procesar el pago'));
     } finally {
       setProcessingCheckout(false);
     }
@@ -137,7 +138,7 @@ export default function Subscription() {
       }
     } catch (error) {
       console.error('Error opening portal:', error);
-      toast.error('Error al abrir el portal de gestión');
+      toast.error(tr('Error al abrir el portal de gestión'));
     } finally {
       setOpeningPortal(false);
     }
@@ -189,10 +190,11 @@ export default function Subscription() {
         {subscription.inGracePeriod && (
           <Alert variant="destructive" className="border-orange-500 bg-orange-500/10">
             <Clock className="h-4 w-4" />
-            <AlertTitle className="text-orange-600">Período de gracia activo</AlertTitle>
+            <AlertTitle className="text-orange-600">{tr('Período de gracia activo')}</AlertTitle>
             <AlertDescription className="text-orange-600/80">
-              Tu suscripción ha sido cancelada. Tienes {subscription.gracePeriodDaysRemaining} día{subscription.gracePeriodDaysRemaining !== 1 ? 's' : ''} para 
-              reactivar tu suscripción antes de que tus datos sean eliminados.
+              {subscription.gracePeriodDaysRemaining === 1
+                ? tr('Tu suscripción ha sido cancelada. Tienes 1 día para reactivar tu suscripción antes de que tus datos sean eliminados.')
+                : tr('Tu suscripción ha sido cancelada. Tienes {days} días para reactivar tu suscripción antes de que tus datos sean eliminados.', { days: subscription.gracePeriodDaysRemaining })}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -201,7 +203,7 @@ export default function Subscription() {
                 disabled={processingCheckout}
               >
                 {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Reactivar suscripción
+                {tr('Reactivar suscripción')}
               </Button>
             </AlertDescription>
           </Alert>
@@ -218,18 +220,18 @@ export default function Subscription() {
               <Badge variant={currentStatus.color as any}>
                 {currentStatus.label}
                 {isPaidPlan && stripeSubscription?.subscribed && (
-                  <span className="ml-1">({isYearly ? 'Anual' : 'Mensual'})</span>
+                  <span className="ml-1">({isYearly ? tr('Anual') : tr('Mensual')})</span>
                 )}
               </Badge>
             </div>
             {subscription.status === 'vip' && (
               <CardDescription className="text-amber-600">
-                {subscription.isAdmin ? 'Administrador de la App' : 'Acceso VIP - Funciones ilimitadas'}
+                {subscription.isAdmin ? tr('Administrador de la App') : tr('Acceso VIP - Funciones ilimitadas')}
               </CardDescription>
             )}
             {isPaidPlan && stripeSubscription?.subscription_end && (
               <CardDescription>
-                Próxima renovación: {format(new Date(stripeSubscription.subscription_end), "d 'de' MMMM yyyy", { locale: getDateFnsLocale(i18n.language) })}
+                {tr('Próxima renovación: {date}', { date: format(new Date(stripeSubscription.subscription_end), 'PPP', { locale: getDateFnsLocale(i18n.language) }) })}
               </CardDescription>
             )}
           </CardHeader>
@@ -260,14 +262,14 @@ export default function Subscription() {
                 disabled={openingPortal}
               >
                 <Settings className="h-4 w-4" />
-                {openingPortal ? 'Abriendo...' : 'Gestionar'}
+                {openingPortal ? tr('Abriendo...') : tr('Gestionar')}
               </Button>
               <Button 
                 variant="ghost" 
                 className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={handleCancelClick}
               >
-                Cancelar suscripción
+                {tr('Cancelar suscripción')}
               </Button>
             </CardFooter>
           )}
@@ -308,7 +310,7 @@ export default function Subscription() {
                     <Zap className="h-5 w-5 text-muted-foreground" />
                     {t('subscription.free')}
                   </CardTitle>
-                  <Badge variant="secondary">Actual</Badge>
+                  <Badge variant="secondary">{tr('Actual')}</Badge>
                 </div>
                 <CardDescription>{t('subscription.freeDesc')}</CardDescription>
               </CardHeader>
@@ -363,14 +365,14 @@ export default function Subscription() {
                     onClick={() => handleCheckout('starter_monthly')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : '5€/mes'}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('5€/mes')}
                   </Button>
                   <Button 
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     onClick={() => handleCheckout('starter_yearly')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : '40€/año'}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('40€/año')}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
@@ -413,14 +415,14 @@ export default function Subscription() {
                     onClick={() => handleCheckout('pro_monthly')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : '15€/mes'}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('15€/mes')}
                   </Button>
                   <Button 
                     className="w-full bg-purple-600 hover:bg-purple-700"
                     onClick={() => handleCheckout('pro_yearly')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : '120€/año'}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('120€/año')}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
@@ -475,10 +477,10 @@ export default function Subscription() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Gift className="h-5 w-5 text-green-500" />
-              ¡Espera! Tenemos una oferta para ti
+              {tr('¡Espera! Tenemos una oferta para ti')}
             </DialogTitle>
             <DialogDescription>
-              Antes de cancelar, considera cambiar al plan anual y ahorra
+              {tr('Antes de cancelar, considera cambiar al plan anual y ahorra')}
             </DialogDescription>
           </DialogHeader>
           
@@ -487,10 +489,10 @@ export default function Subscription() {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-destructive">Aviso importante</p>
+                  <p className="font-medium text-destructive">{tr('Aviso importante')}</p>
                   <p className="text-sm text-muted-foreground">
-                    Si cancelas, perderás acceso a todas las funciones de tu plan al finalizar 
-                    tu período de pago actual. Tus datos podrían no estar disponibles.
+                    {tr('Si cancelas, perderás acceso a todas las funciones de tu plan al finalizar')}
+                    {tr('tu período de pago actual. Tus datos podrían no estar disponibles.')}
                   </p>
                 </div>
               </div>
@@ -504,7 +506,7 @@ export default function Subscription() {
               onClick={handleConfirmCancel}
               disabled={openingPortal}
             >
-              {openingPortal ? 'Abriendo portal...' : 'Continuar con la cancelación'}
+              {openingPortal ? 'Abriendo portal...' : tr('Continuar con la cancelación')}
             </Button>
           </DialogFooter>
         </DialogContent>

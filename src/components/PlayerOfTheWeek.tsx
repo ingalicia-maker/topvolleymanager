@@ -1,15 +1,16 @@
 import { Trophy, Star, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { usePlayerRatings, RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
+import { usePlayerRatings } from '@/hooks/usePlayerRatings';
 import { usePlayers } from '@/hooks/usePlayers';
+import { tr } from '@/lib/tr';
 
 interface PlayerOfTheWeekProps {
   teamId?: string;
 }
 
 export function PlayerOfTheWeek({ teamId }: PlayerOfTheWeekProps) {
-  const { getPlayerOfTheWeek, getWeeklyPlayerStats, getPositiveAlerts } = usePlayerRatings();
+  const { getPlayerOfTheWeek, getWeeklyPlayerStats, getPositiveAlerts, criteria } = usePlayerRatings();
   const { players } = usePlayers();
 
   const potw = getPlayerOfTheWeek(teamId);
@@ -38,7 +39,7 @@ export function PlayerOfTheWeek({ teamId }: PlayerOfTheWeekProps) {
             <div className="flex items-center gap-2 mb-1">
               <Badge variant="secondary" className="text-[10px] bg-primary/20 text-primary">
                 <Star className="h-3 w-3 mr-1" />
-                Jugadora de la semana
+                {tr('Jugadora de la semana')}
               </Badge>
             </div>
             <h3 className="font-bold text-lg text-foreground truncate">{player.name}</h3>
@@ -59,7 +60,7 @@ export function PlayerOfTheWeek({ teamId }: PlayerOfTheWeekProps) {
             {/* Category highlights */}
             {stats && (
               <div className="mt-3 flex flex-wrap gap-1">
-                {RATING_CATEGORIES.filter(cat => stats.avgByCategory[cat.key] >= 4).map(cat => (
+                {criteria.filter(cat => (stats.avgByCategory[cat.key] ?? 0) >= 4).map(cat => (
                   <Badge key={cat.key} variant="outline" className="text-[10px]">
                     {cat.shortLabel}
                   </Badge>

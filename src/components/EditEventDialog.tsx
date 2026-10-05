@@ -114,7 +114,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
     setSaving(false);
 
     if (success) {
-      toast.success(t('events.eventUpdated'));
+      toast.success(t('eventDetail.eventUpdated'));
       onOpenChange(false);
     }
   };
@@ -128,7 +128,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">{t('events.eventTitleLabel')}</Label>
+            <Label htmlFor="title">{t('eventDetail.eventTitleLabel')}</Label>
             <Input
               id="title"
               value={title}
@@ -252,7 +252,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
                 ))}
                 {availableStops.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-2">
-                    {t('events.noStopsConfiguredShort')}
+                    {t('eventDetail.noStopsConfiguredShort')}
                   </p>
                 )}
               </div>
@@ -264,7 +264,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={t('events.additionalNotesPlaceholder')}
+              placeholder={t('eventDetail.additionalNotesPlaceholder')}
               disabled={saving}
               rows={3}
             />
@@ -276,7 +276,7 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
               <div className="flex items-start gap-2">
                 <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700 dark:text-amber-300">
-                  {t('events.autoDeleteShort')}
+                  {t('eventDetail.autoDeleteShort')}
                 </p>
               </div>
 
@@ -288,13 +288,13 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
                 />
                 <div className="flex items-center gap-1">
                   <Shield className="h-3 w-3 text-primary" />
-                  <span className="text-xs font-medium">{t('events.keepSavedForever')}</span>
+                  <span className="text-xs font-medium">{t('eventDetail.keepSavedForever')}</span>
                 </div>
               </label>
 
               {keepForever && (
                 <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
-                  ✓ {t('events.keepForeverConfirmedShort')}
+                  ✓ {t('eventDetail.keepForeverConfirmedShort')}
                 </p>
               )}
             </CardContent>

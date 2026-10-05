@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClub } from './useClub';
+import { tr } from '@/lib/tr';
 
 export interface DbTeam {
   id: string;
@@ -28,7 +29,7 @@ export function useTeams() {
 
     if (error) {
       console.error('Error fetching teams:', error);
-      toast.error('Error al cargar equipos');
+      toast.error(tr('Error al cargar equipos'));
     } else {
       setTeams(data || []);
     }
@@ -49,12 +50,12 @@ export function useTeams() {
       .single();
 
     if (error) {
-      toast.error('Error al añadir equipo');
+      toast.error(tr('Error al añadir equipo'));
       return null;
     }
     
     setTeams(prev => [...prev, data]);
-    toast.success('Equipo añadido');
+    toast.success(tr('Equipo añadido'));
     return data;
   };
 
@@ -65,12 +66,12 @@ export function useTeams() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al actualizar equipo');
+      toast.error(tr('Error al actualizar equipo'));
       return false;
     }
 
     setTeams(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-    toast.success('Equipo actualizado');
+    toast.success(tr('Equipo actualizado'));
     return true;
   };
 
@@ -81,12 +82,12 @@ export function useTeams() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al eliminar equipo');
+      toast.error(tr('Error al eliminar equipo'));
       return false;
     }
 
     setTeams(prev => prev.filter(t => t.id !== id));
-    toast.success('Equipo eliminado');
+    toast.success(tr('Equipo eliminado'));
     return true;
   };
 

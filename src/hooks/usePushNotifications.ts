@@ -4,6 +4,7 @@ import { PushNotifications, type Token } from '@capacitor/push-notifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { tr } from '@/lib/tr';
 
 export function usePushNotifications() {
   const { user } = useAuth();
@@ -38,7 +39,7 @@ export function usePushNotifications() {
 
     const registrationErrorListener = PushNotifications.addListener('registrationError', (err) => {
       console.error('Push registration error:', err);
-      toast.error('Error al activar notificaciones');
+      toast.error(tr('Error al activar notificaciones'));
     });
 
     return () => {
@@ -67,7 +68,7 @@ export function usePushNotifications() {
       setPermission(receive === 'prompt-with-rationale' ? 'default' : receive as 'granted' | 'denied' | 'default');
 
       if (receive !== 'granted') {
-        toast.error('Necesitas permitir las notificaciones para activarlas');
+        toast.error(tr('Necesitas permitir las notificaciones para activarlas'));
         return false;
       }
 
@@ -76,7 +77,7 @@ export function usePushNotifications() {
       return true;
     } catch (error) {
       console.error('Error subscribing to push:', error);
-      toast.error('Error al activar notificaciones');
+      toast.error(tr('Error al activar notificaciones'));
       return false;
     } finally {
       setIsLoading(false);
@@ -98,7 +99,7 @@ export function usePushNotifications() {
       return true;
     } catch (error) {
       console.error('Error unsubscribing:', error);
-      toast.error('Error al desactivar notificaciones');
+      toast.error(tr('Error al desactivar notificaciones'));
       return false;
     } finally {
       setIsLoading(false);

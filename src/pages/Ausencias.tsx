@@ -50,7 +50,7 @@ export default function Ausencias() {
   const [editingReasons, setEditingReasons] = useState<Record<string, string>>({});
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
-  const formattedDate = format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: getDateFnsLocale(i18n.language) });
+  const formattedDate = format(selectedDate, i18n.language?.startsWith('es') ? "EEEE, d 'de' MMMM yyyy" : 'PPPP', { locale: getDateFnsLocale(i18n.language) });
 
   // Filter teams based on role - coaches only see their assigned teams
   const availableTeams = useMemo(() => 

@@ -1257,6 +1257,7 @@ export default {
 
   // Exercises
   exercises: {
+    totalLabel: 'exercises',
     pageTitle: 'Volleyball Drills',
     pageDescription: 'Complete library of volleyball drills organized by category and level, with detailed instructions and variations.',
     title: 'Volleyball Drills',

@@ -14,6 +14,7 @@ import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from 'sonner';
 import { Plus, Trash2, ChevronDown, ChevronUp, History } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 type PhoneType = 'player' | 'parent' | 'tutor';
 
@@ -572,7 +573,7 @@ export default function NewPlayer() {
                   />
                   <div className="flex-1">
                     <p className="font-medium text-foreground">{team.name}</p>
-                    <p className="text-sm text-muted-foreground">Coach: {team.coach}</p>
+                    <p className="text-sm text-muted-foreground">{tr('Entrenador: {coach}', { coach: team.coach })}</p>
                   </div>
                 </label>
               ))}

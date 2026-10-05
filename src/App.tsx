@@ -9,6 +9,8 @@ import { ClubThemeProvider } from "@/components/ClubThemeProvider";
 import { LanguageRedirect } from "@/components/LanguageRedirect";
 import { SeoHead } from "@/components/SeoHead";
 import { PageViewTracker } from "@/components/PageViewTracker";
+import { useTranslation } from "react-i18next";
+import { Fragment, type ReactNode } from "react";
 import Auth from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
 
@@ -52,6 +54,12 @@ import CoachHub from "./pages/CoachHub";
 
 const queryClient = new QueryClient();
 
+// Texts translated with tr() are read at render time: remount the pages when the language changes.
+const LanguageScope = ({ children }: { children: ReactNode }) => {
+  const { i18n } = useTranslation();
+  return <Fragment key={i18n.resolvedLanguage}>{children}</Fragment>;
+};
+
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -61,6 +69,7 @@ const App = () => (
           <BrowserRouter>
           <SeoHead />
            <PageViewTracker />
+          <LanguageScope>
           <Routes>
           {/* Language-prefixed landing pages */}
           <Route path="/:lang" element={<LandingWrapper />} />
@@ -303,6 +312,7 @@ const App = () => (
           />
           <Route path="*" element={<NotFound />} />
         </Routes>
+          </LanguageScope>
         </BrowserRouter>
         </ClubThemeProvider>
       </TooltipProvider>

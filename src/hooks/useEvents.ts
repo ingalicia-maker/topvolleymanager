@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClub } from './useClub';
 import { addDays, addWeeks, parseISO, format, isBefore, isAfter } from 'date-fns';
+import { tr } from '@/lib/tr';
 
 export interface CoachSubmission {
   coach_id: string;
@@ -59,7 +60,7 @@ export function useEvents() {
 
     if (error) {
       console.error('Error fetching events:', error);
-      toast.error('Error al cargar eventos');
+      toast.error(tr('Error al cargar eventos'));
     } else {
       const parsed = (data || []).map(e => ({
         ...e,
@@ -101,7 +102,7 @@ export function useEvents() {
       .single();
 
     if (error) {
-      toast.error('Error al crear evento');
+      toast.error(tr('Error al crear evento'));
       return null;
     }
     
@@ -121,7 +122,7 @@ export function useEvents() {
     } as unknown as DbEvent;
     
     setEvents(prev => [parsed, ...prev]);
-    toast.success('Evento creado');
+    toast.success(tr('Evento creado'));
     return parsed;
   };
 
@@ -188,7 +189,7 @@ export function useEvents() {
 
     if (error) {
       console.error('Error creating recurring events:', error);
-      toast.error('Error al crear eventos recurrentes');
+      toast.error(tr('Error al crear eventos recurrentes'));
       return { created: 0 };
     }
 
@@ -209,7 +210,7 @@ export function useEvents() {
     })) as unknown as DbEvent[];
 
     setEvents(prev => [...parsedEvents, ...prev]);
-    toast.success(`${parsedEvents.length} eventos recurrentes creados`);
+    toast.success(tr('{length} eventos recurrentes creados', { length: parsedEvents.length }));
     
     return { created: parsedEvents.length };
   };
@@ -222,7 +223,7 @@ export function useEvents() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al actualizar evento');
+      toast.error(tr('Error al actualizar evento'));
       return false;
     }
 
@@ -237,12 +238,12 @@ export function useEvents() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al eliminar evento');
+      toast.error(tr('Error al eliminar evento'));
       return false;
     }
 
     setEvents(prev => prev.filter(e => e.id !== id));
-    toast.success('Evento eliminado');
+    toast.success(tr('Evento eliminado'));
     return true;
   };
 

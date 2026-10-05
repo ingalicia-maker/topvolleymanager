@@ -15,6 +15,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { useTranslation } from 'react-i18next';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
 import { isExistingUserSignUp } from '@/lib/signupDetection';
+import { tr } from '@/lib/tr';
 
 
 const emailSchema = z.string().email('Email inválido');
@@ -214,7 +215,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
     // Supabase devuelve éxito "falso" si el email ya existe
     if (isExistingUserSignUp(data.user)) {
 
-      toast.error('Este email ya está registrado. Inicia sesión con tu cuenta.');
+      toast.error(tr('Este email ya está registrado. Inicia sesión con tu cuenta.'));
       setLoading(false);
       return;
     }
@@ -225,7 +226,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       if (emailSent) {
         setShowEmailConfirmation(true);
       } else {
-        toast.error(t('auth.emailSendError', 'Error al enviar el email de verificación'));
+        toast.error(t('auth.emailSendError', tr('Error al enviar el email de verificación')));
       }
     } else if (data.session) {
       // Auto-confirmed (shouldn't happen with email verification enabled)
@@ -268,7 +269,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
   const handleVerifyCode = async () => {
     if (verificationCode.length !== 6) {
-      toast.error(t('auth.invalidCode', 'Código inválido'));
+      toast.error(t('auth.invalidCode', tr('Código inválido')));
       return;
     }
 
@@ -279,7 +280,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
       });
 
       if (error || !data?.success) {
-        toast.error(t('auth.codeExpiredOrInvalid', 'Código expirado o inválido'));
+        toast.error(t('auth.codeExpiredOrInvalid', tr('Código expirado o inválido')));
         setVerifying(false);
         return;
       }
@@ -296,14 +297,14 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
         return;
       }
 
-       toast.success(t('auth.accountVerified', '¡Cuenta verificada correctamente!'));
+       toast.success(t('auth.accountVerified', tr('¡Cuenta verificada correctamente!')));
        
        // Accept invitation and redirect (no limpiamos el token hasta que se complete correctamente)
        await acceptInvitationAndRedirect();
        
      } catch (error) {
        console.error('Error verifying code:', error);
-       toast.error(t('auth.verificationError', 'Error al verificar el código'));
+       toast.error(t('auth.verificationError', tr('Error al verificar el código')));
        setVerifying(false);
      }
    };
@@ -315,7 +316,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
     if (success) {
       toast.success(t('auth.emailResent', 'Email reenviado'));
     } else {
-      toast.error(t('auth.emailResendError', 'Error al reenviar el email'));
+      toast.error(t('auth.emailResendError', tr('Error al reenviar el email')));
     }
     setResendingEmail(false);
   };
@@ -359,21 +360,21 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
           <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
             <Mail className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">{t('auth.confirmEmail', 'Confirma tu email')}</CardTitle>
+          <CardTitle className="text-2xl">{t('auth.confirmEmail', tr('Confirma tu email'))}</CardTitle>
           <CardDescription className="text-base">
-            {t('auth.verificationCodeSent', 'Te hemos enviado un código de verificación a')} <strong>{email}</strong>
+            {t('auth.verificationCodeSent', tr('Te hemos enviado un código de verificación a'))} <strong>{email}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {t('auth.enterCodeFromEmail', 'Introduce el código de 6 dígitos que hemos enviado a tu email. Si no lo ves, revisa tu carpeta de spam.')}
+              {t('auth.enterCodeFromEmail', tr('Introduce el código de 6 dígitos que hemos enviado a tu email. Si no lo ves, revisa tu carpeta de spam.'))}
             </AlertDescription>
           </Alert>
 
           <div className="flex flex-col items-center space-y-4">
-            <p className="text-sm font-medium">{t('auth.verificationCode', 'Código de verificación')}</p>
+            <p className="text-sm font-medium">{t('auth.verificationCode', tr('Código de verificación'))}</p>
             <InputOTP
               maxLength={6}
               value={verificationCode}
@@ -398,12 +399,12 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
               {verifying ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t('auth.verifying', 'Verificando...')}
+                  {t('auth.verifying', tr('Verificando...'))}
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  {t('auth.verifyCode', 'Verificar código')}
+                  {t('auth.verifyCode', tr('Verificar código'))}
                 </>
               )}
             </Button>
@@ -411,7 +412,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
 
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              {t('auth.noEmailReceived', '¿No recibiste el email?')}
+              {t('auth.noEmailReceived', tr('¿No recibiste el email?'))}
             </p>
             <Button 
               variant="ghost" 
@@ -422,7 +423,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
               {resendingEmail ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t('auth.resending', 'Reenviando...')}
+                  {t('auth.resending', tr('Reenviando...'))}
                 </>
               ) : (
                 t('auth.resendEmail', 'Reenviar email')
@@ -439,7 +440,7 @@ export function InvitationRegistrationForm({ inviteToken, onBackToLogin }: Invit
                 setVerificationCode('');
               }}
             >
-              {t('auth.backToLogin', 'Volver al formulario')}
+              {t('auth.backToLogin', tr('Volver al formulario'))}
             </Button>
           </div>
         </CardContent>

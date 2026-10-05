@@ -147,7 +147,7 @@ export default function Exercises() {
               >
                 <span className="text-base md:text-lg tabular-nums">{totalCount ?? "…"}</span>
                 <span className="text-xs uppercase tracking-wide text-primary-foreground/80">
-                  {t("exercises.totalLabel", "ejercicios")}
+                  {t("exercises.totalLabel")}
                 </span>
               </span>
             </div>

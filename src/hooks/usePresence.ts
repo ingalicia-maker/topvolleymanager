@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { tr } from '@/lib/tr';
 
 export interface OnlineUser {
   id: string;
@@ -76,7 +77,7 @@ export function usePresence(channelName: string = 'app-presence') {
 
           await channel.track({
             id: user.id,
-            name: profile?.name || 'Usuario',
+            name: profile?.name || tr('Usuario'),
             online_at: new Date().toISOString(),
           });
         }
@@ -175,7 +176,7 @@ export function useConversationPresence(conversationId: string | null) {
 
           await channel.track({
             id: user.id,
-            name: profile?.name || 'Usuario',
+            name: profile?.name || tr('Usuario'),
           });
         }
       });

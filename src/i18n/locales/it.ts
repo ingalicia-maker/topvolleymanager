@@ -121,7 +121,7 @@ export default {
     verificationCodeSent: 'Ti abbiamo inviato un codice di verifica a',
     enterCodeFromEmail: 'Inserisci il codice a 6 cifre che ti abbiamo inviato via email. Se non lo vedi, controlla la cartella spam.',
     verificationCode: 'Codice di verifica',
-    verifying: 'Verificando...',
+    verifying: 'Verifica in corso...',
     verifyingCode: 'Verificando il codice...',
     invalidCode: 'Codice non valido',
     codeExpiredOrInvalid: 'Codice scaduto o non valido',
@@ -1225,11 +1225,37 @@ export default {
     ctaTitle: 'Pronto a digitalizzare il tuo club?',
     ctaSubtitle: 'Inizia a gestire le tue squadre in modo professionale con Top Volley Manager',
     noResources: 'Nessuna risorsa disponibile al momento.',
-    guides: {},
+    guides: {
+      teamManagement: {
+        title: 'Guida alla gestione della squadra',
+        description: 'Impara a organizzare la tua squadra, gestire le convocazioni e comunicare in modo efficace con giocatrici e genitori.',
+      },
+      trainingPlanning: {
+        title: 'Pianificazione degli allenamenti',
+        description: 'Struttura le tue sedute di allenamento con esercizi progressivi e obiettivi chiari.',
+      },
+      playerEvaluation: {
+        title: 'Valutazione delle giocatrici',
+        description: "Sistema di valutazione oggettiva per seguire i progressi e il potenziale di ogni giocatrice.",
+      },
+      seasonPlanning: {
+        title: 'Pianificazione della stagione',
+        description: 'Organizza tutta la stagione: precampionato, competizione, pause e valutazione finale.',
+      },
+      parentCommunication: {
+        title: 'Comunicazione con i genitori',
+        description: 'Strategie per mantenere una comunicazione efficace e costruttiva con le famiglie.',
+      },
+      attendanceTemplate: {
+        title: 'Modello per il controllo delle presenze',
+        description: 'Modello pronto all\'uso per il controllo delle presenze ad allenamenti e partite.',
+      },
+    },
   },
 
   // Exercises
   exercises: {
+    totalLabel: 'esercizi',
     pageTitle: 'Esercizi di Pallavolo',
     pageDescription: 'Libreria completa di esercizi di pallavolo organizzati per categoria e livello, con istruzioni dettagliate e variazioni.',
     title: 'Esercizi di Pallavolo',

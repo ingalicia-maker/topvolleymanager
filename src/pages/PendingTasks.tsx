@@ -9,6 +9,8 @@ import { useEvents } from '@/hooks/useEvents';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useTeams } from '@/hooks/useTeams';
+import { tr } from '@/lib/tr';
+import i18n from '@/i18n';
 
 interface PendingTask {
   id: string;
@@ -49,14 +51,14 @@ export default function PendingTasks() {
         
         if (teamsWithoutSubmission.length > 0) {
           const teamNames = teamsWithoutSubmission
-            .map(tid => teams.find(t => t.id === tid)?.name || 'Equipo')
+            .map(tid => teams.find(t => t.id === tid)?.name || tr('Equipo'))
             .join(', ');
           
           pending.push({
             id: `displacement-${event.id}`,
             type: 'displacement',
             title: `Desplazamiento: ${event.destination || event.title}`,
-            description: `Falta completar lista de: ${teamNames}`,
+            description: tr('Falta completar lista de: {teamNames}', { teamNames }),
             link: `/events/${event.id}`,
             priority: 'high',
             eventDate: event.date,
@@ -71,12 +73,12 @@ export default function PendingTasks() {
         for (const teamId of myTeamsInEvent) {
           const submission = event.coach_submissions?.[teamId];
           if (!submission?.submitted) {
-            const teamName = teams.find(t => t.id === teamId)?.name || 'Tu equipo';
+            const teamName = teams.find(t => t.id === teamId)?.name || tr('Tu equipo');
             pending.push({
               id: `displacement-${event.id}-${teamId}`,
               type: 'displacement',
               title: `Desplazamiento: ${event.destination || event.title}`,
-              description: `Completa la lista de ${teamName}`,
+              description: tr('Completa la lista de {teamName}', { teamName }),
               link: `/events/${event.id}`,
               priority: 'high',
               eventDate: event.date,
@@ -109,7 +111,7 @@ export default function PendingTasks() {
   
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', { 
+    return date.toLocaleDateString(i18n.resolvedLanguage || 'es', { 
       weekday: 'short', 
       day: 'numeric', 
       month: 'short' 
@@ -118,7 +120,7 @@ export default function PendingTasks() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title="Tareas Pendientes" showBack />
+      <Header title={tr('Tareas Pendientes')} showBack />
       
       <div className="p-4 space-y-4">
         {/* Summary */}
@@ -130,7 +132,7 @@ export default function PendingTasks() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{displacementTasks.length}</p>
-                <p className="text-xs text-muted-foreground">Desplazamientos</p>
+                <p className="text-xs text-muted-foreground">{tr('Desplazamientos')}</p>
               </div>
             </CardContent>
           </Card>
@@ -141,7 +143,7 @@ export default function PendingTasks() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{unreadCount}</p>
-                <p className="text-xs text-muted-foreground">Notificaciones</p>
+                <p className="text-xs text-muted-foreground">{tr('Notificaciones')}</p>
               </div>
             </CardContent>
           </Card>
@@ -151,9 +153,9 @@ export default function PendingTasks() {
           <Card>
             <CardContent className="p-8 text-center">
               <CheckCircle2 className="h-12 w-12 mx-auto text-primary mb-3" />
-              <h3 className="font-semibold text-lg mb-1">¡Todo al día!</h3>
+              <h3 className="font-semibold text-lg mb-1">{tr('¡Todo al día!')}</h3>
               <p className="text-muted-foreground text-sm">
-                No tienes tareas pendientes en este momento
+                {tr('No tienes tareas pendientes en este momento')}
               </p>
             </CardContent>
           </Card>
@@ -164,7 +166,7 @@ export default function PendingTasks() {
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
                   <Bus className="h-4 w-4" />
-                  Desplazamientos sin completar
+                  {tr('Desplazamientos sin completar')}
                 </h2>
                 <div className="space-y-2">
                   {displacementTasks.map(task => (
@@ -185,7 +187,7 @@ export default function PendingTasks() {
                                 </div>
                               )}
                             </div>
-                            <Badge variant="destructive" className="shrink-0">Urgente</Badge>
+                            <Badge variant="destructive" className="shrink-0">{tr('Urgente')}</Badge>
                           </div>
                         </CardContent>
                       </Card>
@@ -200,7 +202,7 @@ export default function PendingTasks() {
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
                   <Bell className="h-4 w-4" />
-                  Notificaciones sin leer
+                  {tr('Notificaciones sin leer')}
                 </h2>
                 <div className="space-y-2">
                   {notificationTasks.map(task => (
@@ -212,7 +214,7 @@ export default function PendingTasks() {
                               <span className="font-medium text-sm">{task.title}</span>
                               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{task.description}</p>
                             </div>
-                            <Badge variant="secondary" className="shrink-0">Pendiente</Badge>
+                            <Badge variant="secondary" className="shrink-0">{tr('Pendiente')}</Badge>
                           </div>
                         </CardContent>
                       </Card>

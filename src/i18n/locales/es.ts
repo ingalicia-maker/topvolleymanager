@@ -1257,6 +1257,7 @@ export default {
 
   // Exercises
   exercises: {
+    totalLabel: 'ejercicios',
     pageTitle: 'Ejercicios de Voleibol',
     pageDescription: 'Biblioteca completa de ejercicios de voleibol organizados por categoría y nivel, con instrucciones detalladas y variaciones.',
     title: 'Ejercicios de Voleibol',

@@ -27,7 +27,8 @@ import {
 } from '@/components/ui/select';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams } from '@/hooks/useTeams';
-import { usePlayerRatings, RATING_CATEGORIES, RatingCategoryKey } from '@/hooks/usePlayerRatings';
+import { usePlayerRatings } from '@/hooks/usePlayerRatings';
+import { averageByCriterion, formValues, overallAverage, ratingAverage, toRatingColumns } from '@/lib/ratingCriteria';
 import { useSeasons } from '@/hooks/useSeasons';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { RatingInput } from '@/components/RatingInput';
@@ -47,21 +48,13 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-const RATING_EMOJIS: Record<string, string> = {
-  effort_attitude: '💪',
-  communication_cooperation: '🤝',
-  technical_execution: '🏐',
-  decision_making: '🧠',
-  leadership_initiative: '⭐',
-};
-
 export default function PlayerDetail() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { players, updatePlayer, deletePlayer, loading } = usePlayers();
   const { teams, loading: teamsLoading } = useTeams();
-  const { ratings, addRating, updateRating, deleteRating, refetch: refetchRatings } = usePlayerRatings();
+  const { ratings, criteria, addRating, updateRating, deleteRating, refetch: refetchRatings } = usePlayerRatings();
   const { seasons } = useSeasons();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -97,13 +90,7 @@ export default function PlayerDetail() {
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [ratingTeamId, setRatingTeamId] = useState<string>('');
-  const [ratingValues, setRatingValues] = useState<Record<RatingCategoryKey, number>>({
-    effort_attitude: 5,
-    communication_cooperation: 5,
-    technical_execution: 5,
-    decision_making: 5,
-    leadership_initiative: 5,
-  });
+  const [ratingValues, setRatingValues] = useState<Record<string, number>>({});
   const [ratingNotes, setRatingNotes] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
   const [editingRatingId, setEditingRatingId] = useState<string | null>(null);
@@ -193,12 +180,8 @@ export default function PlayerDetail() {
     const prevMonth = months.length > 1 ? months[months.length - 2] : null;
 
     const calcAvg = (monthRatings: typeof playerRatings) => {
-      const avgByCategory: Record<RatingCategoryKey, number> = {} as any;
-      RATING_CATEGORIES.forEach(cat => {
-        avgByCategory[cat.key] = monthRatings.reduce((acc, r) => acc + r[cat.key], 0) / monthRatings.length;
-      });
-      const totalAvg = Object.values(avgByCategory).reduce((a, b) => a + b, 0) / 5;
-      return { avgByCategory, totalAvg };
+      const avgByCategory = averageByCriterion(monthRatings, criteria);
+      return { avgByCategory, totalAvg: overallAverage(avgByCategory) };
     };
 
     const current = calcAvg(byMonth[latestMonth]);
@@ -212,7 +195,7 @@ export default function PlayerDetail() {
       ratingsCount: playerRatings.length,
       latestMonth,
     };
-  }, [playerId, ratings]);
+  }, [playerId, ratings, criteria]);
 
   const getTrendIcon = () => {
     if (!ratingStats || ratingStats.trend === 0) return <Minus className="h-4 w-4 text-muted-foreground" />;
@@ -259,13 +242,7 @@ export default function PlayerDetail() {
       setRatingTeamId(playerTeamOptions[0].id);
     }
     setSelectedMonth(format(new Date(), 'yyyy-MM'));
-    setRatingValues({
-      effort_attitude: 5,
-      communication_cooperation: 5,
-      technical_execution: 5,
-      decision_making: 5,
-      leadership_initiative: 5,
-    });
+    setRatingValues(formValues(criteria));
     setRatingNotes('');
     setEditingRatingId(null);
     setRatingDialogOpen(true);
@@ -284,13 +261,7 @@ export default function PlayerDetail() {
   // Edit existing rating
   const handleEditRating = (rating: any) => {
     setEditingRatingId(rating.id);
-    setRatingValues({
-      effort_attitude: rating.effort_attitude,
-      communication_cooperation: rating.communication_cooperation,
-      technical_execution: rating.technical_execution,
-      decision_making: rating.decision_making,
-      leadership_initiative: rating.leadership_initiative,
-    });
+    setRatingValues(formValues(criteria, rating));
     setRatingNotes(rating.notes || '');
     setRatingTeamId(rating.team_id);
   };
@@ -318,7 +289,7 @@ export default function PlayerDetail() {
     let result;
     if (editingRatingId) {
       result = await updateRating(editingRatingId, {
-        ...ratingValues,
+        ...toRatingColumns(ratingValues, criteria),
         notes: ratingNotes || undefined,
         rating_date: `${selectedMonth}-15`,
       });
@@ -326,7 +297,7 @@ export default function PlayerDetail() {
       result = await addRating({
         player_id: playerId,
         team_id: ratingTeamId,
-        ...ratingValues,
+        ...toRatingColumns(ratingValues, criteria),
         notes: ratingNotes || undefined,
         rating_date: `${selectedMonth}-15`,
       }, activeSeason?.id);
@@ -629,13 +600,13 @@ export default function PlayerDetail() {
             {ratingStats ? (
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-1">
-                  {RATING_CATEGORIES.map(cat => (
+                  {criteria.filter(cat => ratingStats.avgByCategory[cat.key] != null).map(cat => (
                     <Badge
                       key={cat.key}
                       variant="outline"
-                      className={`text-xs ${getScoreColor(ratingStats.avgByCategory[cat.key])}`}
+                      className={`text-xs ${getScoreColor(ratingStats.avgByCategory[cat.key]!)}`}
                     >
-                      {RATING_EMOJIS[cat.key]} {ratingStats.avgByCategory[cat.key].toFixed(1)}
+                      {cat.emoji} {ratingStats.avgByCategory[cat.key]!.toFixed(1)}
                     </Badge>
                   ))}
                 </div>
@@ -711,8 +682,7 @@ export default function PlayerDetail() {
                   </Label>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {ratingsForSelectedMonth.map(rating => {
-                      const avgScore = (rating.effort_attitude + rating.communication_cooperation + 
-                        rating.technical_execution + rating.decision_making + rating.leadership_initiative) / 5;
+                      const avgScore = ratingAverage(rating, criteria) ?? 0;
                       const isEditing = editingRatingId === rating.id;
                       return (
                         <div 
@@ -777,13 +747,7 @@ export default function PlayerDetail() {
                       size="sm"
                       onClick={() => {
                         setEditingRatingId(null);
-                        setRatingValues({
-                          effort_attitude: 5,
-                          communication_cooperation: 5,
-                          technical_execution: 5,
-                          decision_making: 5,
-                          leadership_initiative: 5,
-                        });
+                        setRatingValues(formValues(criteria));
                         setRatingNotes('');
                       }}
                     >
@@ -791,12 +755,12 @@ export default function PlayerDetail() {
                     </Button>
                   )}
                 </div>
-                {RATING_CATEGORIES.map(cat => (
+                {criteria.map(cat => (
                   <RatingInput
                     key={cat.key}
                     label={cat.shortLabel}
-                    emoji={RATING_EMOJIS[cat.key]}
-                    value={ratingValues[cat.key]}
+                    emoji={cat.emoji}
+                    value={ratingValues[cat.key] ?? 5}
                     onChange={(val) => setRatingValues(prev => ({ ...prev, [cat.key]: val }))}
                   />
                 ))}

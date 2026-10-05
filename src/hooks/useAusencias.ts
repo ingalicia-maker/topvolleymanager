@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClub } from './useClub';
+import { tr } from '@/lib/tr';
 
 export type AbsenceType = 'justified' | 'unjustified';
 
@@ -30,7 +31,7 @@ export function useAusencias() {
 
     if (error) {
       console.error('Error fetching ausencias:', error);
-      toast.error('Error al cargar ausencias');
+      toast.error(tr('Error al cargar ausencias'));
     } else {
       setAusencias(data || []);
     }
@@ -49,12 +50,12 @@ export function useAusencias() {
       .single();
 
     if (error) {
-      toast.error('Error al registrar ausencia');
+      toast.error(tr('Error al registrar ausencia'));
       return null;
     }
     
     setAusencias(prev => [data, ...prev]);
-    toast.success('Ausencia registrada');
+    toast.success(tr('Ausencia registrada'));
     return data;
   };
 
@@ -65,7 +66,7 @@ export function useAusencias() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al actualizar ausencia');
+      toast.error(tr('Error al actualizar ausencia'));
       return false;
     }
 
@@ -80,12 +81,12 @@ export function useAusencias() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al eliminar ausencia');
+      toast.error(tr('Error al eliminar ausencia'));
       return false;
     }
 
     setAusencias(prev => prev.filter(a => a.id !== id));
-    toast.success('Ausencia eliminada');
+    toast.success(tr('Ausencia eliminada'));
     return true;
   };
 

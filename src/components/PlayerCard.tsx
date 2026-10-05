@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { tr } from '@/lib/tr';
 
 interface PlayerCardProps {
   player: DbPlayer;
@@ -39,9 +40,9 @@ export function PlayerCard({
   onArchive,
   onUnarchive,
   onDelete,
-  archiveLabel = 'Archivar',
-  unarchiveLabel = 'Restaurar',
-  deleteLabel = 'Eliminar',
+  archiveLabel = tr('Archivar'),
+  unarchiveLabel = tr('Restaurar'),
+  deleteLabel = tr('Eliminar'),
 }: PlayerCardProps) {
   const { teams } = useTeams();
   const navigate = useNavigate();
@@ -133,7 +134,7 @@ export function PlayerCard({
                   variant="ghost"
                   size="icon"
                   className="shrink-0 text-muted-foreground"
-                  aria-label={`Acciones para ${fullName}`}
+                  aria-label={tr('Acciones para {fullName}', { fullName })}
                 >
                   <MoreVertical className="h-5 w-5" />
                 </Button>

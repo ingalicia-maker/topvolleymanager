@@ -43,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { tr } from '@/lib/tr';
 
 interface CoachProfile {
   id: string;
@@ -205,7 +206,7 @@ export default function CoachManagement() {
             body: {
               coachEmail: coach.email,
               coachName: coach.name,
-              approvedBy: currentUserProfile?.name || 'Director Deportivo'
+              approvedBy: currentUserProfile?.name || tr('Director Deportivo')
             }
           });
         } catch (emailError) {
@@ -334,7 +335,7 @@ export default function CoachManagement() {
 
       if (error) throw error;
 
-      toast.success(`Mensaje enviado a ${selectedRecipients.length} entrenador(es)`);
+      toast.success(tr('Mensaje enviado a {length} entrenador(es)', { length: selectedRecipients.length }));
       setMessageDialogOpen(false);
       setMessageTitle('');
       setMessageContent('');

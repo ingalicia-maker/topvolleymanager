@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { tr } from '@/lib/tr';
 
 type EventType = 'training' | 'match' | 'displacement' | 'incident' | 'holiday' | 'communication' | 'birthday';
 
@@ -38,7 +39,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
     staleTime: 5 * 60 * 1000,
   });
   const bdLabels: Record<string, { label: string; player: string; coach: string }> = {
-    es: { label: 'Cumpleaños', player: 'Jugadora', coach: 'Entrenador/a' },
+    es: { label: tr('Cumpleaños'), player: tr('Jugadora'), coach: 'Entrenador/a' },
     it: { label: 'Compleanni', player: 'Giocatrice', coach: 'Allenatore' },
     en: { label: 'Birthdays', player: 'Player', coach: 'Coach' },
   };
@@ -112,7 +113,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
   const getTeamName = (teamId: string): string => {
     if (teamId === 'all') return t('common.all');
     const team = teams.find(t => t.id === teamId);
-    return team?.name || t('teams.team');
+    return team?.name || tr('Equipo');
   };
 
   const getEventTypeConfig = (type: string) => {

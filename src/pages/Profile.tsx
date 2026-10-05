@@ -33,10 +33,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX, CheckCircle, Phone, Calendar, Trash2 } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { teams, loading: teamsLoading } = useTeams();
   const { profile, isDirector, assignedTeams, updateAssignedTeams, loading, roles } = useUserRole();
   const { signOut, user } = useAuth();
@@ -72,13 +73,13 @@ export default function Profile() {
 
       if (error) throw error;
       
-      toast.success('Código de responsabilidad aceptado correctamente');
+      toast.success(tr('Código de responsabilidad aceptado correctamente'));
       setShowResponsibilityDialog(false);
       // Reload page to refresh profile data
       window.location.reload();
     } catch (error) {
       console.error('Error accepting responsibility code:', error);
-      toast.error('Error al aceptar el código de responsabilidad');
+      toast.error(tr('Error al aceptar el código de responsabilidad'));
     } finally {
       setAcceptingCode(false);
     }
@@ -162,9 +163,9 @@ export default function Profile() {
       .eq('id', user.id);
     
     if (teamsSuccess && !phoneError) {
-      toast.success('Perfil actualizado correctamente');
+      toast.success(tr('Perfil actualizado correctamente'));
     } else {
-      toast.error('Error al actualizar perfil');
+      toast.error(tr('Error al actualizar perfil'));
     }
     setSaving(false);
   };
@@ -174,7 +175,7 @@ export default function Profile() {
   if (loading || teamsLoading) {
     return (
       <div className="min-h-screen bg-background pb-28">
-        <Header title="Mi Perfil" showBack />
+        <Header title={tr('Mi Perfil')} showBack />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -185,7 +186,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title="Mi Perfil" showBack />
+      <Header title={tr('Mi Perfil')} showBack />
 
       <div className="p-4 space-y-4">
         {/* User Info Card */}
@@ -193,22 +194,22 @@ export default function Profile() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <User className="h-5 w-5" />
-              Información
+              {tr('Información')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <p className="text-sm text-muted-foreground">Nombre</p>
-              <p className="font-medium">{profile?.name || 'Sin nombre'}</p>
+              <p className="text-sm text-muted-foreground">{tr('Nombre')}</p>
+              <p className="font-medium">{profile?.name || tr('Sin nombre')}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="text-sm text-muted-foreground">{tr('Email')}</p>
               <p className="font-medium">{profile?.email}</p>
             </div>
             <div>
               <Label htmlFor="phone" className="text-sm text-muted-foreground flex items-center gap-1">
                 <Phone className="h-3 w-3" />
-                Teléfono
+                {tr('Teléfono')}
               </Label>
               <Input
                 id="phone"
@@ -219,7 +220,7 @@ export default function Profile() {
                 className="mt-1"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Visible para el Director Deportivo
+                {tr('Visible para el Director Deportivo')}
               </p>
             </div>
             <div>
@@ -230,22 +231,22 @@ export default function Profile() {
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Roles actuales:</p>
+              <p className="text-sm text-muted-foreground">{tr('Roles actuales:')}</p>
               <div className="flex flex-wrap gap-2">
                 {isDirector && (
                   <Badge className="bg-amber-500 hover:bg-amber-600">
                     <Shield className="h-3 w-3 mr-1" />
-                    Director Deportivo
+                    {tr('Director Deportivo')}
                   </Badge>
                 )}
                 {assignedTeams.length > 0 && (
                   <Badge variant="secondary">
                     <Users className="h-3 w-3 mr-1" />
-                    Entrenador
+                    {tr('Entrenador')}
                   </Badge>
                 )}
                 {!isDirector && assignedTeams.length === 0 && (
-                  <Badge variant="outline">Sin rol asignado</Badge>
+                  <Badge variant="outline">{tr('Sin rol asignado')}</Badge>
                 )}
               </div>
             </div>
@@ -255,9 +256,9 @@ export default function Profile() {
               <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
                 <FileCheck className="h-5 w-5 text-green-600 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-green-700 dark:text-green-400">Código de responsabilidad aceptado</p>
+                  <p className="text-sm font-medium text-green-700 dark:text-green-400">{tr('Código de responsabilidad aceptado')}</p>
                   <p className="text-xs text-muted-foreground">
-                    Aceptado el {new Date(profile.responsibility_code_accepted_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {tr('Aceptado el {date}', { date: new Date(profile.responsibility_code_accepted_at).toLocaleDateString(i18n.resolvedLanguage || 'es', { day: 'numeric', month: 'long', year: 'numeric' }) })}
                   </p>
                 </div>
               </div>
@@ -265,9 +266,9 @@ export default function Profile() {
               <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
                 <FileX className="h-5 w-5 text-amber-600 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Código de responsabilidad pendiente</p>
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">{tr('Código de responsabilidad pendiente')}</p>
                   <p className="text-xs text-muted-foreground">
-                    Aún no has aceptado el código de responsabilidad del club
+                    {tr('Aún no has aceptado el código de responsabilidad del club')}
                   </p>
                 </div>
                 {club?.responsibility_code && (
@@ -277,7 +278,7 @@ export default function Profile() {
                     onClick={() => setShowResponsibilityDialog(true)}
                     className="shrink-0 border-amber-500 text-amber-600 hover:bg-amber-500/20"
                   >
-                    Aceptar
+                    {tr('Aceptar')}
                   </Button>
                 )}
               </div>
@@ -304,7 +305,7 @@ export default function Profile() {
                 className="w-full gap-2"
               >
                 <Building2 className="h-4 w-4" />
-                Gestión del Club
+                {tr('Gestión del Club')}
               </Button>
               {isClubDirector && (
                 <>
@@ -319,7 +320,7 @@ export default function Profile() {
                     className="w-full gap-2"
                   >
                     <Users className="h-4 w-4" />
-                    Gestión de Entrenadores
+                    {tr('Gestión de Entrenadores')}
                   </Button>
                   <Button
                     type="button"
@@ -332,7 +333,7 @@ export default function Profile() {
                     className="w-full gap-2"
                   >
                     <Calendar className="h-4 w-4" />
-                    Gestión de Temporadas
+                    {tr('Gestión de Temporadas')}
                   </Button>
                   <Button
                     type="button"
@@ -345,10 +346,10 @@ export default function Profile() {
                     className="w-full gap-2"
                   >
                     <Settings className="h-4 w-4" />
-                    Configuración Visual
+                    {tr('Configuración Visual')}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    Opciones exclusivas de Director Deportivo
+                    {tr('Opciones exclusivas de Director Deportivo')}
                   </p>
                 </>
               )}
@@ -404,9 +405,9 @@ export default function Profile() {
                     <BellOff className="h-5 w-5 text-muted-foreground" />
                   )}
                   <div>
-                    <p className="font-medium">Notificaciones Push</p>
+                    <p className="font-medium">{tr('Notificaciones push')}</p>
                     <p className="text-xs text-muted-foreground">
-                      {isSubscribed ? 'Recibirás alertas en tu dispositivo' : 'Activa las alertas en tu dispositivo'}
+                      {isSubscribed ? tr('Recibirás alertas en tu dispositivo') : tr('Activa las alertas en tu dispositivo')}
                     </p>
                   </div>
                 </div>
@@ -425,7 +426,7 @@ export default function Profile() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Users className="h-5 w-5" />
-              Equipos Asignados
+              {tr('Equipos Asignados')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -434,18 +435,18 @@ export default function Profile() {
               <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-amber-500 bg-amber-500/10">
                 <Shield className="h-5 w-5 text-amber-600" />
                 <div className="flex-1">
-                  <p className="font-medium text-amber-600">Director Deportivo</p>
-                  <p className="text-xs text-muted-foreground">Acceso total a todos los equipos y funcionalidades</p>
+                  <p className="font-medium text-amber-600">{tr('Director Deportivo')}</p>
+                  <p className="text-xs text-muted-foreground">{tr('Acceso total a todos los equipos y funcionalidades')}</p>
                 </div>
               </div>
             )}
 
             <div className={isDirector ? "border-t pt-4" : ""}>
-              <p className="text-sm font-medium mb-2">Equipos que entrenas</p>
+              <p className="text-sm font-medium mb-2">{tr('Equipos que entrenas')}</p>
               <p className="text-xs text-muted-foreground mb-3">
                 {isDirector 
-                  ? "Como director tienes acceso a todos los equipos. Selecciona los que entrenas directamente."
-                  : "Selecciona los equipos que entrenas. Para ser director, necesitas una invitación del Director Deportivo actual."
+                  ? tr('Como director tienes acceso a todos los equipos. Selecciona los que entrenas directamente.')
+                  : tr('Selecciona los equipos que entrenas. Para ser director, necesitas una invitación del Director Deportivo actual.')
                 }
               </p>
               <div className="space-y-2">
@@ -478,7 +479,7 @@ export default function Profile() {
               className="w-full gap-2"
             >
               <Save className="h-4 w-4" />
-              {saving ? 'Guardando...' : 'Guardar Cambios'}
+              {saving ? tr('Guardando...') : tr('Guardar Cambios')}
             </Button>
           </CardContent>
         </Card>
@@ -490,7 +491,7 @@ export default function Profile() {
           className="w-full gap-2 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
         >
           <LogOut className="h-4 w-4" />
-          Cerrar Sesión
+          {tr('Cerrar Sesión')}
         </Button>
 
         {/* Delete Account */}
@@ -532,10 +533,10 @@ export default function Profile() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileCheck className="h-5 w-5 text-primary" />
-              Código de Responsabilidad
+              {tr('Código de Responsabilidad')}
             </DialogTitle>
             <DialogDescription>
-              Lee y acepta el código de responsabilidad del club {club?.name}
+              {tr('Lee y acepta el código de responsabilidad del club {club}', { club: club?.name ?? '' })}
             </DialogDescription>
           </DialogHeader>
           
@@ -548,7 +549,7 @@ export default function Profile() {
                 />
               ) : (
                 <p className="text-sm text-muted-foreground italic">
-                  El club no ha configurado un código de responsabilidad.
+                  {tr('El club no ha configurado un código de responsabilidad.')}
                 </p>
               )}
             </div>
@@ -560,7 +561,7 @@ export default function Profile() {
               onClick={() => setShowResponsibilityDialog(false)}
               disabled={acceptingCode}
             >
-              Cancelar
+              {tr('Cancelar')}
             </Button>
             <Button
               onClick={handleAcceptResponsibilityCode}
@@ -568,7 +569,7 @@ export default function Profile() {
               className="gap-2"
             >
               <CheckCircle className="h-4 w-4" />
-              {acceptingCode ? 'Aceptando...' : 'Acepto el código'}
+              {acceptingCode ? tr('Aceptando...') : tr('Acepto el código')}
             </Button>
           </DialogFooter>
         </DialogContent>

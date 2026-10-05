@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { DbTeam } from '@/hooks/useTeams';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
+import { tr } from '@/lib/tr';
 
 interface TeamCardProps {
   team: DbTeam;
@@ -23,7 +24,7 @@ export function TeamCard({ team, playerCount, onDelete, deleteLabel }: TeamCardP
           <div className="flex items-start justify-between">
             <div>
               <h3 className="font-bold text-foreground">{team.name}</h3>
-              <p className="text-sm text-muted-foreground">Coach: {team.coach}</p>
+              <p className="text-sm text-muted-foreground">{tr('Entrenador: {coach}', { coach: team.coach })}</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 rounded-full bg-muted px-2 py-1">

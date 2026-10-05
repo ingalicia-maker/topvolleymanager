@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '@/lib/dateLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DbAusencia } from '@/hooks/useAusencias';
+import { tr } from '@/lib/tr';
 
 interface AbsenceChartProps {
   ausencias: DbAusencia[];
@@ -53,11 +54,11 @@ export function AbsenceChart({ ausencias, teamId, teamName }: AbsenceChartProps)
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Evolución de ausencias</CardTitle>
+          <CardTitle className="text-base">{tr('Evolución de ausencias')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm text-center py-4">
-            No hay datos suficientes para mostrar el gráfico
+            {tr('No hay datos suficientes para mostrar el gráfico')}
           </p>
         </CardContent>
       </Card>
@@ -67,7 +68,7 @@ export function AbsenceChart({ ausencias, teamId, teamName }: AbsenceChartProps)
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Evolución mensual - {teamName}</CardTitle>
+        <CardTitle className="text-base">{tr('Evolución mensual - {team}', { team: teamName })}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[250px] w-full">

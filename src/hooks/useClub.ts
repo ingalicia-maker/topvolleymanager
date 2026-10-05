@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { tr } from '@/lib/tr';
 
 export interface Club {
   id: string;
@@ -121,7 +122,7 @@ export function useClub() {
   }, [user]);
 
   const createClub = async (name: string, role: 'coach' | 'director' = 'director'): Promise<{ club: Club | null; error: string | null }> => {
-    if (!user) return { club: null, error: 'Usuario no autenticado' };
+    if (!user) return { club: null, error: tr('Usuario no autenticado') };
 
     try {
       // Create the club
@@ -165,7 +166,7 @@ export function useClub() {
 
         supabase.functions.invoke('notify-new-director', {
           body: {
-            directorName: profile?.name || user.email || 'Desconocido',
+            directorName: profile?.name || user.email || tr('Desconocido'),
             directorEmail: profile?.email || user.email || '',
             clubName: name,
             userId: user.id,
@@ -182,7 +183,7 @@ export function useClub() {
   };
 
   const joinClubWithToken = async (rawTokenOrUrl: string) => {
-    if (!user) return { success: false, error: 'No autenticado' };
+    if (!user) return { success: false, error: tr('No autenticado') };
 
     // Extract token from URL if needed
     // Supports:
@@ -226,12 +227,12 @@ export function useClub() {
 
       if (invError) throw invError;
       if (!invitation) {
-        return { success: false, error: 'Invitación no válida o expirada' };
+        return { success: false, error: tr('Invitación no válida o expirada') };
       }
 
       // Check if expired
       if (new Date(invitation.expires_at) < new Date()) {
-        return { success: false, error: 'La invitación ha expirado' };
+        return { success: false, error: tr('La invitación ha expirado') };
       }
 
       // Check if already a member
@@ -243,7 +244,7 @@ export function useClub() {
         .maybeSingle();
 
       if (existingMembership) {
-        return { success: false, error: 'Ya eres miembro de este club' };
+        return { success: false, error: tr('Ya eres miembro de este club') };
       }
 
       // Join the club with the role from the invitation
@@ -293,7 +294,7 @@ export function useClub() {
         .eq('id', user.id)
         .maybeSingle();
 
-      const newMemberName = newUserProfile?.name || user.email || 'Nuevo miembro';
+      const newMemberName = newUserProfile?.name || user.email || tr('Nuevo miembro');
 
       // Create notifications for all directors
       if (directors && directors.length > 0) {
@@ -303,8 +304,8 @@ export function useClub() {
             recipient_id: director.user_id,
             sender_id: user.id,
             type: 'new_member_joined',
-            title: 'Nuevo miembro en el club',
-            message: `${newMemberName} se ha unido al club como ${invitation.role === 'director' ? 'Director Deportivo' : 'Entrenador'}`,
+            title: tr('Nuevo miembro en el club'),
+            message: tr('{name} se ha unido al club como {role}', { name: newMemberName, role: invitation.role === 'director' ? tr('Director Deportivo') : tr('Entrenador') }),
             is_read: false,
           }));
 
@@ -317,7 +318,7 @@ export function useClub() {
       return { success: true };
     } catch (error: any) {
       console.error('Error joining club:', error);
-      return { success: false, error: error.message || 'Error al unirse al club' };
+      return { success: false, error: error.message || tr('Error al unirse al club') };
     }
   };
 
@@ -326,8 +327,8 @@ export function useClub() {
     email?: string,
     notifyDirectors: boolean = false
   ): Promise<{ invitation: ClubInvitation | null; error: string | null }> => {
-    if (!user) return { invitation: null, error: 'Usuario no autenticado' };
-    if (!club) return { invitation: null, error: 'Club no cargado' };
+    if (!user) return { invitation: null, error: tr('Usuario no autenticado') };
+    if (!club) return { invitation: null, error: tr('Club no cargado') };
 
     try {
       const { data, error } = await supabase
@@ -358,15 +359,15 @@ export function useClub() {
           .eq('id', user.id)
           .maybeSingle();
 
-        const creatorName = creatorProfile?.name || 'Un entrenador';
+        const creatorName = creatorProfile?.name || tr('Un entrenador');
 
         if (directors && directors.length > 0) {
           const notifications = directors.map(director => ({
             recipient_id: director.user_id,
             sender_id: user.id,
             type: 'coach_created_invitation',
-            title: 'Invitación creada',
-            message: `${creatorName} ha creado una invitación para un nuevo entrenador`,
+            title: tr('Invitación creada'),
+            message: tr('{creatorName} ha creado una invitación para un nuevo entrenador', { creatorName }),
             is_read: false,
           }));
 
@@ -378,7 +379,7 @@ export function useClub() {
       return { invitation: data as ClubInvitation, error: null };
     } catch (error: any) {
       console.error('Error creating invitation:', error);
-      return { invitation: null, error: error?.message || 'Error al crear la invitación' };
+      return { invitation: null, error: error?.message || tr('Error al crear la invitación') };
     }
   };
 

@@ -10,6 +10,7 @@ import { useAusencias } from '@/hooks/useAusencias';
 import { useTeams } from '@/hooks/useTeams';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useUserRole } from '@/hooks/useUserRole';
+import { tr } from '@/lib/tr';
 
 export function MonthlyAbsenceSummary() {
   const { t, i18n } = useTranslation();
@@ -119,7 +120,7 @@ export function MonthlyAbsenceSummary() {
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="bg-muted/50 rounded-lg p-2">
             <p className="text-lg font-bold text-foreground">{monthlyStats.total}</p>
-            <p className="text-[10px] text-muted-foreground">Total</p>
+            <p className="text-[10px] text-muted-foreground">{tr('Total')}</p>
           </div>
           <button
             type="button"
@@ -130,7 +131,7 @@ export function MonthlyAbsenceSummary() {
               <CheckCircle className="h-3 w-3 text-amber-600" />
               <p className="text-lg font-bold text-amber-600">{monthlyStats.justified}</p>
             </div>
-            <p className="text-[10px] text-muted-foreground">Justificadas</p>
+            <p className="text-[10px] text-muted-foreground">{tr('Justificadas')}</p>
           </button>
           <button
             type="button"
@@ -141,7 +142,7 @@ export function MonthlyAbsenceSummary() {
               <X className="h-3 w-3 text-destructive" />
               <p className="text-lg font-bold text-destructive">{monthlyStats.unjustified}</p>
             </div>
-            <p className="text-[10px] text-muted-foreground">Sin justificar</p>
+            <p className="text-[10px] text-muted-foreground">{tr('Sin justificar')}</p>
           </button>
         </div>
 
@@ -149,7 +150,7 @@ export function MonthlyAbsenceSummary() {
         {expandedType && (
           <div className="mt-3 pt-3 border-t space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground mb-2">
-              {expandedType === 'justified' ? 'Ausencias justificadas:' : 'Ausencias sin justificar:'}
+              {expandedType === 'justified' ? tr('Ausencias justificadas:') : tr('Ausencias sin justificar:')}
             </p>
             {(expandedType === 'justified' ? monthlyStats.justifiedList : monthlyStats.unjustifiedList).map(({ player, count }) => (
               <div 
@@ -160,7 +161,7 @@ export function MonthlyAbsenceSummary() {
                   <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
                     <User className="h-3 w-3 text-primary" />
                   </div>
-                  <span className="text-sm font-medium">{player?.name || 'Desconocida'}</span>
+                  <span className="text-sm font-medium">{player?.name || tr('Desconocida')}</span>
                 </div>
                 <Badge 
                   className={`text-[10px] h-5 ${expandedType === 'justified' ? 'bg-amber-500' : ''}`}
@@ -172,7 +173,7 @@ export function MonthlyAbsenceSummary() {
             ))}
             {(expandedType === 'justified' ? monthlyStats.justifiedList : monthlyStats.unjustifiedList).length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-2">
-                No hay ausencias de este tipo
+                {tr('No hay ausencias de este tipo')}
               </p>
             )}
           </div>
@@ -181,13 +182,13 @@ export function MonthlyAbsenceSummary() {
         <div className="flex items-center justify-between mt-3 pt-3 border-t">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Users className="h-3 w-3" />
-            <span>{monthlyStats.playersWithAbsences} de {monthlyStats.totalPlayers} jugadoras con ausencias</span>
+            <span>{tr('{count} de {total} jugadoras con ausencias', { count: monthlyStats.playersWithAbsences, total: monthlyStats.totalPlayers })}</span>
           </div>
           <Badge 
             variant={monthlyStats.attendanceRate >= 90 ? 'default' : monthlyStats.attendanceRate >= 75 ? 'secondary' : 'destructive'}
             className="text-[10px]"
           >
-            {monthlyStats.attendanceRate}% asistencia
+            {tr('{rate}% asistencia', { rate: monthlyStats.attendanceRate })}
           </Badge>
         </div>
       </CardContent>

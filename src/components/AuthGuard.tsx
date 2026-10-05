@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useClub } from '@/hooks/useClub';
 import i18n from '@/i18n';
+import { tr } from '@/lib/tr';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -67,7 +68,7 @@ export function AuthGuard({ children, requireClub = true, unauthenticatedRedirec
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando...</p>
+          <p className="text-muted-foreground">{tr('Cargando...')}</p>
         </div>
       </div>
     );

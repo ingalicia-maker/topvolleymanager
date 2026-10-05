@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
+import { tr } from '@/lib/tr';
 import { useClub } from '@/hooks/useClub';
 import { useStops } from '@/hooks/useStops';
 import { supabase } from '@/integrations/supabase/client';
@@ -631,7 +632,7 @@ export default function ClubManagement() {
                             className={`p-3 rounded-lg border-2 transition-all ${primaryColor === color.value ? 'border-foreground scale-105' : 'border-transparent'}`}
                             style={{ backgroundColor: color.hex }}
                           >
-                            <span className="sr-only">{color.name}</span>
+                            <span className="sr-only">{tr(color.name)}</span>
                           </button>
                         ))}
                       </div>
@@ -649,7 +650,7 @@ export default function ClubManagement() {
                             className={`p-3 rounded-lg border-2 transition-all ${accentColor === color.value ? 'border-foreground scale-105' : 'border-transparent'}`}
                             style={{ backgroundColor: color.hex }}
                           >
-                            <span className="sr-only">{color.name}</span>
+                            <span className="sr-only">{tr(color.name)}</span>
                           </button>
                         ))}
                       </div>

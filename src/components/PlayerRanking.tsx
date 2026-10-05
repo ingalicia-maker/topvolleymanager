@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RATING_CATEGORIES, RatingCategoryKey } from '@/hooks/usePlayerRatings';
+import { useRatingCriteria } from '@/hooks/useRatingCriteria';
+import { averageByCriterion, overallAverage } from '@/lib/ratingCriteria';
 import { Trophy, Medal, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '@/lib/dateLocale';
+import { tr } from '@/lib/tr';
 
 interface PlayerRankingProps {
   players: Array<{
@@ -18,11 +20,12 @@ interface PlayerRankingProps {
     player_id: string;
     team_id: string;
     rating_date: string;
-    effort_attitude: number;
-    communication_cooperation: number;
-    technical_execution: number;
-    decision_making: number;
-    leadership_initiative: number;
+    effort_attitude: number | null;
+    communication_cooperation: number | null;
+    technical_execution: number | null;
+    decision_making: number | null;
+    leadership_initiative: number | null;
+    extra_scores?: unknown;
   }>;
   teamId: string;
   month: string; // Format: 'yyyy-MM'
@@ -32,12 +35,13 @@ interface PlayerRankingProps {
 interface RankedPlayer {
   player: PlayerRankingProps['players'][0];
   totalAvg: number;
-  avgByCategory: Record<RatingCategoryKey, number>;
+  avgByCategory: Record<string, number | null>;
   ratingsCount: number;
 }
 
 export function PlayerRanking({ players, ratings, teamId, month, onPlayerClick }: PlayerRankingProps) {
   const { i18n } = useTranslation();
+  const { criteria } = useRatingCriteria();
   const formatMonthDisplay = (monthStr: string) => {
     const [year, monthNum] = monthStr.split('-');
     const date = new Date(parseInt(year), parseInt(monthNum) - 1);
@@ -58,12 +62,8 @@ export function PlayerRanking({ players, ratings, teamId, month, onPlayerClick }
       
       if (playerMonthRatings.length === 0) return;
       
-      const avgByCategory: Record<RatingCategoryKey, number> = {} as any;
-      RATING_CATEGORIES.forEach(cat => {
-        avgByCategory[cat.key] = playerMonthRatings.reduce((acc, r) => acc + r[cat.key], 0) / playerMonthRatings.length;
-      });
-      
-      const totalAvg = Object.values(avgByCategory).reduce((a, b) => a + b, 0) / 5;
+      const avgByCategory = averageByCriterion(playerMonthRatings, criteria);
+      const totalAvg = overallAverage(avgByCategory);
       
       ranked.push({
         player,
@@ -75,7 +75,7 @@ export function PlayerRanking({ players, ratings, teamId, month, onPlayerClick }
     
     // Sort by total average descending
     return ranked.sort((a, b) => b.totalAvg - a.totalAvg);
-  }, [players, ratings, teamId, month]);
+  }, [players, ratings, teamId, month, criteria]);
 
   const getRankIcon = (position: number) => {
     if (position === 0) return <Trophy className="h-5 w-5 text-amber-500" />;
@@ -104,7 +104,7 @@ export function PlayerRanking({ players, ratings, teamId, month, onPlayerClick }
         <CardContent className="p-6 text-center">
           <Trophy className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
           <p className="text-muted-foreground text-sm">
-            No hay puntuaciones para {formatMonthDisplay(month)}
+            {tr('No hay puntuaciones para {month}', { month: formatMonthDisplay(month) })}
           </p>
         </CardContent>
       </Card>
@@ -116,7 +116,7 @@ export function PlayerRanking({ players, ratings, teamId, month, onPlayerClick }
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <Trophy className="h-4 w-4 text-amber-500" />
-          Ranking {formatMonthDisplay(month)}
+          {tr('Ranking {month}', { month: formatMonthDisplay(month) })}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -144,14 +144,14 @@ export function PlayerRanking({ players, ratings, teamId, month, onPlayerClick }
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{item.player.name}</p>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                {RATING_CATEGORIES.map(cat => (
+                {criteria.filter(cat => item.avgByCategory[cat.key] != null).map(cat => (
                   <Badge
                     key={cat.key}
                     variant="outline"
                     className="text-[9px] px-1 py-0"
                     title={cat.label}
                   >
-                    {item.avgByCategory[cat.key].toFixed(1)}
+                    {item.avgByCategory[cat.key]!.toFixed(1)}
                   </Badge>
                 ))}
               </div>

@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/lib/dateLocale';
+import { tr } from '@/lib/tr';
 
 export default function SeasonManagement() {
   const { t, i18n } = useTranslation();
@@ -56,7 +57,7 @@ export default function SeasonManagement() {
   if (roleLoading || loading) {
     return (
       <div className="min-h-screen bg-background pb-28">
-        <Header title="Gestión de Temporadas" showBack backTo="/profile" />
+        <Header title={tr('Gestión de Temporadas')} showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -71,7 +72,7 @@ export default function SeasonManagement() {
 
   const handleCreateSeason = async () => {
     if (!newSeasonName.trim()) {
-      toast.error('El nombre de la temporada es obligatorio');
+      toast.error(tr('El nombre de la temporada es obligatorio'));
       return;
     }
 
@@ -116,20 +117,20 @@ export default function SeasonManagement() {
     const month = now.getMonth();
     // If we're in August or later, it's year/year+1, otherwise year-1/year
     if (month >= 7) {
-      return `Temporada ${year}/${year + 1}`;
+      return tr('Temporada {year}/{year1}', { year, year1: year + 1 });
     }
-    return `Temporada ${year - 1}/${year}`;
+    return tr('Temporada {year1}/{year}', { year1: year - 1, year });
   };
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title="Gestión de Temporadas" showBack backTo="/profile" />
+      <Header title={tr('Gestión de Temporadas')} showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
         {/* Director Only Notice */}
         <div className="flex items-center gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">
           <Shield className="h-5 w-5 text-amber-500" />
-          <p className="text-sm text-amber-600">Solo los directores pueden gestionar temporadas</p>
+          <p className="text-sm text-amber-600">{tr('Solo los directores pueden gestionar temporadas')}</p>
         </div>
 
         {/* Current Status */}
@@ -147,23 +148,23 @@ export default function SeasonManagement() {
                   <div>
                     <p className="font-semibold text-lg">{activeSeason.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {t('seasons.since', 'Desde')} {formatDate(activeSeason.start_date)}
+                      {t('seasons.since', tr('Desde'))} {formatDate(activeSeason.start_date)}
                     </p>
                   </div>
-                  <Badge className="bg-green-500">{t('seasons.active', 'Activa')}</Badge>
+                  <Badge className="bg-green-500">{t('seasons.active', tr('Activa'))}</Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-2 pt-3 border-t">
                   <div className="text-center">
                     <p className="text-2xl font-bold text-primary">{teams.length}</p>
-                    <p className="text-xs text-muted-foreground">{t('nav.teams', 'Equipos')}</p>
+                    <p className="text-xs text-muted-foreground">{t('nav.teams', tr('Equipos'))}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-primary">{players.length}</p>
-                    <p className="text-xs text-muted-foreground">{t('nav.players', 'Jugadoras')}</p>
+                    <p className="text-xs text-muted-foreground">{t('nav.players', tr('Jugadoras'))}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-primary">{ratings.length}</p>
-                    <p className="text-xs text-muted-foreground">{t('nav.ratings', 'Valoraciones')}</p>
+                    <p className="text-xs text-muted-foreground">{t('nav.ratings', tr('Valoraciones'))}</p>
                   </div>
                 </div>
                 
@@ -176,7 +177,7 @@ export default function SeasonManagement() {
                       onClick={() => openCloseDialog(activeSeason)}
                     >
                       <XCircle className="h-4 w-4 mr-2" />
-                      {t('seasons.closeThisSeason', 'Cerrar esta temporada')}
+                      {t('seasons.closeThisSeason', tr('Cerrar esta temporada'))}
                     </Button>
                   </div>
                 )}
@@ -184,8 +185,8 @@ export default function SeasonManagement() {
             ) : (
               <div className="text-center py-4">
                 <Calendar className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-muted-foreground">{t('seasons.noActiveSeason', 'No hay temporada activa')}</p>
-                <p className="text-sm text-muted-foreground">{t('seasons.createToStart', 'Crea una nueva temporada para empezar')}</p>
+                <p className="text-muted-foreground">{t('seasons.noActiveSeason', tr('No hay temporada activa'))}</p>
+                <p className="text-sm text-muted-foreground">{t('seasons.createToStart', tr('Crea una nueva temporada para empezar'))}</p>
               </div>
             )}
           </CardContent>
@@ -199,23 +200,23 @@ export default function SeasonManagement() {
               <DialogTrigger asChild>
                 <Button className="w-full gap-2" size="lg" variant={activeSeason ? "outline" : "default"}>
                   <Plus className="h-5 w-5" />
-                  {t('seasons.startNewSeason', 'Iniciar nueva temporada')}
+                  {t('seasons.startNewSeason', tr('Iniciar nueva temporada'))}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5" />
-                    {t('seasons.createSeason', 'Crear Nueva Temporada')}
+                    {t('seasons.createSeason', tr('Crear Nueva Temporada'))}
                   </DialogTitle>
                   <DialogDescription>
-                    {t('seasons.createDescription', 'Al crear una nueva temporada, podrás reutilizar jugadoras, equipos y entrenadores existentes. Las valoraciones anteriores se mantendrán asociadas a su temporada original.')}
+                    {t('seasons.createDescription', tr('Al crear una nueva temporada, podrás reutilizar jugadoras, equipos y entrenadores existentes. Las valoraciones anteriores se mantendrán asociadas a su temporada original.'))}
                   </DialogDescription>
                 </DialogHeader>
                 
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="seasonName">{t('seasons.seasonName', 'Nombre de la Temporada')}</Label>
+                    <Label htmlFor="seasonName">{t('seasons.seasonName', tr('Nombre de la Temporada'))}</Label>
                     <Input
                       id="seasonName"
                       value={newSeasonName}
@@ -233,7 +234,7 @@ export default function SeasonManagement() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="startDate">{t('seasons.startDate', 'Fecha de Inicio')}</Label>
+                    <Label htmlFor="startDate">{t('seasons.startDate', tr('Fecha de Inicio'))}</Label>
                     <Input
                       id="startDate"
                       type="date"
@@ -244,17 +245,17 @@ export default function SeasonManagement() {
 
                   <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/30">
                     <p className="text-sm text-blue-600">
-                      <strong>{t('common.note', 'Nota')}:</strong> {t('seasons.keepDataNote', 'Todos los equipos, jugadoras y entrenadores actuales seguirán disponibles en la nueva temporada. Podrás editarlos desde sus respectivas secciones.')}
+                      <strong>{t('common.note', tr('Nota'))}:</strong> {t('seasons.keepDataNote', tr('Todos los equipos, jugadoras y entrenadores actuales seguirán disponibles en la nueva temporada. Podrás editarlos desde sus respectivas secciones.'))}
                     </p>
                   </div>
                 </div>
 
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                    {t('common.cancel', 'Cancelar')}
+                    {t('common.cancel', tr('Cancelar'))}
                   </Button>
                   <Button onClick={handleCreateSeason} disabled={creating}>
-                    {creating ? t('seasons.creating', 'Creando...') : t('seasons.create', 'Crear Temporada')}
+                    {creating ? t('seasons.creating', tr('Creando...')) : t('seasons.create', tr('Crear Temporada'))}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -268,7 +269,7 @@ export default function SeasonManagement() {
               onClick={() => setIsImportDialogOpen(true)}
             >
               <UserPlus className="h-5 w-5" />
-              {t('seasons.importPlayers', 'Importar Jugadoras')}
+              {t('seasons.importPlayers', tr('Importar Jugadoras'))}
             </Button>
 
             <ImportSeasonPlayersDialog
@@ -284,17 +285,17 @@ export default function SeasonManagement() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Archive className="h-5 w-5" />
-              Historial de Temporadas
+              {tr('Historial de Temporadas')}
             </CardTitle>
             <CardDescription>
-              Todas las temporadas del club
+              {tr('Todas las temporadas del club')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {seasons.length === 0 ? (
               <div className="text-center py-6">
                 <Calendar className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-muted-foreground">No hay temporadas registradas</p>
+                <p className="text-muted-foreground">{tr('No hay temporadas registradas')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -314,7 +315,7 @@ export default function SeasonManagement() {
                           <div className="flex items-center gap-2">
                             <p className="font-semibold">{season.name}</p>
                             {season.is_active && (
-                              <Badge className="bg-green-500 text-xs">Activa</Badge>
+                              <Badge className="bg-green-500 text-xs">{tr('Activa')}</Badge>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">
@@ -327,13 +328,13 @@ export default function SeasonManagement() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                         <span className="flex items-center gap-1">
                           <BarChart3 className="h-4 w-4" />
-                          {stats.ratingsCount} valoraciones
+                          {tr('{count} valoraciones', { count: stats.ratingsCount })}
                         </span>
                         <span className="flex items-center gap-1">
                           <User className="h-4 w-4" />
                           {season.is_active
                             ? `${players.length} jugadoras`
-                            : `${stats.playersRated} jugadoras valoradas`}
+                            : tr('{playersRated} jugadoras valoradas', { playersRated: stats.playersRated })}
                         </span>
                       </div>
 
@@ -347,7 +348,7 @@ export default function SeasonManagement() {
                               onClick={() => openCloseDialog(season)}
                             >
                               <XCircle className="h-4 w-4 mr-1" />
-                              {t('seasons.closeSeason', 'Cerrar Temporada')}
+                              {t('seasons.closeSeason', tr('Cerrar Temporada'))}
                             </Button>
                           ) : (
                             <Button 
@@ -356,7 +357,7 @@ export default function SeasonManagement() {
                               onClick={() => setAsActiveSeason(season.id)}
                             >
                               <Play className="h-4 w-4 mr-1" />
-                              {t('seasons.reactivate', 'Reactivar')}
+                              {t('seasons.reactivate', tr('Reactivar'))}
                             </Button>
                           )}
                         </div>
@@ -375,28 +376,27 @@ export default function SeasonManagement() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-destructive">
                 <XCircle className="h-5 w-5" />
-                Cerrar Temporada
+                {tr('Cerrar Temporada')}
               </DialogTitle>
               <DialogDescription>
-                ¿Estás seguro de que quieres cerrar la temporada "{seasonToClose?.name}"?
+                {tr('¿Estás seguro de que quieres cerrar la temporada "{season}"?', { season: seasonToClose?.name ?? '' })}
               </DialogDescription>
             </DialogHeader>
             
             <div className="py-4">
               <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">
                 <p className="text-sm text-amber-600">
-                  <strong>Nota:</strong> Las valoraciones y datos de esta temporada se conservarán.
-                  Podrás crear una nueva temporada y seguir usando los mismos equipos y jugadoras.
+                  <strong>{tr('Nota:')}</strong> {tr('Las valoraciones y datos de esta temporada se conservarán. Podrás crear una nueva temporada y seguir usando los mismos equipos y jugadoras.')}
                 </p>
               </div>
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCloseDialogOpen(false)}>
-                Cancelar
+                {tr('Cancelar')}
               </Button>
               <Button variant="destructive" onClick={handleCloseSeason}>
-                Cerrar Temporada
+                {tr('Cerrar Temporada')}
               </Button>
             </DialogFooter>
           </DialogContent>

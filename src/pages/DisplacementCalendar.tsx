@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { useEvents } from '@/hooks/useEvents';
 import { useTeams } from '@/hooks/useTeams';
 import { Bus, MapPin, Clock, ChevronLeft, ChevronRight, Check, AlertCircle, Users } from 'lucide-react';
+import { tr } from '@/lib/tr';
+import i18n from '@/i18n';
 
 export default function DisplacementCalendar() {
   const { events, loading } = useEvents();
@@ -52,11 +54,11 @@ export default function DisplacementCalendar() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+    return date.toLocaleDateString(i18n.resolvedLanguage || 'es', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
   const formatMonthYear = (date: Date) => {
-    return date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(i18n.resolvedLanguage || 'es', { month: 'long', year: 'numeric' });
   };
 
   const goToPrevMonth = () => {
@@ -92,7 +94,7 @@ export default function DisplacementCalendar() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-28">
-        <Header title="Calendario Desplazamientos" showBack />
+        <Header title={tr('Calendario Desplazamientos')} showBack />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -103,7 +105,7 @@ export default function DisplacementCalendar() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title="Calendario Desplazamientos" showBack />
+      <Header title={tr('Calendario Desplazamientos')} showBack />
       
       <div className="p-4 space-y-6">
         {/* Month Navigation */}
@@ -126,14 +128,14 @@ export default function DisplacementCalendar() {
         {/* Month Displacements */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Desplazamientos del mes ({monthDisplacements.length})
+            {tr('Desplazamientos del mes ({count})', { count: monthDisplacements.length })}
           </h3>
           
           {monthDisplacements.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
                 <Bus className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No hay desplazamientos este mes</p>
+                <p>{tr('No hay desplazamientos este mes')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -162,7 +164,7 @@ export default function DisplacementCalendar() {
                           <div className="font-medium">{formatDate(displacement.date)}</div>
                           <div className="flex items-center gap-1 text-sm">
                             <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="font-medium text-blue-600">{totalPassengers} pasajeros</span>
+                            <span className="font-medium text-blue-600">{tr('{count} pasajeros', { count: totalPassengers })}</span>
                           </div>
                         </div>
                       </div>
@@ -170,16 +172,16 @@ export default function DisplacementCalendar() {
                       {/* Team Status */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Estado de equipos</span>
+                          <span className="text-sm font-medium">{tr('Estado de equipos')}</span>
                           {status.allSubmitted ? (
                             <Badge variant="default" className="bg-green-500">
                               <Check className="h-3 w-3 mr-1" />
-                              Todos enviados
+                              {tr('Todos enviados')}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-amber-600 border-amber-300">
                               <AlertCircle className="h-3 w-3 mr-1" />
-                              {status.submittedCount}/{status.total} enviados
+                              {tr('{done}/{total} enviados', { done: status.submittedCount, total: status.total })}
                             </Badge>
                           )}
                         </div>
@@ -224,7 +226,7 @@ export default function DisplacementCalendar() {
         {upcomingDisplacements.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Próximos desplazamientos
+              {tr('Próximos desplazamientos')}
             </h3>
             
             {upcomingDisplacements.map(displacement => {
@@ -248,7 +250,7 @@ export default function DisplacementCalendar() {
                           <Check className="h-5 w-5 text-green-500" />
                         ) : (
                           <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
-                            {status.pendingTeams.length} pendiente{status.pendingTeams.length !== 1 ? 's' : ''}
+                            {status.pendingTeams.length === 1 ? tr('1 pendiente') : tr('{count} pendientes', { count: status.pendingTeams.length })}
                           </Badge>
                         )}
                       </div>

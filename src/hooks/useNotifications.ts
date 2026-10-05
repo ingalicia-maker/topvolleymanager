@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { tr } from '@/lib/tr';
+import i18n from '@/i18n';
 
 export interface Notification {
   id: string;
@@ -103,8 +105,8 @@ export function useNotifications() {
       recipient_id: recipientCoachId,
       sender_id: user?.id || null,
       type: 'player_summoned',
-      title: 'Jugadora convocada',
-      message: `${senderName} ha convocado a ${playerName} para "${eventTitle}"`,
+      title: tr('Jugadora convocada'),
+      message: tr('{senderName} ha convocado a {playerName} para "{eventTitle}"', { senderName, playerName, eventTitle }),
       related_player_id: playerId,
       related_event_id: eventId,
     });
@@ -118,7 +120,7 @@ export function useNotifications() {
     eventDate: string,
     eventId: string
   ) => {
-    const formattedDate = new Date(eventDate).toLocaleDateString('es-ES', { 
+    const formattedDate = new Date(eventDate).toLocaleDateString(i18n.resolvedLanguage || 'es', { 
       weekday: 'long', 
       day: 'numeric', 
       month: 'long' 
@@ -128,8 +130,8 @@ export function useNotifications() {
       recipient_id: recipientCoachId,
       sender_id: user?.id || null,
       type: 'displacement_created',
-      title: 'Nuevo desplazamiento',
-      message: `${senderName} ha creado un desplazamiento a ${destination} para el ${formattedDate}. Añade las jugadoras de tu equipo.`,
+      title: tr('Nuevo desplazamiento'),
+      message: tr('{senderName} ha creado un desplazamiento a {destination} para el {formattedDate}. Añade las jugadoras de tu equipo.', { senderName, destination, formattedDate }),
       related_player_id: null,
       related_event_id: eventId,
     });

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerCoachWelcome } from '@/components/CoachWelcomeDialog';
+import { tr } from '@/lib/tr';
 
 export default function Invitation() {
   const navigate = useNavigate();
@@ -63,11 +64,11 @@ export default function Invitation() {
       
       if (error) {
         if (error.message?.toLowerCase().includes('ya eres miembro')) {
-          toast.success('¡Ya eres miembro de este club!');
+          toast.success(tr('¡Ya eres miembro de este club!'));
           navigate('/', { replace: true });
           return;
         }
-        setJoinResult({ success: false, message: error.message || 'Error al unirse al club' });
+        setJoinResult({ success: false, message: error.message || tr('Error al unirse al club') });
         setJoiningClub(false);
         return;
       }
@@ -75,11 +76,11 @@ export default function Invitation() {
       // Success
       window.dispatchEvent(new Event('club-membership-changed'));
       triggerCoachWelcome();
-      toast.success('¡Te has unido al club!');
+      toast.success(tr('¡Te has unido al club!'));
       navigate('/', { replace: true });
     } catch (err) {
       console.error('[Invitation] Error:', err);
-      setJoinResult({ success: false, message: 'Error inesperado al unirse al club' });
+      setJoinResult({ success: false, message: tr('Error inesperado al unirse al club') });
       setJoiningClub(false);
     }
   };
@@ -102,14 +103,14 @@ export default function Invitation() {
             <div className="mx-auto mb-4 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-destructive" />
             </div>
-            <CardTitle className="text-2xl">Enlace no válido</CardTitle>
+            <CardTitle className="text-2xl">{tr('Enlace no válido')}</CardTitle>
             <CardDescription>
-              No se ha encontrado ningún token de invitación en el enlace.
+              {tr('No se ha encontrado ningún token de invitación en el enlace.')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button variant="outline" className="w-full" onClick={() => navigate('/landing')}>
-              Volver al inicio
+              {tr('Volver al inicio')}
             </Button>
           </CardContent>
         </Card>
@@ -125,7 +126,7 @@ export default function Invitation() {
           <Card className="w-full max-w-md">
             <CardContent className="flex flex-col items-center justify-center py-12 gap-4">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-muted-foreground">Uniéndote al club...</p>
+              <p className="text-muted-foreground">{tr('Uniéndote al club...')}</p>
             </CardContent>
           </Card>
         </div>
@@ -140,12 +141,12 @@ export default function Invitation() {
               <div className="mx-auto mb-4 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
                 <AlertCircle className="w-8 h-8 text-destructive" />
               </div>
-              <CardTitle className="text-2xl">Error al unirse</CardTitle>
+              <CardTitle className="text-2xl">{tr('Error al unirse')}</CardTitle>
               <CardDescription>{joinResult.message}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
-                Ir al dashboard
+                {tr('Ir al dashboard')}
               </Button>
             </CardContent>
           </Card>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Cookie, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { tr } from '@/lib/tr';
 
 const COOKIE_CONSENT_KEY = 'cookie_consent_accepted';
 
@@ -46,9 +47,9 @@ export function CookieBanner() {
                   {t('cookies.title', 'Utilizamos cookies')}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {t('cookies.description', 'Usamos cookies propias y de terceros para mejorar tu experiencia, analizar el tráfico y mostrarte contenido personalizado. Al hacer clic en "Aceptar", consientes el uso de todas las cookies.')}{' '}
+                  {t('cookies.description', tr('Usamos cookies propias y de terceros para mejorar tu experiencia, analizar el tráfico y mostrarte contenido personalizado. Al hacer clic en "Aceptar", consientes el uso de todas las cookies.'))}{' '}
                   <Link to="/privacy" className="text-primary hover:underline">
-                    {t('cookies.learnMore', 'Más información')}
+                    {t('cookies.learnMore', tr('Más información'))}
                   </Link>
                 </p>
               </div>
@@ -60,14 +61,14 @@ export function CookieBanner() {
                 onClick={declineCookies}
                 className="flex-1 md:flex-none"
               >
-                {t('cookies.decline', 'Rechazar')}
+                {t('cookies.decline', tr('Rechazar'))}
               </Button>
               <Button
                 size="sm"
                 onClick={acceptCookies}
                 className="flex-1 md:flex-none"
               >
-                {t('cookies.accept', 'Aceptar')}
+                {t('cookies.accept', tr('Aceptar'))}
               </Button>
             </div>
           </div>

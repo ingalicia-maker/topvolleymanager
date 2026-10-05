@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useClub } from './useClub';
+import { tr } from '@/lib/tr';
 
 export interface Conversation {
   id: string;
@@ -146,7 +147,7 @@ export function useConversations() {
               const profile = profileMap.get(p.user_id);
               return {
                 user_id: p.user_id,
-                name: profile?.name || 'Usuario',
+                name: profile?.name || tr('Usuario'),
                 email: profile?.email || '',
                 last_read_at: p.last_read_at,
               };
@@ -207,13 +208,13 @@ export function useConversations() {
 
   const createConversation = useCallback(
     async (participantIds: string[], title?: string): Promise<CreateConversationResult> => {
-      if (!user) return { id: null, error: 'Sesión no válida' };
+      if (!user) return { id: null, error: tr('Sesión no válida') };
 
       // Fall-back: si el club aún no está cargado en el hook, lo pedimos al backend.
       let clubId = club?.id ?? null;
       if (!clubId) {
         const { data, error } = await supabase.rpc('get_user_club_id', { _user_id: user.id });
-        if (error || !data) return { id: null, error: 'Club no cargado' };
+        if (error || !data) return { id: null, error: tr('Club no cargado') };
         clubId = data as string;
       }
 
@@ -287,7 +288,7 @@ export function useConversations() {
         return { id: newConv.id, error: null };
       } catch (error: any) {
         console.error('Error creating conversation:', error);
-        return { id: null, error: error?.message || 'Error al crear la conversación' };
+        return { id: null, error: error?.message || tr('Error al crear la conversación') };
       }
     },
     [user, club, conversations, fetchConversations]

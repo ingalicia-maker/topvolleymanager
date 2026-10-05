@@ -1,37 +1,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
+import { useRatingCriteria } from '@/hooks/useRatingCriteria';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '@/lib/dateLocale';
 import { Users, TrendingUp } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
-interface MonthlyTeamData {
+type MonthlyTeamData = Record<string, number | string | null> & {
   month: string;
-  effort_attitude: number;
-  communication_cooperation: number;
-  technical_execution: number;
-  decision_making: number;
-  leadership_initiative: number;
   totalAvg: number;
   count: number;
-}
+};
 
 interface TeamProgressChartProps {
   data: MonthlyTeamData[];
   teamColor: string;
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  effort_attitude: '#ef4444',
-  communication_cooperation: '#3b82f6',
-  technical_execution: '#22c55e',
-  decision_making: '#f59e0b',
-  leadership_initiative: '#8b5cf6',
-};
-
 export function TeamProgressChart({ data, teamColor }: TeamProgressChartProps) {
   const { i18n } = useTranslation();
+  const { criteria } = useRatingCriteria();
   const formatMonth = (monthStr: string) => {
     const [year, month] = monthStr.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -53,7 +42,7 @@ export function TeamProgressChart({ data, teamColor }: TeamProgressChartProps) {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Evolución Media del Equipo
+            {tr('Evolución Media del Equipo')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -79,7 +68,7 @@ export function TeamProgressChart({ data, teamColor }: TeamProgressChartProps) {
                     fontSize: '12px'
                   }}
                   formatter={(value: number, name: string) => {
-                    if (name === 'totalAvg') return [value.toFixed(1), 'Media Total'];
+                    if (name === 'totalAvg') return [value.toFixed(1), tr('Media total')];
                     return [value.toFixed(1), name];
                   }}
                 />
@@ -103,7 +92,7 @@ export function TeamProgressChart({ data, teamColor }: TeamProgressChartProps) {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Desglose por Categoría
+            {tr('Desglose por Categoría')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -133,16 +122,16 @@ export function TeamProgressChart({ data, teamColor }: TeamProgressChartProps) {
                 <Legend 
                   wrapperStyle={{ fontSize: '10px' }}
                   formatter={(value) => {
-                    const cat = RATING_CATEGORIES.find(c => c.key === value);
+                    const cat = criteria.find(c => c.key === value);
                     return cat?.shortLabel || value;
                   }}
                 />
-                {RATING_CATEGORIES.map(cat => (
+                {criteria.map(cat => (
                   <Bar
                     key={cat.key}
                     dataKey={cat.key}
                     name={cat.key}
-                    fill={CATEGORY_COLORS[cat.key]}
+                    fill={cat.color}
                     radius={[2, 2, 0, 0]}
                   />
                 ))}
@@ -156,18 +145,18 @@ export function TeamProgressChart({ data, teamColor }: TeamProgressChartProps) {
       {latestData && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Último Mes: {formatMonth(latestData.month)}</CardTitle>
+            <CardTitle className="text-sm">{tr('Último mes: {month}', { month: formatMonth(latestData.month) })}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-5 gap-2">
-              {RATING_CATEGORIES.map(cat => (
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              {criteria.filter(cat => typeof latestData[cat.key] === 'number').map(cat => (
                 <div 
                   key={cat.key} 
                   className="text-center p-2 rounded-lg"
-                  style={{ backgroundColor: `${CATEGORY_COLORS[cat.key]}10` }}
+                  style={{ backgroundColor: `${cat.color}10` }}
                 >
-                  <p className="text-lg font-bold" style={{ color: CATEGORY_COLORS[cat.key] }}>
-                    {latestData[cat.key].toFixed(1)}
+                  <p className="text-lg font-bold" style={{ color: cat.color }}>
+                    {(latestData[cat.key] as number).toFixed(1)}
                   </p>
                   <p className="text-[10px] text-muted-foreground truncate">{cat.shortLabel}</p>
                 </div>
@@ -177,7 +166,7 @@ export function TeamProgressChart({ data, teamColor }: TeamProgressChartProps) {
               <p className="text-2xl font-bold" style={{ color: teamColor }}>
                 {latestData.totalAvg.toFixed(1)}
               </p>
-              <p className="text-xs text-muted-foreground">Media Total ({latestData.count} puntuaciones)</p>
+              <p className="text-xs text-muted-foreground">{tr('Media total ({count} puntuaciones)', { count: latestData.count })}</p>
             </div>
           </CardContent>
         </Card>

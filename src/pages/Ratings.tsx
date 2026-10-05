@@ -9,7 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useTeams, DbTeam } from '@/hooks/useTeams';
-import { usePlayerRatings, RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
+import { usePlayerRatings } from '@/hooks/usePlayerRatings';
+import { useRatingCriteria } from '@/hooks/useRatingCriteria';
+import { averageByCriterion, formValues, overallAverage, toRatingColumns, type ScoredRating } from '@/lib/ratingCriteria';
+import { RatingCriteriaDialog } from '@/components/RatingCriteriaDialog';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useSeasons, Season } from '@/hooks/useSeasons';
 import { PlayerProgressChart } from '@/components/PlayerProgressChart';
@@ -19,17 +22,10 @@ import { PlayerRatingsSummary } from '@/components/PlayerRatingsSummary';
 import { PlayerRanking } from '@/components/PlayerRanking';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Star, User, Calendar, ChevronRight, Check, TrendingUp, Users, Plus, History } from 'lucide-react';
+import { Star, User, Calendar, ChevronRight, Check, TrendingUp, Users, Plus, History, Settings2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/lib/dateLocale';
-
-const RATING_EMOJIS: Record<string, string> = {
-  effort_attitude: '💪',
-  communication_cooperation: '🤝',
-  technical_execution: '🏐',
-  decision_making: '🧠',
-  leadership_initiative: '⭐',
-};
+import { tr } from '@/lib/tr';
 
 export default function Ratings() {
   const { t, i18n } = useTranslation();
@@ -44,13 +40,9 @@ export default function Ratings() {
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(() => format(new Date(), 'yyyy-MM'));
-  const [ratingsValues, setRatingsValues] = useState({
-    effort_attitude: 5,
-    communication_cooperation: 5,
-    technical_execution: 5,
-    decision_making: 5,
-    leadership_initiative: 5,
-  });
+  const { criteria } = useRatingCriteria();
+  const [criteriaOpen, setCriteriaOpen] = useState(false);
+  const [ratingsValues, setRatingsValues] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [ratedPlayers, setRatedPlayers] = useState<string[]>([]);
@@ -102,24 +94,12 @@ export default function Ratings() {
     if (existingRating) {
       // Load existing values for editing
       setEditingRatingId(existingRating.id);
-      setRatingsValues({
-        effort_attitude: existingRating.effort_attitude,
-        communication_cooperation: existingRating.communication_cooperation,
-        technical_execution: existingRating.technical_execution,
-        decision_making: existingRating.decision_making,
-        leadership_initiative: existingRating.leadership_initiative,
-      });
+      setRatingsValues(formValues(criteria, existingRating as ScoredRating));
       setNotes(existingRating.notes || '');
     } else {
       // Reset to defaults for new rating
       setEditingRatingId(null);
-      setRatingsValues({
-        effort_attitude: 5,
-        communication_cooperation: 5,
-        technical_execution: 5,
-        decision_making: 5,
-        leadership_initiative: 5,
-      });
+      setRatingsValues(formValues(criteria));
       setNotes('');
     }
     setStep('rate');
@@ -133,7 +113,7 @@ export default function Ratings() {
     if (editingRatingId) {
       // Update existing rating
       const success = await updateRating(editingRatingId, {
-        ...ratingsValues,
+        ...toRatingColumns(ratingsValues, criteria),
         notes: notes.trim() || null,
       });
       if (success) {
@@ -146,7 +126,7 @@ export default function Ratings() {
       const success = await addRating({
         player_id: selectedPlayer,
         team_id: selectedTeam,
-        ...ratingsValues,
+        ...toRatingColumns(ratingsValues, criteria),
         notes: notes.trim() || null,
         rating_date: ratingDate,
       }, activeSeason?.id);
@@ -227,6 +207,13 @@ export default function Ratings() {
                     ))}
                   </select>
                 </div>
+
+                {isDirector && (
+                  <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => setCriteriaOpen(true)}>
+                    <Settings2 className="h-4 w-4" />
+                    {tr('Criterios de valoración')} ({criteria.length})
+                  </Button>
+                )}
 
                 <p className="text-muted-foreground text-sm">
                   {t('ratings.selectTeamToRate')}
@@ -379,12 +366,12 @@ export default function Ratings() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="px-4 py-2">
-                    {RATING_CATEGORIES.map(cat => (
+                    {criteria.map(cat => (
                       <RatingInput
                         key={cat.key}
                         label={cat.label}
-                        emoji={RATING_EMOJIS[cat.key]}
-                        value={ratingsValues[cat.key]}
+                        emoji={cat.emoji}
+                        value={ratingsValues[cat.key] ?? 5}
                         onChange={(val) =>
                           setRatingsValues(prev => ({ ...prev, [cat.key]: val }))
                         }
@@ -439,6 +426,7 @@ export default function Ratings() {
           </TabsContent>
         </Tabs>
       </div>
+      <RatingCriteriaDialog open={criteriaOpen} onOpenChange={setCriteriaOpen} />
       <BottomNav />
     </div>
   );
@@ -465,6 +453,7 @@ function PlayerProgressView({
   getPositiveAlerts: (playerId: string, teamId?: string) => string[];
 }) {
   const { t, i18n } = useTranslation();
+  const { criteria } = useRatingCriteria();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [rankingMonth, setRankingMonth] = useState(() => format(new Date(), 'yyyy-MM'));
@@ -521,25 +510,11 @@ function PlayerProgressView({
 
     return Object.entries(byMonth)
       .map(([month, monthRatings]) => {
-        const effort_attitude = monthRatings.reduce((acc, r) => acc + r.effort_attitude, 0) / monthRatings.length;
-        const communication_cooperation = monthRatings.reduce((acc, r) => acc + r.communication_cooperation, 0) / monthRatings.length;
-        const technical_execution = monthRatings.reduce((acc, r) => acc + r.technical_execution, 0) / monthRatings.length;
-        const decision_making = monthRatings.reduce((acc, r) => acc + r.decision_making, 0) / monthRatings.length;
-        const leadership_initiative = monthRatings.reduce((acc, r) => acc + r.leadership_initiative, 0) / monthRatings.length;
-        const totalAvg = (effort_attitude + communication_cooperation + technical_execution + decision_making + leadership_initiative) / 5;
-        
-        return {
-          month,
-          effort_attitude,
-          communication_cooperation,
-          technical_execution,
-          decision_making,
-          leadership_initiative,
-          totalAvg,
-        };
+        const avgs = averageByCriterion(monthRatings, criteria);
+        return { ...avgs, month, totalAvg: overallAverage(avgs) };
       })
       .sort((a, b) => a.month.localeCompare(b.month));
-  }, [selectedPlayer, selectedTeam, filteredRatings]);
+  }, [selectedPlayer, selectedTeam, filteredRatings, criteria]);
 
   const trends = useMemo(() => {
     if (!selectedPlayer) return [];
@@ -556,16 +531,16 @@ function PlayerProgressView({
       {/* Season Filter */}
       <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
         <History className="h-4 w-4 text-muted-foreground" />
-        <Label className="text-sm font-medium">{t('seasons.filterBySeason', 'Temporada')}:</Label>
+        <Label className="text-sm font-medium">{t('seasons.filterBySeason', tr('Temporada'))}:</Label>
         <select
           className="flex-1 h-8 rounded-md border border-input bg-background px-2 py-1 text-sm"
           value={selectedSeasonId}
           onChange={(e) => setSelectedSeasonId(e.target.value)}
         >
-          <option value="all">{t('seasons.allSeasons', 'Todas las temporadas')}</option>
+          <option value="all">{t('seasons.allSeasons', tr('Todas las temporadas'))}</option>
           {seasons.map(season => (
             <option key={season.id} value={season.id}>
-              {season.name} {season.is_active ? `(${t('seasons.active', 'Activa')})` : ''}
+              {season.name} {season.is_active ? `(${t('seasons.active', tr('Activa'))})` : ''}
             </option>
           ))}
         </select>
@@ -574,7 +549,7 @@ function PlayerProgressView({
       {/* Team and Month selectors */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>{t('common.team', 'Equipo')}</Label>
+          <Label>{t('common.team', tr('Equipo'))}</Label>
           <select
             className={nativeSelectClassName}
             value={selectedTeam || ''}
@@ -583,14 +558,14 @@ function PlayerProgressView({
               setSelectedPlayer(null);
             }}
           >
-            <option value="">{t('ratings.selectTeam', 'Selecciona equipo')}</option>
+            <option value="">{t('ratings.selectTeam', tr('Selecciona equipo'))}</option>
             {visibleTeams.map(t => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
         </div>
         <div className="space-y-2">
-          <Label>{t('ratings.rankingMonth', 'Mes ranking')}</Label>
+          <Label>{tr('Mes del ranking')}</Label>
           <select
             className={nativeSelectClassName}
             value={rankingMonth}
@@ -730,6 +705,7 @@ function TeamProgressView({
   activeSeason: Season | null;
 }) {
   const { t, i18n } = useTranslation();
+  const { criteria } = useRatingCriteria();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string | 'all'>(activeSeason?.id || 'all');
 
@@ -760,55 +736,40 @@ function TeamProgressView({
 
     return Object.entries(byMonth)
       .map(([month, monthRatings]) => {
-        const effort_attitude = monthRatings.reduce((acc, r) => acc + r.effort_attitude, 0) / monthRatings.length;
-        const communication_cooperation = monthRatings.reduce((acc, r) => acc + r.communication_cooperation, 0) / monthRatings.length;
-        const technical_execution = monthRatings.reduce((acc, r) => acc + r.technical_execution, 0) / monthRatings.length;
-        const decision_making = monthRatings.reduce((acc, r) => acc + r.decision_making, 0) / monthRatings.length;
-        const leadership_initiative = monthRatings.reduce((acc, r) => acc + r.leadership_initiative, 0) / monthRatings.length;
-        const totalAvg = (effort_attitude + communication_cooperation + technical_execution + decision_making + leadership_initiative) / 5;
-        
-        return { 
-          month, 
-          effort_attitude,
-          communication_cooperation,
-          technical_execution,
-          decision_making,
-          leadership_initiative,
-          totalAvg,
-          count: monthRatings.length
-        };
+        const avgs = averageByCriterion(monthRatings, criteria);
+        return { ...avgs, month, totalAvg: overallAverage(avgs), count: monthRatings.length };
       })
       .sort((a, b) => a.month.localeCompare(b.month));
-  }, [selectedTeam, filteredRatings]);
+  }, [selectedTeam, filteredRatings, criteria]);
 
   return (
     <div className="space-y-4">
       {/* Season Filter */}
       <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
         <History className="h-4 w-4 text-muted-foreground" />
-        <Label className="text-sm font-medium">{t('seasons.filterBySeason', 'Temporada')}:</Label>
+        <Label className="text-sm font-medium">{t('seasons.filterBySeason', tr('Temporada'))}:</Label>
         <select
           className="flex-1 h-8 rounded-md border border-input bg-background px-2 py-1 text-sm"
           value={selectedSeasonId}
           onChange={(e) => setSelectedSeasonId(e.target.value)}
         >
-          <option value="all">{t('seasons.allSeasons', 'Todas las temporadas')}</option>
+          <option value="all">{t('seasons.allSeasons', tr('Todas las temporadas'))}</option>
           {seasons.map(season => (
             <option key={season.id} value={season.id}>
-              {season.name} {season.is_active ? `(${t('seasons.active', 'Activa')})` : ''}
+              {season.name} {season.is_active ? `(${t('seasons.active', tr('Activa'))})` : ''}
             </option>
           ))}
         </select>
       </div>
 
       <div className="space-y-2">
-        <Label>{t('common.team', 'Equipo')}</Label>
+        <Label>{t('common.team', tr('Equipo'))}</Label>
         <select
           className={nativeSelectClassName}
           value={selectedTeam || ''}
           onChange={(e) => setSelectedTeam(e.target.value || null)}
         >
-          <option value="">{t('ratings.selectTeam', 'Selecciona equipo')}</option>
+          <option value="">{t('ratings.selectTeam', tr('Selecciona equipo'))}</option>
           {visibleTeams.map(t => (
             <option key={t.id} value={t.id}>{t.name}</option>
           ))}

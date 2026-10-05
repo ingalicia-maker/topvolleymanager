@@ -12,6 +12,7 @@ import { useStops } from '@/hooks/useStops';
 import { toast } from 'sonner';
 import { Building2, Palette, Type, Upload, Save, Shield, Bus, Plus, Trash2, GripVertical, Calendar, ChevronRight } from 'lucide-react';
 import { Navigate, Link } from 'react-router-dom';
+import { tr } from '@/lib/tr';
 
 const COLOR_PRESETS = [
   { name: 'Azul', value: '221 83% 53%', hex: '#2563eb' },
@@ -66,7 +67,7 @@ export default function ClubSettings() {
   if (roleLoading || loading) {
     return (
       <div className="min-h-screen bg-background pb-28">
-        <Header title="Configuración del Club" showBack backTo="/profile" />
+        <Header title={tr('Configuración del Club')} showBack backTo="/profile" />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -84,12 +85,12 @@ export default function ClubSettings() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor selecciona una imagen');
+      toast.error(tr('Por favor selecciona una imagen'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('La imagen debe ser menor a 5MB');
+      toast.error(tr('La imagen debe ser menor a 5MB'));
       return;
     }
 
@@ -99,14 +100,14 @@ export default function ClubSettings() {
       setLogoUrl(url);
       toast.success('Logo subido correctamente');
     } else {
-      toast.error('Error al subir el logo');
+      toast.error(tr('Error al subir el logo'));
     }
     setUploading(false);
   };
 
   const handleSave = async () => {
     if (!clubName.trim()) {
-      toast.error('El nombre del club es obligatorio');
+      toast.error(tr('El nombre del club es obligatorio'));
       return;
     }
 
@@ -120,16 +121,16 @@ export default function ClubSettings() {
     });
 
     if (success) {
-      toast.success('Configuración guardada. Recarga la página para ver los cambios.');
+      toast.success(tr('Configuración guardada. Recarga la página para ver los cambios.'));
     } else {
-      toast.error('Error al guardar la configuración');
+      toast.error(tr('Error al guardar la configuración'));
     }
     setSaving(false);
   };
 
   const handleAddStop = async () => {
     if (!newStopName.trim()) {
-      toast.error('El nombre de la parada es obligatorio');
+      toast.error(tr('El nombre de la parada es obligatorio'));
       return;
     }
 
@@ -143,7 +144,7 @@ export default function ClubSettings() {
 
   const handleEditStop = async (stopId: string) => {
     if (!editingStopName.trim()) {
-      toast.error('El nombre de la parada es obligatorio');
+      toast.error(tr('El nombre de la parada es obligatorio'));
       return;
     }
 
@@ -170,12 +171,12 @@ export default function ClubSettings() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title="Configuración del Club" showBack backTo="/profile" />
+      <Header title={tr('Configuración del Club')} showBack backTo="/profile" />
 
       <div className="p-4 space-y-4">
         <div className="flex items-center gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">
           <Shield className="h-5 w-5 text-amber-500" />
-          <p className="text-sm text-amber-600">Solo los directores pueden modificar estas opciones</p>
+          <p className="text-sm text-amber-600">{tr('Solo los directores pueden modificar estas opciones')}</p>
         </div>
 
         {/* Season Management Link */}
@@ -187,9 +188,9 @@ export default function ClubSettings() {
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">Gestión de Temporadas</p>
+                  <p className="font-medium">{tr('Gestión de Temporadas')}</p>
                   <p className="text-xs text-muted-foreground">
-                    Iniciar nueva temporada, reutilizar jugadoras y equipos
+                    {tr('Iniciar nueva temporada, reutilizar jugadoras y equipos')}
                   </p>
                 </div>
               </div>
@@ -203,28 +204,28 @@ export default function ClubSettings() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Building2 className="h-5 w-5" />
-              Identidad del Club
+              {tr('Identidad del Club')}
             </CardTitle>
-            <CardDescription>Nombre y escudo de tu club</CardDescription>
+            <CardDescription>{tr('Nombre y escudo de tu club')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="clubName">Nombre del Club</Label>
+              <Label htmlFor="clubName">{tr('Nombre del Club')}</Label>
               <Input
                 id="clubName"
                 value={clubName}
                 onChange={(e) => setClubName(e.target.value)}
-                placeholder="Nombre de tu club"
+                placeholder={tr('Nombre de tu club')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Escudo del Club</Label>
+              <Label>{tr('Escudo del Club')}</Label>
               <div className="flex items-center gap-4">
                 {logoUrl ? (
                   <img
                     src={logoUrl}
-                    alt="Logo del club"
+                    alt={tr('Logo del club')}
                     className="w-20 h-20 object-contain rounded-lg border border-border bg-background"
                   />
                 ) : (
@@ -247,9 +248,9 @@ export default function ClubSettings() {
                     className="gap-2"
                   >
                     <Upload className="h-4 w-4" />
-                    {uploading ? 'Subiendo...' : 'Subir escudo'}
+                    {uploading ? tr('Subiendo...') : tr('Subir escudo')}
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG hasta 5MB</p>
+                  <p className="text-xs text-muted-foreground mt-1">{tr('PNG, JPG hasta 5MB')}</p>
                 </div>
               </div>
             </div>
@@ -261,9 +262,9 @@ export default function ClubSettings() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Bus className="h-5 w-5" />
-              Paradas de Bus
+              {tr('Paradas de Bus')}
             </CardTitle>
-            <CardDescription>Configura las paradas para los desplazamientos</CardDescription>
+            <CardDescription>{tr('Configura las paradas para los desplazamientos')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {stopsLoading ? (
@@ -292,14 +293,14 @@ export default function ClubSettings() {
                             size="sm"
                             onClick={() => handleEditStop(stop.id)}
                           >
-                            Guardar
+                            {tr('Guardar')}
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={cancelEditingStop}
                           >
-                            Cancelar
+                            {tr('Cancelar')}
                           </Button>
                         </>
                       ) : (
@@ -310,7 +311,7 @@ export default function ClubSettings() {
                             variant="ghost"
                             onClick={() => startEditingStop(stop.id, stop.name)}
                           >
-                            Editar
+                            {tr('Editar')}
                           </Button>
                           <Button
                             size="sm"
@@ -327,7 +328,7 @@ export default function ClubSettings() {
                   
                   {stops.length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-4">
-                      No hay paradas configuradas
+                      {tr('No hay paradas configuradas')}
                     </p>
                   )}
                 </div>
@@ -335,7 +336,7 @@ export default function ClubSettings() {
                 {/* Add new stop */}
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Nombre de la nueva parada"
+                    placeholder={tr('Nombre de la nueva parada')}
                     value={newStopName}
                     onChange={(e) => setNewStopName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddStop()}
@@ -346,7 +347,7 @@ export default function ClubSettings() {
                     className="gap-2 shrink-0"
                   >
                     <Plus className="h-4 w-4" />
-                    Añadir
+                    {tr('Añadir')}
                   </Button>
                 </div>
               </>
@@ -359,13 +360,13 @@ export default function ClubSettings() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Palette className="h-5 w-5" />
-              Colores
+              {tr('Colores')}
             </CardTitle>
-            <CardDescription>Personaliza los colores de la interfaz</CardDescription>
+            <CardDescription>{tr('Personaliza los colores de la interfaz')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Color Principal</Label>
+              <Label>{tr('Color principal')}</Label>
               <div className="grid grid-cols-4 gap-2">
                 {COLOR_PRESETS.map((color) => (
                   <button
@@ -378,17 +379,17 @@ export default function ClubSettings() {
                     }`}
                     style={{ backgroundColor: color.hex }}
                   >
-                    <span className="sr-only">{color.name}</span>
+                    <span className="sr-only">{tr(color.name)}</span>
                   </button>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                Color seleccionado: {COLOR_PRESETS.find(c => c.value === primaryColor)?.name || 'Personalizado'}
+                {tr('Color seleccionado: {color}', { color: tr(COLOR_PRESETS.find(c => c.value === primaryColor)?.name || 'Personalizado') })}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>Color de Acento</Label>
+              <Label>{tr('Color de Acento')}</Label>
               <div className="grid grid-cols-4 gap-2">
                 {COLOR_PRESETS.map((color) => (
                   <button
@@ -401,12 +402,12 @@ export default function ClubSettings() {
                     }`}
                     style={{ backgroundColor: color.hex }}
                   >
-                    <span className="sr-only">{color.name}</span>
+                    <span className="sr-only">{tr(color.name)}</span>
                   </button>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                Color seleccionado: {COLOR_PRESETS.find(c => c.value === accentColor)?.name || 'Personalizado'}
+                {tr('Color seleccionado: {color}', { color: tr(COLOR_PRESETS.find(c => c.value === accentColor)?.name || 'Personalizado') })}
               </p>
             </div>
           </CardContent>
@@ -417,14 +418,14 @@ export default function ClubSettings() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Type className="h-5 w-5" />
-              Tipografía
+              {tr('Tipografía')}
             </CardTitle>
-            <CardDescription>Elige la fuente de la aplicación</CardDescription>
+            <CardDescription>{tr('Elige la fuente de la aplicación')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Select value={fontFamily} onValueChange={setFontFamily}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona una fuente" />
+                <SelectValue placeholder={tr('Selecciona una fuente')} />
               </SelectTrigger>
               <SelectContent>
                 {FONT_OPTIONS.map((font) => (
@@ -445,7 +446,7 @@ export default function ClubSettings() {
           size="lg"
         >
           <Save className="h-5 w-5" />
-          {saving ? 'Guardando...' : 'Guardar Configuración'}
+          {saving ? tr('Guardando...') : tr('Guardar Configuración')}
         </Button>
       </div>
 

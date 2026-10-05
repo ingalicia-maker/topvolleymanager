@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useConversations } from '@/hooks/useConversations';
 import { Team } from '@/types/volleyball';
+import { tr } from '@/lib/tr';
 
 interface CoachProfile {
   id: string;
@@ -96,12 +97,12 @@ export function CoachDetailDialog({
 
       if (error) throw error;
 
-      toast.success('Equipos asignados correctamente');
+      toast.success(tr('Equipos asignados correctamente'));
       setIsEditing(false);
       onCoachUpdated();
     } catch (error) {
       console.error('Error updating coach:', error);
-      toast.error('Error al actualizar el entrenador');
+      toast.error(tr('Error al actualizar el entrenador'));
     } finally {
       setSaving(false);
     }
@@ -127,12 +128,12 @@ export function CoachDetailDialog({
         .eq('user_id', coach.id)
         .eq('role', 'coach');
 
-      toast.success('Entrenador eliminado del club');
+      toast.success(tr('Entrenador eliminado del club'));
       onOpenChange(false);
       onCoachDeleted();
     } catch (error) {
       console.error('Error deleting coach:', error);
-      toast.error('Error al eliminar el entrenador');
+      toast.error(tr('Error al eliminar el entrenador'));
     } finally {
       setDeleting(false);
       setConfirmDelete(false);
@@ -149,11 +150,11 @@ export function CoachDetailDialog({
         onOpenChange(false);
         navigate('/messages', { state: { openConversationId: res.id } });
       } else {
-        toast.error(res.error || 'Error al crear la conversación');
+        toast.error(res.error || tr('Error al crear la conversación'));
       }
     } catch (error) {
       console.error('Error creating direct message:', error);
-      toast.error('Error al crear la conversación');
+      toast.error(tr('Error al crear la conversación'));
     } finally {
       setMessagingLoading(false);
     }
@@ -175,10 +176,10 @@ export function CoachDetailDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Perfil del Entrenador
+            {tr('Perfil del Entrenador')}
           </DialogTitle>
           <DialogDescription>
-            Información y gestión del entrenador
+            {tr('Información y gestión del entrenador')}
           </DialogDescription>
         </DialogHeader>
 
@@ -191,12 +192,12 @@ export function CoachDetailDialog({
                 {coach.role === 'director' ? (
                   <>
                     <Shield className="h-3 w-3 mr-1" />
-                    Director
+                    {tr('Director')}
                   </>
                 ) : (
                   <>
                     <Users className="h-3 w-3 mr-1" />
-                    Entrenador
+                    {tr('Entrenador')}
                   </>
                 )}
               </Badge>
@@ -222,7 +223,7 @@ export function CoachDetailDialog({
               {coach.created_at && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  Registrado: {format(new Date(coach.created_at), "d MMM yyyy, HH:mm", { locale: getDateFnsLocale(i18n.language) })}
+                  {tr('Registrado: {date}', { date: format(new Date(coach.created_at), "d MMM yyyy, HH:mm", { locale: getDateFnsLocale(i18n.language) }) })}
                 </div>
               )}
             </div>
@@ -237,13 +238,13 @@ export function CoachDetailDialog({
                 <>
                   <FileCheck className="h-4 w-4" />
                   <span>
-                    Código aceptado el {format(new Date(coach.responsibility_code_accepted_at!), "d MMM yyyy", { locale: getDateFnsLocale(i18n.language) })}
+                    {tr('Código aceptado el {date}', { date: format(new Date(coach.responsibility_code_accepted_at!), "d MMM yyyy", { locale: getDateFnsLocale(i18n.language) }) })}
                   </span>
                 </>
               ) : (
                 <>
                   <FileX className="h-4 w-4" />
-                  <span>Código de responsabilidad pendiente</span>
+                  <span>{tr('Código de responsabilidad pendiente')}</span>
                 </>
               )}
             </div>
@@ -252,7 +253,7 @@ export function CoachDetailDialog({
           {/* Teams Assignment */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Equipos asignados</Label>
+              <Label className="text-sm font-medium">{tr('Equipos asignados')}</Label>
               {!isEditing && !isCurrentUser && (
                 <Button
                   variant="ghost"
@@ -261,7 +262,7 @@ export function CoachDetailDialog({
                   className="gap-1 h-7"
                 >
                   <Edit2 className="h-3 w-3" />
-                  Editar
+                  {tr('Editar')}
                 </Button>
               )}
             </div>
@@ -269,7 +270,7 @@ export function CoachDetailDialog({
             {isEditing ? (
               <div className="space-y-2 border rounded-lg p-3">
                 {teams.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No hay equipos creados</p>
+                  <p className="text-sm text-muted-foreground">{tr('No hay equipos creados')}</p>
                 ) : (
                   teams.map(team => (
                     <div
@@ -301,7 +302,7 @@ export function CoachDetailDialog({
                     disabled={saving}
                   >
                     <X className="h-3 w-3 mr-1" />
-                    Cancelar
+                    {tr('Cancelar')}
                   </Button>
                   <Button
                     size="sm"
@@ -310,7 +311,7 @@ export function CoachDetailDialog({
                     className="flex-1"
                   >
                     <Save className="h-3 w-3 mr-1" />
-                    {saving ? 'Guardando...' : 'Guardar'}
+                    {saving ? tr('Guardando...') : tr('Guardar')}
                   </Button>
                 </div>
               </div>
@@ -323,7 +324,7 @@ export function CoachDetailDialog({
                     </Badge>
                   ))
                 ) : (
-                  <p className="text-xs text-muted-foreground">Sin equipos asignados</p>
+                  <p className="text-xs text-muted-foreground">{tr('Sin equipos asignados')}</p>
                 )}
               </div>
             )}
@@ -340,7 +341,7 @@ export function CoachDetailDialog({
                 className="gap-2 w-full sm:w-auto"
               >
                 <MessageSquare className="h-4 w-4" />
-                {messagingLoading ? 'Abriendo...' : 'Enviar mensaje'}
+                {messagingLoading ? tr('Abriendo...') : tr('Enviar mensaje')}
               </Button>
 
               {confirmDelete ? (
@@ -351,7 +352,7 @@ export function CoachDetailDialog({
                     disabled={deleting}
                     size="sm"
                   >
-                    Cancelar
+                    {tr('Cancelar')}
                   </Button>
                   <Button
                     variant="destructive"
@@ -361,7 +362,7 @@ export function CoachDetailDialog({
                     className="gap-1"
                   >
                     <Trash2 className="h-4 w-4" />
-                    {deleting ? 'Eliminando...' : 'Confirmar'}
+                    {deleting ? tr('Eliminando...') : tr('Confirmar')}
                   </Button>
                 </div>
               ) : (
@@ -371,7 +372,7 @@ export function CoachDetailDialog({
                   className="gap-2 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground w-full sm:w-auto"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Eliminar del club
+                  {tr('Eliminar del club')}
                 </Button>
               )}
             </>

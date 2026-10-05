@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClub } from './useClub';
+import { tr } from '@/lib/tr';
 
 export interface DbStop {
   id: string;
@@ -25,7 +26,7 @@ export function useStops() {
 
     if (error) {
       console.error('Error fetching stops:', error);
-      toast.error('Error al cargar paradas');
+      toast.error(tr('Error al cargar paradas'));
     } else {
       setStops(data || []);
     }
@@ -52,12 +53,12 @@ export function useStops() {
       .single();
 
     if (error) {
-      toast.error('Error al añadir parada');
+      toast.error(tr('Error al añadir parada'));
       return null;
     }
     
     setStops(prev => [...prev, data]);
-    toast.success('Parada añadida');
+    toast.success(tr('Parada añadida'));
     return data;
   };
 
@@ -68,12 +69,12 @@ export function useStops() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al actualizar parada');
+      toast.error(tr('Error al actualizar parada'));
       return false;
     }
 
     setStops(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-    toast.success('Parada actualizada');
+    toast.success(tr('Parada actualizada'));
     return true;
   };
 
@@ -84,12 +85,12 @@ export function useStops() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al eliminar parada');
+      toast.error(tr('Error al eliminar parada'));
       return false;
     }
 
     setStops(prev => prev.filter(s => s.id !== id));
-    toast.success('Parada eliminada');
+    toast.success(tr('Parada eliminada'));
     return true;
   };
 

@@ -22,6 +22,7 @@ import {
   checkRateLimit, 
   resetRateLimit,
 } from '@/lib/security';
+import { tr } from '@/lib/tr';
 
 const emailSchema = z.string().email('Email inválido').max(255);
 const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').max(128);
@@ -359,7 +360,7 @@ export default function Auth() {
     if (success) {
       toast.success(t('auth.emailResent', 'Email reenviado'));
     } else {
-      toast.error(t('auth.emailResendError', 'Error al reenviar el email'));
+      toast.error(t('auth.emailResendError', tr('Error al reenviar el email')));
     }
     setResendingEmail(false);
   };
@@ -413,11 +414,11 @@ export default function Auth() {
   }, [invitationCode]);
 
   // Runs a promise with a hard timeout so the form never stays stuck in "loading"
-  const withTimeout = async <T,>(promise: PromiseLike<T>, ms = 20000, label = 'La operación'): Promise<T> => {
+  const withTimeout = async <T,>(promise: PromiseLike<T>, ms = 20000, label = tr('La operación')): Promise<T> => {
     let timer: ReturnType<typeof setTimeout>;
     const timeout = new Promise<never>((_, reject) => {
       timer = setTimeout(
-        () => reject(new Error(`${label} ha tardado demasiado (${Math.round(ms / 1000)}s). Comprueba tu conexión e inténtalo de nuevo.`)),
+        () => reject(new Error(tr('{label} ha tardado demasiado ({round}s). Comprueba tu conexión e inténtalo de nuevo.', { label, round: Math.round(ms / 1000) }))),
         ms,
       );
     });
@@ -432,19 +433,19 @@ export default function Auth() {
   const describeSignUpError = (error: unknown): string => {
     const raw = error instanceof Error ? error.message : String(error ?? '');
     const msg = raw.toLowerCase();
-    if (!navigator.onLine) return 'Sin conexión a internet. Conéctate y vuelve a intentarlo.';
+    if (!navigator.onLine) return tr('Sin conexión a internet. Conéctate y vuelve a intentarlo.');
     if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already')) {
-      return 'Este email ya está registrado. Inicia sesión o recupera tu contraseña.';
+      return tr('Este email ya está registrado. Inicia sesión o recupera tu contraseña.');
     }
-    if (msg.includes('invalid email') || msg.includes('email address') && msg.includes('invalid')) return 'El email introducido no es válido.';
-    if (msg.includes('password') && msg.includes('at least')) return 'La contraseña es demasiado corta (mínimo 6 caracteres).';
-    if (msg.includes('weak') || msg.includes('pwned') || msg.includes('compromised')) return 'Esa contraseña es demasiado débil o ha aparecido en filtraciones. Usa otra.';
+    if (msg.includes('invalid email') || msg.includes('email address') && msg.includes('invalid')) return tr('El email introducido no es válido.');
+    if (msg.includes('password') && msg.includes('at least')) return tr('La contraseña es demasiado corta (mínimo 6 caracteres).');
+    if (msg.includes('weak') || msg.includes('pwned') || msg.includes('compromised')) return tr('Esa contraseña es demasiado débil o ha aparecido en filtraciones. Usa otra.');
     if (msg.includes('rate limit') || msg.includes('too many') || msg.includes('429')) return 'Demasiados intentos. Espera unos minutos y vuelve a intentarlo.';
-    if (msg.includes('signups not allowed') || msg.includes('signup is disabled')) return 'Los registros están temporalmente desactivados.';
-    if (msg.includes('sending') && msg.includes('email')) return 'No se ha podido enviar el email de verificación. Inténtalo de nuevo en unos minutos.';
-    if (msg.includes('failed to fetch') || msg.includes('network')) return 'No se ha podido conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.';
+    if (msg.includes('signups not allowed') || msg.includes('signup is disabled')) return tr('Los registros están temporalmente desactivados.');
+    if (msg.includes('sending') && msg.includes('email')) return tr('No se ha podido enviar el email de verificación. Inténtalo de nuevo en unos minutos.');
+    if (msg.includes('failed to fetch') || msg.includes('network')) return tr('No se ha podido conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.');
     if (msg.includes('tardado demasiado')) return raw;
-    return raw || 'Error desconocido al crear la cuenta. Inténtalo de nuevo.';
+    return raw || tr('Error desconocido al crear la cuenta. Inténtalo de nuevo.');
   };
 
 
@@ -490,7 +491,7 @@ export default function Auth() {
           },
         }),
         20000,
-        'El registro',
+        tr('El registro'),
       );
 
       if (error) {
@@ -519,7 +520,7 @@ export default function Auth() {
           const { error: joinError } = await withTimeout(
             supabase.rpc('accept_club_invitation_by_code', { _code: invitationCode.toUpperCase() }),
             15000,
-            'La unión al club',
+            tr('La unión al club'),
           );
           if (!joinError || joinError.message?.toLowerCase().includes('ya eres miembro')) {
             window.dispatchEvent(new Event('club-membership-changed'));
@@ -581,7 +582,7 @@ export default function Auth() {
           },
         }),
         20000,
-        'El registro',
+        tr('El registro'),
       );
 
       if (error) {
@@ -778,13 +779,13 @@ export default function Auth() {
         <CardHeader className="text-center">
           <img src={tvmLogo} alt="Top Volley Manager" className="mx-auto h-20 w-auto mb-2" />
           <CardTitle className="sr-only">Top Volley Manager</CardTitle>
-          <CardDescription>{t('auth.manageTeams', 'Gestiona tus equipos y convocatorias')}</CardDescription>
+          <CardDescription>{t('auth.manageTeams', tr('Gestiona tus equipos y convocatorias'))}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="w-full">
-              <TabsTrigger value="login" className="flex-1">{t('auth.login', 'Iniciar Sesión')}</TabsTrigger>
-              <TabsTrigger value="register" className="flex-1">{t('auth.register', 'Registrarse')}</TabsTrigger>
+              <TabsTrigger value="login" className="flex-1">{t('auth.login', tr('Iniciar Sesión'))}</TabsTrigger>
+              <TabsTrigger value="register" className="flex-1">{t('auth.register', tr('Registrarse'))}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login" className="mt-4">

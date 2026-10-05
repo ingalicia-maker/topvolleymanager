@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 type State = 'verifying' | 'success' | 'error';
 
@@ -37,8 +38,8 @@ export default function AuthConfirm() {
         setState('error');
         setMessage(
           errorDescription?.includes('expired')
-            ? 'El enlace ha caducado. Solicita uno nuevo desde la pantalla de acceso.'
-            : errorDescription || 'El enlace de verificación no es válido.'
+            ? tr('El enlace ha caducado. Solicita uno nuevo desde la pantalla de acceso.')
+            : errorDescription || tr('El enlace de verificación no es válido.')
         );
         return;
       }
@@ -57,8 +58,8 @@ export default function AuthConfirm() {
           setState('error');
           setMessage(
             error.message.toLowerCase().includes('expired')
-              ? 'El enlace ha caducado. Solicita uno nuevo desde la pantalla de acceso.'
-              : 'No hemos podido verificar tu email. El enlace puede haber sido usado ya.'
+              ? tr('El enlace ha caducado. Solicita uno nuevo desde la pantalla de acceso.')
+              : tr('No hemos podido verificar tu email. El enlace puede haber sido usado ya.')
           );
           return;
         }
@@ -72,7 +73,7 @@ export default function AuthConfirm() {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
           setState('error');
-          setMessage('No hemos podido completar la verificación. Vuelve a iniciar sesión.');
+          setMessage(tr('No hemos podido completar la verificación. Vuelve a iniciar sesión.'));
           return;
         }
         finish(redirectTo);
@@ -89,7 +90,7 @@ export default function AuthConfirm() {
         });
         if (error) {
           setState('error');
-          setMessage('No hemos podido iniciar tu sesión. Vuelve a iniciar sesión.');
+          setMessage(tr('No hemos podido iniciar tu sesión. Vuelve a iniciar sesión.'));
           return;
         }
         finish(redirectTo);
@@ -104,7 +105,7 @@ export default function AuthConfirm() {
       }
 
       setState('error');
-      setMessage('Enlace de verificación incompleto o ya utilizado.');
+      setMessage(tr('Enlace de verificación incompleto o ya utilizado.'));
     };
 
     void run();
@@ -122,19 +123,19 @@ export default function AuthConfirm() {
             {state === 'verifying' && <Loader2 className="h-5 w-5 animate-spin" />}
             {state === 'success' && <CheckCircle2 className="h-5 w-5 text-primary" />}
             {state === 'error' && <AlertCircle className="h-5 w-5 text-destructive" />}
-            {state === 'verifying' && 'Verificando tu email...'}
-            {state === 'success' && '¡Email verificado!'}
-            {state === 'error' && 'No se pudo verificar'}
+            {state === 'verifying' && tr('Verificando tu email...')}
+            {state === 'success' && tr('¡Email verificado!')}
+            {state === 'error' && tr('No se pudo verificar')}
           </CardTitle>
           <CardDescription>
-            {state === 'verifying' && 'Un momento, estamos confirmando tu cuenta.'}
-            {state === 'success' && 'Te estamos redirigiendo a la aplicación.'}
+            {state === 'verifying' && tr('Un momento, estamos confirmando tu cuenta.')}
+            {state === 'success' && tr('Te estamos redirigiendo a la aplicación.')}
             {state === 'error' && message}
           </CardDescription>
         </CardHeader>
         {state === 'error' && (
           <CardContent className="flex justify-center">
-            <Button onClick={() => navigate('/auth', { replace: true })}>Ir a iniciar sesión</Button>
+            <Button onClick={() => navigate('/auth', { replace: true })}>{tr('Ir a iniciar sesión')}</Button>
           </CardContent>
         )}
       </Card>

@@ -5,6 +5,9 @@ import { useClub } from './useClub';
 import { useUserRole } from './useUserRole';
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
+import { tr } from '@/lib/tr';
+import { useRatingCriteria } from './useRatingCriteria';
+import { averageByCriterion, overallAverage, ratingAverage, scoreOf, type ScoredRating } from '@/lib/ratingCriteria';
 
 export interface PlayerRating {
   id: string;
@@ -13,11 +16,12 @@ export interface PlayerRating {
   rated_by: string | null;
   event_id: string | null;
   rating_date: string;
-  effort_attitude: number;
-  communication_cooperation: number;
-  technical_execution: number;
-  decision_making: number;
-  leadership_initiative: number;
+  effort_attitude: number | null;
+  communication_cooperation: number | null;
+  technical_execution: number | null;
+  decision_making: number | null;
+  leadership_initiative: number | null;
+  extra_scores?: Record<string, number> | null;
   notes: string | null;
   created_at: string;
   club_id: string | null;
@@ -28,23 +32,16 @@ export interface RatingInput {
   player_id: string;
   team_id: string;
   event_id?: string;
-  effort_attitude: number;
-  communication_cooperation: number;
-  technical_execution: number;
-  decision_making: number;
-  leadership_initiative: number;
+  effort_attitude: number | null;
+  communication_cooperation: number | null;
+  technical_execution: number | null;
+  decision_making: number | null;
+  leadership_initiative: number | null;
+  extra_scores?: Record<string, number>;
   notes?: string;
 }
 
-export const RATING_CATEGORIES = [
-  { key: 'effort_attitude', label: 'Esfuerzo y actitud', shortLabel: 'Esfuerzo' },
-  { key: 'communication_cooperation', label: 'Comunicación y cooperación', shortLabel: 'Comunicación' },
-  { key: 'technical_execution', label: 'Ejecución técnica', shortLabel: 'Técnica' },
-  { key: 'decision_making', label: 'Toma de decisiones', shortLabel: 'Decisiones' },
-  { key: 'leadership_initiative', label: 'Liderazgo e iniciativa', shortLabel: 'Liderazgo' },
-] as const;
-
-export type RatingCategoryKey = typeof RATING_CATEGORIES[number]['key'];
+export type { Criterion } from '@/lib/ratingCriteria';
 
 export function usePlayerRatings() {
   const { user } = useAuth();
@@ -52,6 +49,7 @@ export function usePlayerRatings() {
   const { assignedTeams, isDirector, loading: roleLoading } = useUserRole();
   const [allRatings, setAllRatings] = useState<PlayerRating[]>([]);
   const [loading, setLoading] = useState(true);
+  const { criteria } = useRatingCriteria();
 
   const fetchRatings = async () => {
     const { data, error } = await supabase
@@ -61,7 +59,7 @@ export function usePlayerRatings() {
 
     if (error) {
       console.error('Error fetching ratings:', error);
-      toast.error('Error al cargar puntuaciones');
+      toast.error(tr('Error al cargar puntuaciones'));
     } else {
       setAllRatings(data || []);
     }
@@ -97,11 +95,11 @@ export function usePlayerRatings() {
 
     if (error) {
       console.error('Error saving rating:', error);
-      toast.error('Error al guardar puntuación');
+      toast.error(tr('Error al guardar puntuación'));
     }
 
     setAllRatings(prev => [data, ...prev]);
-    toast.success('Puntuación guardada');
+    toast.success(tr('Puntuación guardada'));
     return data;
   };
 
@@ -114,12 +112,12 @@ export function usePlayerRatings() {
       .single();
 
     if (error) {
-      toast.error('Error al actualizar puntuación');
+      toast.error(tr('Error al actualizar puntuación'));
       return null;
     }
 
     setAllRatings(prev => prev.map(r => r.id === id ? data : r));
-    toast.success('Puntuación actualizada');
+    toast.success(tr('Puntuación actualizada'));
     return data;
   };
 
@@ -130,12 +128,12 @@ export function usePlayerRatings() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al eliminar puntuación');
+      toast.error(tr('Error al eliminar puntuación'));
       return false;
     }
 
     setAllRatings(prev => prev.filter(r => r.id !== id));
-    toast.success('Puntuación eliminada');
+    toast.success(tr('Puntuación eliminada'));
     return true;
   };
 
@@ -153,20 +151,8 @@ export function usePlayerRatings() {
 
     if (weekRatings.length === 0) return null;
 
-    const avgByCategory: Record<RatingCategoryKey, number> = {
-      effort_attitude: 0,
-      communication_cooperation: 0,
-      technical_execution: 0,
-      decision_making: 0,
-      leadership_initiative: 0,
-    };
-
-    RATING_CATEGORIES.forEach(cat => {
-      const sum = weekRatings.reduce((acc, r) => acc + (r[cat.key] as number), 0);
-      avgByCategory[cat.key] = sum / weekRatings.length;
-    });
-
-    const totalAvg = Object.values(avgByCategory).reduce((a, b) => a + b, 0) / 5;
+    const avgByCategory = averageByCriterion(weekRatings as ScoredRating[], criteria);
+    const totalAvg = overallAverage(avgByCategory);
 
     return { avgByCategory, totalAvg, ratingsCount: weekRatings.length };
   };
@@ -191,11 +177,9 @@ export function usePlayerRatings() {
     let topPlayer: { playerId: string; avgScore: number } | null = null;
 
     Object.entries(byPlayer).forEach(([playerId, playerRatings]) => {
-      const totalScore = playerRatings.reduce((acc, r) => {
-        return acc + r.effort_attitude + r.communication_cooperation + 
-               r.technical_execution + r.decision_making + r.leadership_initiative;
-      }, 0);
-      const avgScore = totalScore / (playerRatings.length * 5);
+      const avgs = playerRatings.map((r) => ratingAverage(r as ScoredRating, criteria)).filter((v): v is number => v !== null);
+      if (!avgs.length) return;
+      const avgScore = avgs.reduce((a, b) => a + b, 0) / avgs.length;
 
       if (!topPlayer || avgScore > topPlayer.avgScore) {
         topPlayer = { playerId, avgScore };
@@ -205,13 +189,8 @@ export function usePlayerRatings() {
     return topPlayer;
   };
 
-  const getMonthlyEvolution = (playerId: string, teamId?: string): Array<{
+  const getMonthlyEvolution = (playerId: string, teamId?: string): Array<Record<string, number | null> & {
     month: string;
-    effort_attitude: number;
-    communication_cooperation: number;
-    technical_execution: number;
-    decision_making: number;
-    leadership_initiative: number;
     totalAvg: number;
   }> => {
     const playerRatings = ratings.filter(r => 
@@ -228,21 +207,8 @@ export function usePlayerRatings() {
 
     return Object.entries(byMonth)
       .map(([month, monthRatings]) => {
-        const effort_attitude = monthRatings.reduce((acc, r) => acc + r.effort_attitude, 0) / monthRatings.length;
-        const communication_cooperation = monthRatings.reduce((acc, r) => acc + r.communication_cooperation, 0) / monthRatings.length;
-        const technical_execution = monthRatings.reduce((acc, r) => acc + r.technical_execution, 0) / monthRatings.length;
-        const decision_making = monthRatings.reduce((acc, r) => acc + r.decision_making, 0) / monthRatings.length;
-        const leadership_initiative = monthRatings.reduce((acc, r) => acc + r.leadership_initiative, 0) / monthRatings.length;
-        const totalAvg = (effort_attitude + communication_cooperation + technical_execution + decision_making + leadership_initiative) / 5;
-        return { 
-          month, 
-          effort_attitude,
-          communication_cooperation,
-          technical_execution,
-          decision_making,
-          leadership_initiative,
-          totalAvg 
-        };
+        const avgs = averageByCriterion(monthRatings as ScoredRating[], criteria);
+        return { ...avgs, month, totalAvg: overallAverage(avgs) } as Record<string, number | null> & { month: string; totalAvg: number };
       })
       .sort((a, b) => a.month.localeCompare(b.month));
   };
@@ -255,12 +221,13 @@ export function usePlayerRatings() {
     const lastTwo = evolution.slice(-2);
     const [prev, curr] = lastTwo;
 
-    RATING_CATEGORIES.forEach(cat => {
+    criteria.forEach(cat => {
+      if (curr[cat.key] == null || prev[cat.key] == null) return;
       const diff = (curr[cat.key] as number) - (prev[cat.key] as number);
       if (diff >= 0.5) {
-        trends.push(`Mejora en ${cat.label.toLowerCase()}`);
+        trends.push(tr('Mejora en {toLowerCase}', { toLowerCase: cat.label.toLowerCase() }));
       } else if (diff <= -0.5) {
-        trends.push(`Bajada en ${cat.label.toLowerCase()}`);
+        trends.push(tr('Bajada en {toLowerCase}', { toLowerCase: cat.label.toLowerCase() }));
       }
     });
 
@@ -269,9 +236,9 @@ export function usePlayerRatings() {
       .slice(0, 9);
 
     if (recentRatings.length >= 6) {
-      const highEffortCount = recentRatings.filter(r => r.effort_attitude >= 4).length;
+      const highEffortCount = recentRatings.filter(r => (r.effort_attitude ?? 0) >= 4).length;
       if (highEffortCount >= recentRatings.length * 0.8) {
-        trends.push('Mantiene alto nivel de esfuerzo');
+        trends.push(tr('Mantiene alto nivel de esfuerzo'));
       }
     }
 
@@ -296,7 +263,9 @@ export function usePlayerRatings() {
       );
       
       if (weekRatings.length > 0) {
-        const avgEffort = weekRatings.reduce((a, r) => a + r.effort_attitude, 0) / weekRatings.length;
+        const effortScores = weekRatings.map(r => scoreOf(r as ScoredRating, 'effort_attitude')).filter((v): v is number => v !== null);
+        if (!effortScores.length) break;
+        const avgEffort = effortScores.reduce((a, b) => a + b, 0) / effortScores.length;
         if (avgEffort >= 4) {
           consecutiveHighEffort++;
         } else {
@@ -308,14 +277,14 @@ export function usePlayerRatings() {
     }
     
     if (consecutiveHighEffort >= 3) {
-      alerts.push(`¡Ha sido la más constante en esfuerzo durante ${consecutiveHighEffort} semanas!`);
+      alerts.push(tr('¡Ha sido la más constante en esfuerzo durante {consecutiveHighEffort} semanas!', { consecutiveHighEffort }));
     }
 
     const evolution = getMonthlyEvolution(playerId, teamId);
     if (evolution.length >= 2) {
       const [prev, curr] = evolution.slice(-2);
-      if ((curr.decision_making as number) - (prev.decision_making as number) >= 1) {
-        alerts.push('¡Gran mejora en su lectura de juego!');
+      if (curr.decision_making != null && prev.decision_making != null && curr.decision_making - prev.decision_making >= 1) {
+        alerts.push(tr('¡Gran mejora en su lectura de juego!'));
       }
     }
 
@@ -333,6 +302,7 @@ export function usePlayerRatings() {
     getMonthlyEvolution,
     getPlayerTrends,
     getPositiveAlerts,
+    criteria,
     refetch: fetchRatings,
   };
 }

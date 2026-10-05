@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTeams } from '@/hooks/useTeams';
 import { usePlayers } from '@/hooks/usePlayers';
 import { toast } from 'sonner';
+import { tr } from '@/lib/tr';
 
 interface PlayerRow {
   nombre?: string;
@@ -123,25 +124,25 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
     const warnings: string[] = [];
 
     if (!row.nombre?.toString().trim()) {
-      errors.push('Nombre es obligatorio');
+      errors.push(tr('Nombre es obligatorio'));
     }
 
     if (!row.apellido1?.toString().trim() && !row.apellido2?.toString().trim()) {
-      errors.push('Apellido(s) es obligatorio');
+      errors.push(tr('Apellido(s) es obligatorio'));
     }
 
     const phone = row.telefono?.toString().trim();
     if (!phone) {
-      warnings.push('Sin teléfono (lo podrás añadir después)');
+      warnings.push(tr('Sin teléfono (lo podrás añadir después)'));
     } else if (existingPhones.includes(phone)) {
-      warnings.push('Este teléfono ya existe');
+      warnings.push(tr('Este teléfono ya existe'));
     }
 
     const rawTeam = row.equipo?.toString().trim();
     if (!rawTeam) {
-      warnings.push('Sin equipo (lo podrás asignar después)');
+      warnings.push(tr('Sin equipo (lo podrás asignar después)'));
     } else if (findTeamIds(rawTeam).length === 0) {
-      warnings.push(`Equipo "${rawTeam}" no encontrado, se importará sin equipo`);
+      warnings.push(tr('Equipo "{rawTeam}" no encontrado, se importará sin equipo', { rawTeam }));
     }
 
     return {
@@ -167,11 +168,11 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
         .map((row, index) => validateRow(row, index));
 
       if (validated.length === 0) {
-        toast.error('No se han encontrado filas con datos. Revisa las columnas del archivo.');
+        toast.error(tr('No se han encontrado filas con datos. Revisa las columnas del archivo.'));
       }
       setValidatedRows(validated);
     } catch (error) {
-      toast.error('Error al leer el archivo');
+      toast.error(tr('Error al leer el archivo'));
       console.error(error);
     }
     setIsProcessing(false);
@@ -230,7 +231,7 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
   const downloadTemplate = () => {
     const ws = XLSX.utils.json_to_sheet(templateData());
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Jugadoras');
+    XLSX.utils.book_append_sheet(wb, ws, tr('Jugadoras'));
     XLSX.writeFile(wb, 'plantilla_jugadoras.xlsx');
   };
 
@@ -250,7 +251,7 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
   const importPlayers = async () => {
     const validRows = validatedRows.filter(r => r.isValid);
     if (validRows.length === 0) {
-      toast.error('No hay filas válidas para importar');
+      toast.error(tr('No hay filas válidas para importar'));
       return;
     }
 
@@ -277,7 +278,7 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
     }
 
     setIsProcessing(false);
-    toast.success(`${imported} jugadora${imported !== 1 ? 's' : ''} importada${imported !== 1 ? 's' : ''}`);
+    toast.success(imported === 1 ? tr('1 jugadora importada') : tr('{count} jugadoras importadas', { count: imported }));
     onSuccess();
     handleClose();
   };
@@ -297,10 +298,10 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
-            Importar Jugadoras
+            {tr('Importar Jugadoras')}
           </DialogTitle>
           <DialogDescription>
-            Sube un archivo CSV (.csv) o Excel (.xlsx) con los datos de las jugadoras
+            {tr('Sube un archivo CSV (.csv) o Excel (.xlsx) con los datos de las jugadoras')}
           </DialogDescription>
         </DialogHeader>
 
@@ -308,32 +309,28 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
           <div className="space-y-4">
             {/* Instructions */}
             <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-3">
-              <p className="font-medium">Columnas del archivo (primera fila = cabeceras):</p>
+              <p className="font-medium">{tr('Columnas del archivo (primera fila = cabeceras):')}</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
                 <div>
-                  <span className="text-destructive">*</span> <strong>nombre</strong> — Nombre
+                  <span className="text-destructive">*</span> <strong>nombre</strong> {tr('— Nombre')}
                 </div>
                 <div>
-                  <span className="text-destructive">*</span> <strong>apellido1</strong> — Primer apellido
+                  <span className="text-destructive">*</span> <strong>apellido1</strong> {tr('— Primer apellido')}
                 </div>
-                <div><strong>apellido2</strong> — Segundo apellido</div>
-                <div><strong>telefono</strong> — WhatsApp (ej: +34600111222)</div>
-                <div><strong>equipo</strong> — Nombre del equipo</div>
-                <div><strong>dorsal</strong> — Número</div>
-                <div><strong>año_nacimiento</strong> — Ej: 2010</div>
-                <div><strong>altura</strong> — En centímetros</div>
+                <div><strong>apellido2</strong> {tr('— Segundo apellido')}</div>
+                <div><strong>telefono</strong> {tr('— WhatsApp (ej: +34600111222)')}</div>
+                <div><strong>equipo</strong> {tr('— Nombre del equipo')}</div>
+                <div><strong>dorsal</strong> {tr('— Número')}</div>
+                <div><strong>año_nacimiento</strong> {tr('— Ej: 2010')}</div>
+                <div><strong>altura</strong> {tr('— En centímetros')}</div>
               </div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-destructive">*</span> Solo <strong>nombre</strong> y <strong>apellido(s)</strong> son
-                obligatorios. El resto lo puedes dejar vacío y completarlo después a mano en la ficha de cada jugadora.
+                <span className="text-destructive">*</span> {tr('Solo nombre y apellido(s) son obligatorios. El resto lo puedes dejar vacío y completarlo después a mano en la ficha de cada jugadora.')}
               </p>
               <div className="flex items-start gap-2 text-xs text-muted-foreground border-t pt-2">
                 <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                 <span>
-                  También se aceptan cabeceras equivalentes (<em>apellidos</em>, <em>móvil</em>, <em>equipos</em>,{' '}
-                  <em>name</em>, <em>phone</em>, <em>team</em>…), con o sin acentos y en mayúsculas. Si usas una sola
-                  columna <em>apellidos</em>, se dividirá automáticamente. Para varios equipos, sepáralos con comas.
-                  En CSV, usa comas como separador y codificación UTF-8.
+                  {tr('También se aceptan cabeceras equivalentes (apellidos, móvil, equipos, name, phone, team…), con o sin acentos y en mayúsculas. Si usas una sola columna apellidos, se dividirá automáticamente. Para varios equipos, sepáralos con comas. En CSV, usa comas como separador y codificación UTF-8.')}
                 </span>
               </div>
             </div>
@@ -342,11 +339,11 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" onClick={downloadCsvTemplate}>
                 <Download className="h-4 w-4 mr-2" />
-                Plantilla CSV
+                {tr('Plantilla CSV')}
               </Button>
               <Button variant="outline" onClick={downloadTemplate}>
                 <Download className="h-4 w-4 mr-2" />
-                Plantilla Excel
+                {tr('Plantilla Excel')}
               </Button>
             </div>
 
@@ -367,9 +364,9 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
                   className="hidden"
                 />
                 <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                <p className="text-sm font-medium">Arrastra tu archivo aquí</p>
+                <p className="text-sm font-medium">{tr('Arrastra tu archivo aquí')}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  o haz clic para seleccionar (.csv, .xlsx, .xls)
+                  {tr('o haz clic para seleccionar (.csv, .xlsx, .xls)')}
                 </p>
               </label>
             )}
@@ -391,12 +388,12 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
                 <div className="flex items-center gap-4 text-sm">
                   <span className="flex items-center gap-1 text-green-600">
                     <CheckCircle2 className="h-4 w-4" />
-                    {validCount} válidas
+                    {tr('{count} válidas', { count: validCount })}
                   </span>
                   {invalidCount > 0 && (
                     <span className="flex items-center gap-1 text-destructive">
                       <AlertCircle className="h-4 w-4" />
-                      {invalidCount} con errores
+                      {tr('{count} con errores', { count: invalidCount })}
                     </span>
                   )}
                 </div>
@@ -419,7 +416,7 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">
-                            Fila {row.rowNumber}: {row.nombre} {row.apellido1} {row.apellido2}
+                            {tr('Fila {n}', { n: row.rowNumber })}: {row.nombre} {row.apellido1} {row.apellido2}
                           </p>
                           {row.errors.length > 0 && (
                             <p className="text-xs text-destructive">{row.errors.join(', ')}</p>
@@ -440,14 +437,14 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
         {/* Actions */}
         <div className="flex gap-2 pt-4 border-t">
           <Button variant="outline" onClick={handleClose} className="flex-1">
-            Cancelar
+            {tr('Cancelar')}
           </Button>
           <Button
             onClick={importPlayers}
             disabled={validCount === 0 || isProcessing}
             className="flex-1"
           >
-            {isProcessing ? 'Importando...' : `Importar ${validCount} jugadora${validCount !== 1 ? 's' : ''}`}
+            {isProcessing ? tr('Importando...') : validCount === 1 ? tr('Importar 1 jugadora') : tr('Importar {count} jugadoras', { count: validCount })}
           </Button>
         </div>
       </DialogContent>

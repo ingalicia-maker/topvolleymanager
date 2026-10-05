@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
 import { useClubTheme } from './ClubThemeProvider';
+import { tr } from '@/lib/tr';
 
 interface HeaderProps {
   title: string;
@@ -42,7 +43,7 @@ export function Header({ title, showBack = false, rightAction, onBack, backTo }:
             size="icon"
             onClick={handleBack}
             className="shrink-0 min-h-11 min-w-11"
-            aria-label="Volver"
+            aria-label={tr('Volver')}
           >
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </Button>

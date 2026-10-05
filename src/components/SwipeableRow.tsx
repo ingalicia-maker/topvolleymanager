@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Pencil, Archive, Trash2, ArrowRightLeft } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -21,10 +22,10 @@ export function SwipeableRow({
   onMove,
   onArchive,
   onDelete,
-  editLabel = 'Editar',
-  moveLabel = 'Mover',
-  archiveLabel = 'Archivar',
-  deleteLabel = 'Eliminar',
+  editLabel = tr('Editar'),
+  moveLabel = tr('Mover'),
+  archiveLabel = tr('Archivar'),
+  deleteLabel = tr('Eliminar'),
 }: SwipeableRowProps) {
   const actions = [
     onEdit && { key: 'edit', icon: Pencil, label: editLabel, run: onEdit, className: 'bg-secondary text-secondary-foreground' },

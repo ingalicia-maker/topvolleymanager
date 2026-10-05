@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AlertTriangle, FileCheck, CheckCircle } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 export function ResponsibilityCodeBanner() {
   const { profile } = useUserRole();
@@ -32,12 +33,12 @@ export function ResponsibilityCodeBanner() {
 
       if (error) throw error;
       
-      toast.success('Código de responsabilidad aceptado');
+      toast.success(tr('Código de responsabilidad aceptado'));
       setShowDialog(false);
       window.location.reload();
     } catch (error) {
       console.error('Error accepting responsibility code:', error);
-      toast.error('Error al aceptar el código');
+      toast.error(tr('Error al aceptar el código'));
     } finally {
       setAccepting(false);
     }
@@ -50,10 +51,10 @@ export function ResponsibilityCodeBanner() {
           <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="font-semibold text-amber-700 dark:text-amber-400">
-              ¡Acción requerida!
+              {tr('¡Acción requerida!')}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Debes aceptar el código de responsabilidad del club antes de continuar trabajando con datos de menores.
+              {tr('Debes aceptar el código de responsabilidad del club antes de continuar trabajando con datos de menores.')}
             </p>
             <Button
               size="sm"
@@ -61,7 +62,7 @@ export function ResponsibilityCodeBanner() {
               className="mt-3 gap-2 bg-amber-600 hover:bg-amber-700"
             >
               <FileCheck className="h-4 w-4" />
-              Ver y aceptar código
+              {tr('Ver y aceptar código')}
             </Button>
           </div>
         </div>
@@ -72,10 +73,10 @@ export function ResponsibilityCodeBanner() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileCheck className="h-5 w-5 text-primary" />
-              Código de Responsabilidad
+              {tr('Código de Responsabilidad')}
             </DialogTitle>
             <DialogDescription>
-              Lee y acepta el código de responsabilidad del club {club?.name}
+              {tr('Lee y acepta el código de responsabilidad del club {club}', { club: club?.name ?? '' })}
             </DialogDescription>
           </DialogHeader>
           
@@ -94,7 +95,7 @@ export function ResponsibilityCodeBanner() {
               onClick={() => setShowDialog(false)}
               disabled={accepting}
             >
-              Cancelar
+              {tr('Cancelar')}
             </Button>
             <Button
               onClick={handleAccept}
@@ -102,7 +103,7 @@ export function ResponsibilityCodeBanner() {
               className="gap-2"
             >
               <CheckCircle className="h-4 w-4" />
-              {accepting ? 'Aceptando...' : 'Acepto el código'}
+              {accepting ? tr('Aceptando...') : tr('Acepto el código')}
             </Button>
           </DialogFooter>
         </DialogContent>

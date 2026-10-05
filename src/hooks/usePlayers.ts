@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClub } from './useClub';
+import { tr } from '@/lib/tr';
 
 export interface DbPlayer {
   id: string;
@@ -37,7 +38,7 @@ export function usePlayers() {
 
     if (error) {
       console.error('Error fetching players:', error);
-      toast.error('Error al cargar jugadoras');
+      toast.error(tr('Error al cargar jugadoras'));
     } else {
       setAllPlayers((data || []) as DbPlayer[]);
     }
@@ -56,12 +57,12 @@ export function usePlayers() {
       .single();
 
     if (error) {
-      toast.error('Error al añadir jugadora');
+      toast.error(tr('Error al añadir jugadora'));
       return null;
     }
     
     setAllPlayers(prev => [...prev, data as DbPlayer]);
-    toast.success('Jugadora añadida');
+    toast.success(tr('Jugadora añadida'));
     return data;
   };
 
@@ -72,12 +73,12 @@ export function usePlayers() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al actualizar jugadora');
+      toast.error(tr('Error al actualizar jugadora'));
       return false;
     }
 
     setAllPlayers(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    toast.success('Jugadora actualizada');
+    toast.success(tr('Jugadora actualizada'));
     return true;
   };
 
@@ -88,12 +89,12 @@ export function usePlayers() {
       .eq('id', id);
 
     if (error) {
-      toast.error('Error al eliminar jugadora');
+      toast.error(tr('Error al eliminar jugadora'));
       return false;
     }
 
     setAllPlayers(prev => prev.filter(p => p.id !== id));
-    toast.success('Jugadora eliminada');
+    toast.success(tr('Jugadora eliminada'));
     return true;
   };
 
@@ -109,12 +110,12 @@ export function usePlayers() {
       .eq('id', id);
 
     if (error) {
-      toast.error(archived ? 'Error al archivar jugadora' : 'Error al restaurar jugadora');
+      toast.error(archived ? tr('Error al archivar jugadora') : tr('Error al restaurar jugadora'));
       return false;
     }
 
     setAllPlayers(prev => prev.map(p => (p.id === id ? { ...p, ...updates } : p)));
-    toast.success(archived ? 'Jugadora archivada' : 'Jugadora restaurada');
+    toast.success(archived ? tr('Jugadora archivada') : tr('Jugadora restaurada'));
     return true;
   };
 

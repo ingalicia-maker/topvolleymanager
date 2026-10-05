@@ -1,17 +1,11 @@
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RATING_CATEGORIES, RatingCategoryKey } from '@/hooks/usePlayerRatings';
 import { User, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { TEAMS } from '@/types/volleyball';
-
-const RATING_EMOJIS: Record<string, string> = {
-  effort_attitude: '💪',
-  communication_cooperation: '🤝',
-  technical_execution: '🏐',
-  decision_making: '🧠',
-  leadership_initiative: '⭐',
-};
+import { tr } from '@/lib/tr';
+import { useRatingCriteria } from '@/hooks/useRatingCriteria';
+import { averageByCriterion, overallAverage } from '@/lib/ratingCriteria';
 
 interface PlayerRatingsSummaryProps {
   player: {
@@ -25,11 +19,12 @@ interface PlayerRatingsSummaryProps {
     player_id: string;
     team_id: string;
     rating_date: string;
-    effort_attitude: number;
-    communication_cooperation: number;
-    technical_execution: number;
-    decision_making: number;
-    leadership_initiative: number;
+    effort_attitude: number | null;
+    communication_cooperation: number | null;
+    technical_execution: number | null;
+    decision_making: number | null;
+    leadership_initiative: number | null;
+    extra_scores?: unknown;
   }>;
   onClick?: () => void;
   isSelected?: boolean;
@@ -43,6 +38,7 @@ export function PlayerRatingsSummary({
   isSelected = false,
 }: PlayerRatingsSummaryProps) {
   const team = TEAMS.find(t => t.id === teamId);
+  const { criteria } = useRatingCriteria();
 
   // Calculate latest month stats
   const stats = useMemo(() => {
@@ -67,11 +63,8 @@ export function PlayerRatingsSummary({
     const prevMonth = months.length > 1 ? months[months.length - 2] : null;
 
     const calcAvg = (monthRatings: typeof playerRatings) => {
-      const avgByCategory: Record<RatingCategoryKey, number> = {} as any;
-      RATING_CATEGORIES.forEach(cat => {
-        avgByCategory[cat.key] = monthRatings.reduce((acc, r) => acc + r[cat.key], 0) / monthRatings.length;
-      });
-      const totalAvg = Object.values(avgByCategory).reduce((a, b) => a + b, 0) / 5;
+      const avgByCategory = averageByCriterion(monthRatings, criteria);
+      const totalAvg = overallAverage(avgByCategory);
       return { avgByCategory, totalAvg };
     };
 
@@ -86,7 +79,7 @@ export function PlayerRatingsSummary({
       trend,
       ratingsCount: playerRatings.length,
     };
-  }, [player.id, teamId, ratings]);
+  }, [player.id, teamId, ratings, criteria]);
 
   const getTrendIcon = () => {
     if (!stats || stats.trend === 0) return <Minus className="h-3 w-3 text-muted-foreground" />;
@@ -132,19 +125,19 @@ export function PlayerRatingsSummary({
 
             {stats ? (
               <div className="flex items-center gap-1 mt-1 overflow-x-auto">
-                {RATING_CATEGORIES.map(cat => (
+                {criteria.filter(cat => stats.avgByCategory[cat.key] != null).map(cat => (
                   <Badge
                     key={cat.key}
                     variant="outline"
-                    className={`text-[10px] px-1.5 py-0 shrink-0 ${getScoreColor(stats.avgByCategory[cat.key])}`}
+                    className={`text-[10px] px-1.5 py-0 shrink-0 ${getScoreColor(stats.avgByCategory[cat.key]!)}`}
                     title={cat.label}
                   >
-                    {RATING_EMOJIS[cat.key]} {stats.avgByCategory[cat.key].toFixed(1)}
+                    {cat.emoji} {stats.avgByCategory[cat.key]!.toFixed(1)}
                   </Badge>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">Sin puntuaciones</p>
+              <p className="text-xs text-muted-foreground">{tr('Sin puntuaciones')}</p>
             )}
           </div>
 

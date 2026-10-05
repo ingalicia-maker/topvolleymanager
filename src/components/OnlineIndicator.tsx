@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { tr } from '@/lib/tr';
 
 interface OnlineIndicatorProps {
   isOnline: boolean;
@@ -29,14 +30,14 @@ export function OnlineIndicator({
             ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]' 
             : 'bg-muted-foreground/40'
         )}
-        title={isOnline ? 'En línea' : 'Desconectado'}
+        title={isOnline ? tr('En línea') : tr('Desconectado')}
       />
       {showLabel && (
         <span className={cn(
           'text-xs',
           isOnline ? 'text-green-600' : 'text-muted-foreground'
         )}>
-          {isOnline ? 'En línea' : 'Desconectado'}
+          {isOnline ? tr('En línea') : tr('Desconectado')}
         </span>
       )}
     </div>

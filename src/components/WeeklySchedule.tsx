@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { tr } from '@/lib/tr';
 
 interface WeeklyScheduleProps {
   events: DbEvent[];
@@ -77,7 +78,7 @@ export function WeeklySchedule({ events }: WeeklyScheduleProps) {
   const getTeamName = (teamId: string): string => {
     if (teamId === 'all') return t('common.all');
     const team = teams.find(t => t.id === teamId);
-    return team?.name || t('teams.team');
+    return team?.name || tr('Equipo');
   };
 
   const getTeamColor = (teamId: string): string => {

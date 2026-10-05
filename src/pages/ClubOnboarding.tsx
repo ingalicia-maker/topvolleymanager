@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Building2, Users, Link2, Loader2, CheckCircle, XCircle, Shield, KeyRound } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
 export default function ClubOnboarding() {
   const { t } = useTranslation();
@@ -217,7 +218,7 @@ export default function ClubOnboarding() {
         
         if (error) {
           let errorMsg = error.message;
-          if (errorMsg.includes('Invitación no válida')) {
+          if (errorMsg.includes(tr('Invitación no válida'))) {
             errorMsg = t('onboarding.invalidInvitation');
           } else if (errorMsg.includes('Ya eres miembro')) {
             errorMsg = t('onboarding.alreadyMember');

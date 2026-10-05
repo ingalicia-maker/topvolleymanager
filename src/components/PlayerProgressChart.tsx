@@ -1,35 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RATING_CATEGORIES } from '@/hooks/usePlayerRatings';
+import { useRatingCriteria } from '@/hooks/useRatingCriteria';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '@/lib/dateLocale';
 import { TrendingUp } from 'lucide-react';
+import { tr } from '@/lib/tr';
 
-interface MonthlyData {
+type MonthlyData = Record<string, number | string | null> & {
   month: string;
-  effort_attitude: number;
-  communication_cooperation: number;
-  technical_execution: number;
-  decision_making: number;
-  leadership_initiative: number;
   totalAvg: number;
-}
+};
 
 interface PlayerProgressChartProps {
   data: MonthlyData[];
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  effort_attitude: '#ef4444',
-  communication_cooperation: '#3b82f6',
-  technical_execution: '#22c55e',
-  decision_making: '#f59e0b',
-  leadership_initiative: '#8b5cf6',
-};
-
 export function PlayerProgressChart({ data }: PlayerProgressChartProps) {
   const { i18n } = useTranslation();
+  const { criteria } = useRatingCriteria();
   const formatMonth = (monthStr: string) => {
     const [year, month] = monthStr.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -46,7 +35,7 @@ export function PlayerProgressChart({ data }: PlayerProgressChartProps) {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
-          Evolución Mensual
+          {tr('Evolución Mensual')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -76,20 +65,21 @@ export function PlayerProgressChart({ data }: PlayerProgressChartProps) {
               <Legend 
                 wrapperStyle={{ fontSize: '10px' }}
                 formatter={(value) => {
-                  const cat = RATING_CATEGORIES.find(c => c.key === value);
+                  const cat = criteria.find(c => c.key === value);
                   return cat?.shortLabel || value;
                 }}
               />
-              {RATING_CATEGORIES.map(cat => (
+              {criteria.map(cat => (
                 <Line
                   key={cat.key}
                   type="monotone"
                   dataKey={cat.key}
                   name={cat.key}
-                  stroke={CATEGORY_COLORS[cat.key]}
+                  stroke={cat.color}
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
+                  connectNulls
                 />
               ))}
             </LineChart>
@@ -98,19 +88,21 @@ export function PlayerProgressChart({ data }: PlayerProgressChartProps) {
 
         {/* Summary Stats */}
         {data.length > 0 && (
-          <div className="mt-4 grid grid-cols-5 gap-2">
-            {RATING_CATEGORIES.map(cat => {
-              const latestValue = data[data.length - 1][cat.key];
-              const prevValue = data.length > 1 ? data[data.length - 2][cat.key] : null;
+          <div className="mt-4 grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {criteria.map(cat => {
+              const latestValue = data[data.length - 1][cat.key] as number | null;
+              if (latestValue == null) return null;
+              const prev = data.length > 1 ? data[data.length - 2][cat.key] : null;
+              const prevValue = typeof prev === 'number' ? prev : null;
               const diff = prevValue !== null ? latestValue - prevValue : 0;
               
               return (
                 <div 
                   key={cat.key} 
                   className="text-center p-2 rounded-lg"
-                  style={{ backgroundColor: `${CATEGORY_COLORS[cat.key]}10` }}
+                  style={{ backgroundColor: `${cat.color}10` }}
                 >
-                  <p className="text-lg font-bold" style={{ color: CATEGORY_COLORS[cat.key] }}>
+                  <p className="text-lg font-bold" style={{ color: cat.color }}>
                     {latestValue.toFixed(1)}
                   </p>
                   {prevValue !== null && (

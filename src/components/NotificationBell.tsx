@@ -15,6 +15,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale } from '@/lib/dateLocale';
 import { cn } from '@/lib/utils';
+import { tr } from '@/lib/tr';
 
 export function NotificationBell() {
   const { i18n } = useTranslation();
@@ -70,17 +71,17 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-3 border-b">
-          <h4 className="font-semibold">Notificaciones</h4>
+          <h4 className="font-semibold">{tr('Notificaciones')}</h4>
           {unreadCount > 0 && (
             <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-xs h-7">
-              Marcar todas leídas
+              {tr('Marcar todas leídas')}
             </Button>
           )}
         </div>
         <ScrollArea className="max-h-[300px]">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground text-sm">
-              No hay notificaciones
+              {tr('No hay notificaciones')}
             </div>
           ) : (
             <div className="divide-y">
@@ -111,12 +112,12 @@ export function NotificationBell() {
                         </p>
                         {notification.type === 'monthly_reminder' && (
                           <span className="text-[10px] text-primary font-medium">
-                            Ir a puntuaciones →
+                            {tr('Ir a puntuaciones →')}
                           </span>
                         )}
                         {notification.related_event_id && (
                           <span className="text-[10px] text-primary font-medium">
-                            Ver evento →
+                            {tr('Ver evento →')}
                           </span>
                         )}
                       </div>
