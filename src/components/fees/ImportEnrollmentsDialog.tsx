@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Enrollment, FeePlan } from '@/hooks/useClubFees';
 import { tr } from '@/lib/tr';
+import { trn } from './feeUtils';
 
 interface Props {
   open: boolean;
@@ -111,7 +112,7 @@ export function ImportEnrollmentsDialog({ open, onOpenChange, plans, onImport }:
         language: ['es', 'en', 'it'].includes(plain(r.language)) ? plain(r.language) : 'es',
         status,
       })));
-      toast.success(tr('{n} inscripciones importadas', { n }));
+      toast.success(trn('{n} inscripción importada', '{n} inscripciones importadas', n));
       reset();
       onOpenChange(false);
     } catch (e) {
@@ -155,7 +156,7 @@ export function ImportEnrollmentsDialog({ open, onOpenChange, plans, onImport }:
                 ))}
                 {rows.length > 50 && <p className="text-muted-foreground">{tr('y {n} más', { n: rows.length - 50 })}</p>}
               </div>
-              {withoutEmail > 0 && <p className="text-xs text-amber-600">{tr('{n} filas sin email válido: no recibirán emails.', { n: withoutEmail })}</p>}
+              {withoutEmail > 0 && <p className="text-xs text-amber-600">{trn('{n} fila sin email válido: no recibirá emails.', '{n} filas sin email válido: no recibirán emails.', withoutEmail)}</p>}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">

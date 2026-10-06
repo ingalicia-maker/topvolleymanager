@@ -165,7 +165,7 @@ export default function EnrollmentPage() {
                       <RadioGroup value={values.plan_id} onValueChange={v => set('plan_id', v)}>
                         {form.plans.map(p => (
                           <label key={p.id} className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer">
-                            <RadioGroupItem value={p.id} className="mt-1" />
+                            <RadioGroupItem value={p.id} className="mt-1" aria-label={p.name} />
                             <div>
                               <p className="font-medium">{p.name}</p>
                               <p className="text-sm text-muted-foreground">{money(Number(p.amount), form.currency)} · {frequencyLabel(p.frequency, p.installments)}</p>

@@ -670,5 +670,13 @@
   "Autorizo el uso de imágenes de la jugadora en las comunicaciones del club": "I authorise the use of the player's images in the club's communications",
   "Siempre se piden: nombre de la jugadora, fecha de nacimiento, y nombre, email y teléfono del responsable. Añade aquí el resto.": "Always asked: player's name, date of birth, and the guardian's name, email and phone. Add the rest here.",
   "No se encontró ninguna jugadora. Revisa que el archivo tenga una columna \"Jugadora\".": "No players found. Check that the file has a \"Player\" column.",
-  "Sube un CSV o Excel con una fila por jugadora. Columnas: Jugadora, Apellidos, Fecha nacimiento, Tutor, Email, Teléfono, Cuota, Idioma (es, en o it).": "Upload a CSV or Excel file with one row per player. Columns: Player, Surname, Date of birth, Guardian, Email, Phone, Fee, Language (es, en or it)."
+  "Sube un CSV o Excel con una fila por jugadora. Columnas: Jugadora, Apellidos, Fecha nacimiento, Tutor, Email, Teléfono, Cuota, Idioma (es, en o it).": "Upload a CSV or Excel file with one row per player. Columns: Player, Surname, Date of birth, Guardian, Email, Phone, Fee, Language (es, en or it).",
+  "¿Seguro?": "Are you sure?",
+  "Formulario enviado a {n} familia": "Form sent to {n} family",
+  "{n} email válido": "{n} valid email",
+  "{n} recordatorio enviado": "{n} reminder sent",
+  "{n} familia no tiene email": "{n} family has no email",
+  "{n} seleccionado": "{n} selected",
+  "{n} inscripción importada": "{n} enrolment imported",
+  "{n} fila sin email válido: no recibirá emails.": "{n} row without a valid email: it won't get emails."
 }

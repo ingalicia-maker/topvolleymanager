@@ -12,7 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { isOverdue, type Enrollment, type FeeCharge } from '@/hooks/useClubFees';
-import { money, PAYMENT_METHODS } from './feeUtils';
+import { money, PAYMENT_METHODS, trn } from './feeUtils';
+import { useConfirm } from './ConfirmDialog';
 import { tr } from '@/lib/tr';
 
 interface Props {
@@ -34,6 +35,7 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
   const [method, setMethod] = useState(PAYMENT_METHODS[0]);
   const [editing, setEditing] = useState<Partial<FeeCharge> | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirm, confirmDialog] = useConfirm();
 
   const byId = useMemo(() => new Map(enrollments.map(e => [e.id, e])), [enrollments]);
   const list = charges.filter(c => {
@@ -66,8 +68,8 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
   const remind = (targets: string[]) => run(async () => {
     const pending = targets.filter(id => charges.find(c => c.id === id)?.status === 'pending');
     const sent = await onRemind(pending);
-    toast.success(tr('{n} recordatorios enviados', { n: sent }));
-    if (sent < pending.length) toast.warning(tr('{n} familias no tienen email', { n: pending.length - sent }));
+    toast.success(trn('{n} recordatorio enviado', '{n} recordatorios enviados', sent));
+    if (sent < pending.length) toast.warning(trn('{n} familia no tiene email', '{n} familias no tienen email', pending.length - sent));
   });
 
   const saveEdit = () => {
@@ -111,7 +113,7 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
         <div className="flex items-center gap-2 flex-wrap rounded-lg border p-2">
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={allSelected} onCheckedChange={v => setSelected(v ? new Set(list.map(c => c.id)) : new Set())} />
-            {ids.length ? tr('{n} seleccionados', { n: ids.length }) : tr('Seleccionar todos')}
+            {ids.length ? trn('{n} seleccionado', '{n} seleccionados', ids.length) : tr('Seleccionar todos')}
           </label>
           {ids.length > 0 && (
             <>
@@ -143,7 +145,7 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
                 <p className="text-xs text-muted-foreground truncate">{new Date(c.due_date).toLocaleDateString()} · {c.concept}</p>
                 <p className="text-xs text-muted-foreground">
                   {c.status === 'paid' && c.paid_at && `${tr('Pagado el')} ${new Date(c.paid_at).toLocaleDateString()}${c.payment_method ? ` · ${tr(c.payment_method)}` : ''}`}
-                  {c.status === 'pending' && c.reminders_sent > 0 && tr('{n} recordatorios enviados', { n: c.reminders_sent })}
+                  {c.status === 'pending' && c.reminders_sent > 0 && trn('{n} recordatorio enviado', '{n} recordatorios enviados', c.reminders_sent)}
                 </p>
               </div>
               <div className="text-right space-y-1">
@@ -156,6 +158,7 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
         );
       })}
 
+      {confirmDialog}
       <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing?.id ? tr('Editar pago') : tr('Nuevo pago')}</DialogTitle></DialogHeader>
@@ -222,7 +225,7 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
             <div className="flex gap-2">
               {editing?.id && (
                 <Button variant="ghost" size="icon" aria-label={tr('Eliminar')} disabled={busy}
-                  onClick={() => confirm(tr('¿Eliminar este pago?')) && run(async () => { await onDelete(editing.id!); setEditing(null); }, tr('Pago eliminado'))}>
+                  onClick={async () => (await confirm(tr('¿Eliminar este pago?'))) && run(async () => { await onDelete(editing.id!); setEditing(null); }, tr('Pago eliminado'))}>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               )}

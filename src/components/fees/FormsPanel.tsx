@@ -12,7 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Enrollment, EnrollmentForm, FeePlan, FieldType, FormField } from '@/hooks/useClubFees';
-import { enrollmentLink } from './feeUtils';
+import { enrollmentLink, trn } from './feeUtils';
+import { useConfirm } from './ConfirmDialog';
 import { tr } from '@/lib/tr';
 
 interface Props {
@@ -50,6 +51,7 @@ const newId = () => 'f' + Math.random().toString(36).slice(2, 8);
 
 export function FormsPanel({ forms, plans, clubName, onSave, onDelete, enrollments, onSend }: Props) {
   const [sending, setSending] = useState<EnrollmentForm | null>(null);
+  const [confirm, confirmDialog] = useConfirm();
   const [recipients, setRecipients] = useState('');
   const [sendLang, setSendLang] = useState('es');
   const [busySend, setBusySend] = useState(false);
@@ -63,7 +65,7 @@ export function FormsPanel({ forms, plans, clubName, onSave, onDelete, enrollmen
     setBusySend(true);
     try {
       const n = await onSend(sending.id, emails, sendLang);
-      toast.success(tr('Formulario enviado a {n} familias', { n }));
+      toast.success(trn('Formulario enviado a {n} familia', 'Formulario enviado a {n} familias', n));
       setSending(null);
       setRecipients('');
     } catch (e) {
@@ -107,7 +109,7 @@ export function FormsPanel({ forms, plans, clubName, onSave, onDelete, enrollmen
   };
 
   const remove = async (form: EnrollmentForm) => {
-    if (!confirm(tr('¿Eliminar el formulario "{name}"? Las inscripciones recibidas se mantienen.', { name: form.title }))) return;
+    if (!(await confirm(tr('¿Eliminar el formulario "{name}"? Las inscripciones recibidas se mantienen.', { name: form.title })))) return;
     try { await onDelete(form.id); } catch (e) { toast.error((e as Error).message); }
   };
 
@@ -157,6 +159,7 @@ export function FormsPanel({ forms, plans, clubName, onSave, onDelete, enrollmen
         </Card>
       ))}
 
+      {confirmDialog}
       <Dialog open={!!sending} onOpenChange={o => !o && setSending(null)}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{tr('Enviar "{title}"', { title: sending?.title ?? '' })}</DialogTitle></DialogHeader>
@@ -173,7 +176,7 @@ export function FormsPanel({ forms, plans, clubName, onSave, onDelete, enrollmen
             <div className="space-y-1">
               <Label>{tr('Emails (uno por línea o separados por comas)')}</Label>
               <Textarea rows={6} value={recipients} onChange={e => setRecipients(e.target.value)} placeholder="familia@example.com" />
-              <p className="text-xs text-muted-foreground">{tr('{n} emails válidos', { n: emails.length })}</p>
+              <p className="text-xs text-muted-foreground">{trn('{n} email válido', '{n} emails válidos', emails.length)}</p>
             </div>
             <div className="space-y-1">
               <Label>{tr('Idioma para las familias nuevas')}</Label>

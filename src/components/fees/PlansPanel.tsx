@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { FeePlan, Frequency } from '@/hooks/useClubFees';
 import { frequencyLabel, money } from './feeUtils';
+import { useConfirm } from './ConfirmDialog';
 import { tr } from '@/lib/tr';
 
 interface Props {
@@ -26,6 +27,7 @@ const EMPTY: Partial<FeePlan> = { name: '', description: '', amount: 0, frequenc
 export function PlansPanel({ plans, currency, onSave, onDelete }: Props) {
   const [editing, setEditing] = useState<Partial<FeePlan> | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirm, confirmDialog] = useConfirm();
 
   const save = async () => {
     if (!editing?.name?.trim()) { toast.error(tr('Escribe el nombre de la cuota')); return; }
@@ -53,7 +55,7 @@ export function PlansPanel({ plans, currency, onSave, onDelete }: Props) {
   };
 
   const remove = async (plan: FeePlan) => {
-    if (!confirm(tr('¿Eliminar la cuota "{name}"? Los pagos ya creados se mantienen.', { name: plan.name }))) return;
+    if (!(await confirm(tr('¿Eliminar la cuota "{name}"? Los pagos ya creados se mantienen.', { name: plan.name })))) return;
     try { await onDelete(plan.id); } catch (e) { toast.error((e as Error).message); }
   };
 
@@ -91,6 +93,7 @@ export function PlansPanel({ plans, currency, onSave, onDelete }: Props) {
         </Card>
       ))}
 
+      {confirmDialog}
       <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing?.id ? tr('Editar cuota') : tr('Nueva cuota')}</DialogTitle></DialogHeader>

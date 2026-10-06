@@ -670,5 +670,13 @@
   "Autorizo el uso de imágenes de la jugadora en las comunicaciones del club": "Autorizzo l'uso delle immagini della giocatrice nelle comunicazioni del club",
   "Siempre se piden: nombre de la jugadora, fecha de nacimiento, y nombre, email y teléfono del responsable. Añade aquí el resto.": "Sempre richiesti: nome della giocatrice, data di nascita e nome, email e telefono del responsabile. Aggiungi qui il resto.",
   "No se encontró ninguna jugadora. Revisa que el archivo tenga una columna \"Jugadora\".": "Nessuna giocatrice trovata. Controlla che il file abbia una colonna \"Giocatrice\".",
-  "Sube un CSV o Excel con una fila por jugadora. Columnas: Jugadora, Apellidos, Fecha nacimiento, Tutor, Email, Teléfono, Cuota, Idioma (es, en o it).": "Carica un CSV o un Excel con una riga per giocatrice. Colonne: Giocatrice, Cognome, Data di nascita, Tutore, Email, Telefono, Quota, Lingua (es, en o it)."
+  "Sube un CSV o Excel con una fila por jugadora. Columnas: Jugadora, Apellidos, Fecha nacimiento, Tutor, Email, Teléfono, Cuota, Idioma (es, en o it).": "Carica un CSV o un Excel con una riga per giocatrice. Colonne: Giocatrice, Cognome, Data di nascita, Tutore, Email, Telefono, Quota, Lingua (es, en o it).",
+  "¿Seguro?": "Sei sicuro?",
+  "Formulario enviado a {n} familia": "Modulo inviato a {n} famiglia",
+  "{n} email válido": "{n} email valida",
+  "{n} recordatorio enviado": "{n} promemoria inviato",
+  "{n} familia no tiene email": "{n} famiglia non ha email",
+  "{n} seleccionado": "{n} selezionato",
+  "{n} inscripción importada": "{n} iscrizione importata",
+  "{n} fila sin email válido: no recibirá emails.": "{n} riga senza email valida: non riceverà email."
 }

@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Enrollment, EnrollmentForm, FeeCharge, FeePlan } from '@/hooks/useClubFees';
 import { money } from './feeUtils';
 import { ImportEnrollmentsDialog } from './ImportEnrollmentsDialog';
+import { useConfirm } from './ConfirmDialog';
 import { tr } from '@/lib/tr';
 
 interface Props {
@@ -33,6 +34,7 @@ const NO_PLAN = 'none';
 
 export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, currency, onSave, onActivate, onDelete, onImport }: Props) {
   const [importing, setImporting] = useState(false);
+  const [confirm, confirmDialog] = useConfirm();
   const [filter, setFilter] = useState<Filter>('pending');
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<Partial<Enrollment> | null>(null);
@@ -77,8 +79,8 @@ export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, c
     await onActivate({ ...(open as Enrollment), ...editedFields() }, open.plan_id ?? null);
   }, tr('Inscripción aceptada y pagos creados'));
   const cancel = () => open?.id && run(() => onSave({ id: open.id, status: 'cancelled' }), tr('Inscripción dada de baja'));
-  const remove = () => {
-    if (!open?.id || !confirm(tr('¿Eliminar esta inscripción y todos sus pagos?'))) return;
+  const remove = async () => {
+    if (!open?.id || !(await confirm(tr('¿Eliminar esta inscripción y todos sus pagos?')))) return;
     return run(() => onDelete(open.id!), tr('Inscripción eliminada'));
   };
 
@@ -114,6 +116,7 @@ export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, c
           <FileUp className="h-4 w-4" /> <span className="hidden sm:inline">{tr('Importar')}</span>
         </Button>
       </div>
+      {confirmDialog}
       <ImportEnrollmentsDialog open={importing} onOpenChange={setImporting} plans={plans} onImport={onImport} />
       <div className="flex gap-2">
         {(['pending', 'active', 'cancelled'] as Filter[]).map(f => (

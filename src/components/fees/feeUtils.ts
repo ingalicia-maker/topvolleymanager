@@ -22,4 +22,7 @@ export const frequencyLabel = (f: Frequency, installments = 1) => ({
   yearly: tr('Anual ({n} plazos)', { n: installments }),
 }[f]);
 
+/** Singular or plural text depending on n (Spanish keys, translated by tr). */
+export const trn = (one: string, other: string, n: number) => tr(n === 1 ? one : other, { n });
+
 export const enrollmentLink = (slug: string) => `https://www.topvolleymanager.com/inscripcion/${slug}`;
