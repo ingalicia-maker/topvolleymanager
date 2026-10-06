@@ -55,7 +55,8 @@ export function useClubSettings() {
 
   const uploadLogo = async (file: File) => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `logo-${Date.now()}.${fileExt}`;
+    // Each club's logos live in its own folder; only its directors may write there
+    const fileName = `${settings.id}/logo-${Date.now()}.${fileExt}`;
     
     const { error: uploadError } = await supabase.storage
       .from('club-logos')

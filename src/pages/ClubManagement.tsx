@@ -187,7 +187,8 @@ export default function ClubManagement() {
 
     setUploading(true);
     const fileExt = file.name.split('.').pop();
-    const fileName = `club-${club?.id}-logo-${Date.now()}.${fileExt}`;
+    // Each club's logos live in its own folder; only its directors may write there
+    const fileName = `${club?.id}/logo-${Date.now()}.${fileExt}`;
     
     const { error: uploadError } = await supabase.storage
       .from('club-logos')
