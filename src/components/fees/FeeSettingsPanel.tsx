@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { CheckCircle2, CreditCard, ExternalLink, Loader2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useConfirm } from './ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,28 +13,9 @@ import { tr } from '@/lib/tr';
 interface Props {
   settings: FeeSettings;
   onSave: (values: Partial<FeeSettings>) => Promise<void>;
-  onStripe: (action: 'onboard' | 'status' | 'disconnect') => Promise<{ url?: string }>;
 }
 
-export function FeeSettingsPanel({ settings, onSave, onStripe }: Props) {
-  const [stripeBusy, setStripeBusy] = useState(false);
-  const [confirm, confirmDialog] = useConfirm();
-
-  const stripe = async (action: 'onboard' | 'status' | 'disconnect') => {
-    if (action === 'disconnect' && !(await confirm(tr('Las familias ya no podrán pagar con tarjeta desde los recordatorios. Tu cuenta de Stripe no se borra.')))) return;
-    setStripeBusy(true);
-    try {
-      const r = await onStripe(action);
-      if (r.url) window.location.href = r.url;
-      else if (action === 'disconnect') toast.success(tr('Stripe desconectado'));
-    } catch (e) {
-      toast.error(tr('No se pudo conectar con Stripe') + ': ' + (e as Error).message);
-    } finally {
-      setStripeBusy(false);
-    }
-  };
-  const connected = !!settings.stripe_account_id;
-  const ready = connected && !!settings.stripe_charges_enabled;
+export function FeeSettingsPanel({ settings, onSave }: Props) {
   const [values, setValues] = useState(settings);
   const [saving, setSaving] = useState(false);
   useEffect(() => setValues(settings), [settings]);
@@ -111,40 +89,6 @@ export function FeeSettingsPanel({ settings, onSave, onStripe }: Props) {
           </p>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <CreditCard className="h-4 w-4" /> {tr('Cobros online con Stripe (opcional)')}
-            {ready && <Badge className="bg-green-600 hover:bg-green-600 gap-1"><CheckCircle2 className="h-3 w-3" />{tr('Conectado')}</Badge>}
-            {connected && !ready && <Badge variant="outline">{tr('Alta pendiente')}</Badge>}
-          </CardTitle>
-          <CardDescription>
-            {tr('Conecta la cuenta de Stripe del club y las familias podrán pagar cada plazo con tarjeta desde el recordatorio. El pago se marca solo como pagado y el dinero va directo a la cuenta del club. Si no lo conectas, todo funciona igual: registras los pagos a mano (transferencia, efectivo, Bizum...).')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {!ready && (
-            <Button onClick={() => stripe('onboard')} disabled={stripeBusy} className="gap-1">
-              {stripeBusy && <Loader2 className="h-4 w-4 animate-spin" />}
-              {connected ? tr('Completar el alta en Stripe') : tr('Conectar con Stripe')}
-            </Button>
-          )}
-          {connected && (
-            <Button variant="outline" onClick={() => stripe('status')} disabled={stripeBusy}>{tr('Comprobar estado')}</Button>
-          )}
-          {ready && (
-            <Button variant="outline" className="gap-1" asChild>
-              <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" />{tr('Abrir panel de Stripe')}</a>
-            </Button>
-          )}
-          {connected && (
-            <Button variant="ghost" className="text-destructive" onClick={() => stripe('disconnect')} disabled={stripeBusy}>{tr('Desconectar')}</Button>
-          )}
-          <p className="w-full text-xs text-muted-foreground">{tr('Stripe cobra su comisión habitual al club por cada pago. Top Volley Manager no cobra comisión.')}</p>
-        </CardContent>
-      </Card>
-      {confirmDialog}
 
       <Button className="w-full" onClick={save} disabled={saving}>{saving ? tr('Guardando...') : tr('Guardar ajustes')}</Button>
     </div>

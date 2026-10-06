@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useMemo } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -22,30 +21,6 @@ export default function ClubFees() {
   const { isDirector, loading: roleLoading } = useUserRole();
   const fees = useClubFees();
   const currency = fees.settings?.currency ?? 'EUR';
-  const [params, setParams] = useSearchParams();
-  const stripeReturn = params.get('stripe');
-  const handledStripe = useRef(false);
-
-  // Back from Stripe's onboarding: refresh the account status (or reopen onboarding if the link expired)
-  useEffect(() => {
-    if (!stripeReturn || !fees.clubId || handledStripe.current) return;
-    handledStripe.current = true;
-    (async () => {
-      try {
-        if (stripeReturn === 'refresh') {
-          const r = await fees.stripeConnect('onboard');
-          if (r.url) { window.location.href = r.url; return; }
-        }
-        const r = await fees.stripeConnect('status');
-        if (r.chargesEnabled) toast.success(tr('Stripe conectado: las familias ya pueden pagar con tarjeta'));
-        else toast.info(tr('Stripe aún está revisando los datos del club. Vuelve a comprobarlo más tarde.'));
-      } catch (e) {
-        toast.error(tr('No se pudo conectar con Stripe') + ': ' + (e as Error).message);
-      } finally {
-        setParams({}, { replace: true });
-      }
-    })();
-  }, [stripeReturn, fees.clubId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const summary = useMemo(() => {
     const live = fees.charges.filter(c => fees.enrollments.find(e => e.id === c.enrollment_id)?.status !== 'cancelled');
@@ -99,7 +74,7 @@ export default function ClubFees() {
 
             <FeesChart charges={fees.charges.filter(c => fees.enrollments.find(e => e.id === c.enrollment_id)?.status !== 'cancelled')} currency={currency} />
 
-            <Tabs defaultValue={stripeReturn ? 'settings' : summary.toReview ? 'enrollments' : 'payments'}>
+            <Tabs defaultValue={summary.toReview ? 'enrollments' : 'payments'}>
               <TabsList className="w-full overflow-x-auto justify-start">
                 <TabsTrigger value="enrollments">{tr('Inscripciones')}</TabsTrigger>
                 <TabsTrigger value="payments">{tr('Pagos')}</TabsTrigger>
@@ -118,7 +93,6 @@ export default function ClubFees() {
                 <PaymentsPanel
                   charges={fees.charges} enrollments={fees.enrollments} currency={currency}
                   onSave={fees.saveCharge} onDelete={fees.deleteCharge} onMarkPaid={fees.markPaid} onRemind={fees.sendReminders}
-                  stripeReady={!!fees.settings?.stripe_charges_enabled}
                 />
               </TabsContent>
               <TabsContent value="plans">
@@ -128,7 +102,7 @@ export default function ClubFees() {
                 <FormsPanel forms={fees.forms} plans={fees.plans} clubName={fees.clubName} onSave={fees.saveForm} onDelete={fees.deleteForm} enrollments={fees.enrollments} onSend={fees.sendForm} />
               </TabsContent>
               <TabsContent value="settings">
-                {fees.settings && <FeeSettingsPanel settings={fees.settings} onSave={fees.saveSettings} onStripe={fees.stripeConnect} />}
+                {fees.settings && <FeeSettingsPanel settings={fees.settings} onSave={fees.saveSettings} />}
               </TabsContent>
             </Tabs>
           </>
