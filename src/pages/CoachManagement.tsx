@@ -96,14 +96,15 @@ export default function CoachManagement() {
       const member = clubMembers.find(m => m.user_id === coachToRemove.id);
       if (!member) throw new Error('member not found');
 
-      const ok = await removeMember(member.id);
-      if (!ok) throw new Error('remove failed');
-
+      // The coach role can only be removed while the coach is still in the club
       await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', coachToRemove.id)
         .eq('role', 'coach');
+
+      const ok = await removeMember(member.id);
+      if (!ok) throw new Error('remove failed');
 
       toast.success(t('coachManagement.removedFromClub'));
       queryClient.invalidateQueries({ queryKey: ['all-user-roles'] });

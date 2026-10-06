@@ -217,68 +217,13 @@ export function useClub() {
       // Not a URL, use as-is (raw token)
     }
     try {
-      // Find the invitation
-      const { data: invitation, error: invError } = await supabase
-        .from('club_invitations')
-        .select('*')
-        .eq('token', token)
-        .is('used_at', null)
-        .maybeSingle();
-
-      if (invError) throw invError;
-      if (!invitation) {
-        return { success: false, error: tr('Invitación no válida o expirada') };
+      // Accept on the server: it checks the invitation, adds the membership with the
+      // invitation's role, syncs user_roles and marks the invitation as used.
+      const { data: accepted, error: acceptError } = await supabase.rpc('accept_club_invitation', { _token: token });
+      if (acceptError) {
+        return { success: false, error: acceptError.message || tr('Invitación no válida o expirada') };
       }
-
-      // Check if expired
-      if (new Date(invitation.expires_at) < new Date()) {
-        return { success: false, error: tr('La invitación ha expirado') };
-      }
-
-      // Check if already a member
-      const { data: existingMembership } = await supabase
-        .from('club_members')
-        .select('id')
-        .eq('club_id', invitation.club_id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (existingMembership) {
-        return { success: false, error: tr('Ya eres miembro de este club') };
-      }
-
-      // Join the club with the role from the invitation
-      const memberRole = invitation.role as 'coach' | 'director';
-      const { error: joinError } = await supabase
-        .from('club_members')
-        .insert({
-          club_id: invitation.club_id,
-          user_id: user.id,
-          role: memberRole,
-        });
-
-      if (joinError) throw joinError;
-
-      // Also add to user_roles table for permission checks
-      // First check if role already exists
-      const { data: existingRole } = await supabase
-        .from('user_roles')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('role', memberRole)
-        .maybeSingle();
-
-      if (!existingRole) {
-        await supabase
-          .from('user_roles')
-          .insert({ user_id: user.id, role: memberRole });
-      }
-
-      // Mark invitation as used
-      await supabase
-        .from('club_invitations')
-        .update({ used_at: new Date().toISOString() })
-        .eq('id', invitation.id);
+      const invitation = accepted as { club_id: string; role: 'coach' | 'director' };
 
       // Notify all directors that a new member joined
       const { data: directors } = await supabase

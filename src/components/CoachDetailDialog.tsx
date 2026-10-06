@@ -113,6 +113,13 @@ export function CoachDetailDialog({
     setDeleting(true);
 
     try {
+      // Remove the coach role first: it can only be changed while the coach is in the club
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', coach.id)
+        .eq('role', 'coach');
+
       // Remove from club_members
       const { error: memberError } = await supabase
         .from('club_members')
@@ -120,13 +127,6 @@ export function CoachDetailDialog({
         .eq('user_id', coach.id);
 
       if (memberError) throw memberError;
-
-      // Remove from user_roles
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', coach.id)
-        .eq('role', 'coach');
 
       toast.success(tr('Entrenador eliminado del club'));
       onOpenChange(false);
