@@ -62,13 +62,18 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
     
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PGZNMSVL5W"></script>
+    <!-- Google tag (gtag.js), website only: the iOS/Android apps run on localhost and load no analytics -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-PGZNMSVL5W');
+      if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+        var gt = document.createElement('script');
+        gt.async = true;
+        gt.src = 'https://www.googletagmanager.com/gtag/js?id=G-PGZNMSVL5W';
+        document.head.appendChild(gt);
+        gtag('js', new Date());
+        gtag('config', 'G-PGZNMSVL5W');
+      }
     </script>
     
     <!-- Schema.org JSON-LD -->
