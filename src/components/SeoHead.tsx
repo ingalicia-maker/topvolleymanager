@@ -34,6 +34,8 @@ const NOINDEX_PREFIXES = [
   "/messages",
   "/subscription",
   "/seasons",
+  "/fees",
+  "/inscripcion",
 ];
 
 /**

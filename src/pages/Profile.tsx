@@ -32,7 +32,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX, CheckCircle, Phone, Calendar, Trash2 } from 'lucide-react';
+import { User, Shield, Users, Save, LogOut, Settings, Bell, BellOff, Building2, Crown, Globe, Zap, FileCheck, FileX, CheckCircle, Phone, Calendar, Trash2, Wallet } from 'lucide-react';
 import { tr } from '@/lib/tr';
 
 export default function Profile() {
@@ -334,6 +334,19 @@ export default function Profile() {
                   >
                     <Calendar className="h-4 w-4" />
                     {tr('Gestión de Temporadas')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate('/fees');
+                    }}
+                    className="w-full gap-2"
+                  >
+                    <Wallet className="h-4 w-4" />
+                    {tr('Cuotas e inscripciones')}
                   </Button>
                   <Button
                     type="button"
