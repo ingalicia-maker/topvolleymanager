@@ -88,7 +88,7 @@ export default function WeeklySummary() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header title="Resumen Semanal" showBack />
+      <Header title={tr('Resumen Semanal')} showBack />
       
       <div className="p-4 space-y-4">
         {/* Week Selector */}
@@ -146,12 +146,12 @@ export default function WeeklySummary() {
                     <div className="text-center p-3 bg-primary/10 rounded-lg">
                       <Dumbbell className="h-5 w-5 mx-auto text-primary mb-1" />
                       <p className="text-xl font-bold">{stats.trainings}</p>
-                      <p className="text-xs text-muted-foreground">{tr('Entrenos')}</p>
+                      <p className="text-xs text-muted-foreground">{tr('Entrenamientos')}</p>
                     </div>
                     <div className="text-center p-3 bg-secondary/50 rounded-lg">
                       <Calendar className="h-5 w-5 mx-auto text-secondary-foreground mb-1" />
                       <p className="text-xl font-bold">{stats.displacements}</p>
-                      <p className="text-xs text-muted-foreground">{tr('Viajes')}</p>
+                      <p className="text-xs text-muted-foreground">{tr('Desplazamientos')}</p>
                     </div>
                   </div>
                   

@@ -425,7 +425,7 @@ export default function NewPlayer() {
                           type="number"
                           value={entry.value}
                           onChange={e => handleUpdateMeasurement(entry.index, 'value', e.target.value)}
-                          placeholder="Valor (cm)"
+                          placeholder={tr('Valor (cm)')}
                           className="w-24"
                           disabled={loading}
                         />

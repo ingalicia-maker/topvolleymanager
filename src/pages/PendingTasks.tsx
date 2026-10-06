@@ -57,7 +57,7 @@ export default function PendingTasks() {
           pending.push({
             id: `displacement-${event.id}`,
             type: 'displacement',
-            title: `Desplazamiento: ${event.destination || event.title}`,
+            title: tr('Desplazamiento: {place}', { place: event.destination || event.title }),
             description: tr('Falta completar lista de: {teamNames}', { teamNames }),
             link: `/events/${event.id}`,
             priority: 'high',
@@ -77,7 +77,7 @@ export default function PendingTasks() {
             pending.push({
               id: `displacement-${event.id}-${teamId}`,
               type: 'displacement',
-              title: `Desplazamiento: ${event.destination || event.title}`,
+              title: tr('Desplazamiento: {place}', { place: event.destination || event.title }),
               description: tr('Completa la lista de {teamName}', { teamName }),
               link: `/events/${event.id}`,
               priority: 'high',

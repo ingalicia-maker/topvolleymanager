@@ -52,7 +52,7 @@ function PrivacyES() {
   return (
     <>
       <h1>Política de Privacidad</h1>
-      <p className="text-muted-foreground">Última actualización: {new Date().toLocaleDateString('es-ES')}</p>
+      <p className="text-muted-foreground">Última actualización: 6 de octubre de 2026</p>
 
       <h2>1. Información del Responsable del Tratamiento</h2>
       <p>
@@ -67,7 +67,8 @@ function PrivacyES() {
         <li><strong>Datos de registro:</strong> nombre, dirección de correo electrónico y contraseña cifrada.</li>
         <li><strong>Datos de jugadoras:</strong> nombre, apellidos, año de nacimiento, altura, número de teléfono, fotografía y datos de rendimiento deportivo.</li>
         <li><strong>Datos de uso:</strong> información sobre cómo utiliza nuestra aplicación, incluyendo registros de acceso y preferencias.</li>
-        <li><strong>Datos de suscripción:</strong> información de facturación procesada a través de Stripe (no almacenamos datos de tarjetas de crédito).</li>
+        <li><strong>Datos de suscripción:</strong> información de facturación procesada a través de Stripe, App Store o Google Play (no almacenamos datos de tarjetas de crédito).</li>
+        <li><strong>Datos de inscripción de las familias:</strong> cuando un club usa las inscripciones y cuotas, el nombre y la fecha de nacimiento de la jugadora, los datos de contacto del padre, madre o tutor, las respuestas al formulario del club y el estado de los pagos. El club decide qué datos pide y para qué los usa (es el responsable del tratamiento); Top Volley Manager los trata por cuenta del club. No recibimos ni almacenamos los pagos de las familias.</li>
       </ul>
 
       <h2>3. Base Legal del Tratamiento</h2>
@@ -178,7 +179,7 @@ function PrivacyEN() {
   return (
     <>
       <h1>Privacy Policy</h1>
-      <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-GB')}</p>
+      <p className="text-muted-foreground">Last updated: 6 October 2026</p>
 
       <h2>1. Data Controller Information</h2>
       <p>
@@ -193,7 +194,8 @@ function PrivacyEN() {
         <li><strong>Registration data:</strong> name, email address, and encrypted password.</li>
         <li><strong>Player data:</strong> name, surnames, birth year, height, phone number, photograph, and sports performance data.</li>
         <li><strong>Usage data:</strong> information about how you use our application, including access logs and preferences.</li>
-        <li><strong>Subscription data:</strong> billing information processed through Stripe (we do not store credit card data).</li>
+        <li><strong>Subscription data:</strong> billing information processed through Stripe, the App Store or Google Play (we do not store credit card data).</li>
+        <li><strong>Family enrolment data:</strong> when a club uses enrolments and fees, the player's name and date of birth, the parent's or guardian's contact details, the answers to the club's form and the payment status. The club decides which data it asks for and why (it is the data controller); Top Volley Manager processes it on the club's behalf. We do not receive or hold families' payments.</li>
       </ul>
 
       <h2>3. Legal Basis for Processing</h2>
@@ -304,7 +306,7 @@ function PrivacyIT() {
   return (
     <>
       <h1>Informativa sulla Privacy</h1>
-      <p className="text-muted-foreground">Ultimo aggiornamento: {new Date().toLocaleDateString('it-IT')}</p>
+      <p className="text-muted-foreground">Ultimo aggiornamento: 6 ottobre 2026</p>
 
       <h2>1. Informazioni sul Titolare del Trattamento</h2>
       <p>
@@ -319,7 +321,8 @@ function PrivacyIT() {
         <li><strong>Dati di registrazione:</strong> nome, indirizzo email e password criptata.</li>
         <li><strong>Dati delle giocatrici:</strong> nome, cognomi, anno di nascita, altezza, numero di telefono, fotografia e dati sulle prestazioni sportive.</li>
         <li><strong>Dati di utilizzo:</strong> informazioni su come utilizzi la nostra applicazione, inclusi registri di accesso e preferenze.</li>
-        <li><strong>Dati di abbonamento:</strong> informazioni di fatturazione elaborate tramite Stripe (non memorizziamo i dati delle carte di credito).</li>
+        <li><strong>Dati di abbonamento:</strong> informazioni di fatturazione elaborate tramite Stripe, App Store o Google Play (non memorizziamo i dati delle carte di credito).</li>
+        <li><strong>Dati di iscrizione delle famiglie:</strong> quando un club usa iscrizioni e quote, il nome e la data di nascita della giocatrice, i contatti del genitore o tutore, le risposte al modulo del club e lo stato dei pagamenti. Il club decide quali dati chiede e per quale scopo (è il titolare del trattamento); Top Volley Manager li tratta per conto del club. Non riceviamo né custodiamo i pagamenti delle famiglie.</li>
       </ul>
 
       <h2>3. Base Giuridica del Trattamento</h2>

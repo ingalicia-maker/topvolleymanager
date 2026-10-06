@@ -107,9 +107,9 @@ export default function EnrollmentPage() {
                 <p className="text-center text-sm text-muted-foreground">{tr('Las inscripciones están cerradas.')}</p>
               ) : (
                 <form onSubmit={submit} className="space-y-4">
-                  <p className="font-medium">{tr('Datos del jugador')}</p>
+                  <p className="font-medium">{tr('Datos de la jugadora')}</p>
                   <div className="space-y-1">
-                    <Label>{tr('Nombre y apellidos del jugador')} *</Label>
+                    <Label>{tr('Nombre y apellidos de la jugadora')} *</Label>
                     <Input required maxLength={200} value={values.player_name} onChange={e => set('player_name', e.target.value)} />
                   </div>
                   <div className="space-y-1">
@@ -179,7 +179,7 @@ export default function EnrollmentPage() {
 
                   <label className="flex items-start gap-2 text-sm pt-2">
                     <Checkbox className="mt-0.5" checked={consent} onCheckedChange={v => setConsent(!!v)} />
-                    <span>{tr('Acepto que {club} trate estos datos para gestionar la inscripción y los pagos del jugador.', { club: form.club.name })} *</span>
+                    <span>{tr('Acepto que {club} trate estos datos para gestionar la inscripción y los pagos de la jugadora.', { club: form.club.name })} *</span>
                   </label>
 
                   {error && <p className="text-sm text-destructive">{error}</p>}

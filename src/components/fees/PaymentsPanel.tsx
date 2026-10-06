@@ -72,7 +72,7 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
 
   const saveEdit = () => {
     if (!editing) return;
-    if (!editing.enrollment_id) { toast.error(tr('Elige el jugador')); return; }
+    if (!editing.enrollment_id) { toast.error(tr('Elige la jugadora')); return; }
     if (!editing.concept?.trim() || !editing.due_date) { toast.error(tr('Completa el concepto y la fecha')); return; }
     return run(async () => {
       await onSave({ ...editing, concept: editing.concept!.trim(), amount: Number(editing.amount) || 0 });
@@ -92,7 +92,7 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input className="pl-8" value={query} onChange={e => setQuery(e.target.value)} placeholder={tr('Buscar jugador o concepto')} />
+          <Input className="pl-8" value={query} onChange={e => setQuery(e.target.value)} placeholder={tr('Buscar jugadora o concepto')} />
         </div>
         <Button size="sm" variant="outline" className="gap-1 shrink-0"
           onClick={() => setEditing({ concept: '', amount: 0, due_date: format(new Date(), 'yyyy-MM-dd'), status: 'pending' })}>
@@ -163,9 +163,9 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
             <div className="space-y-3">
               {!editing.id && (
                 <div className="space-y-1">
-                  <Label>{tr('Jugador')}</Label>
+                  <Label>{tr('Jugadora')}</Label>
                   <Select value={editing.enrollment_id ?? ''} onValueChange={v => setEditing({ ...editing, enrollment_id: v })}>
-                    <SelectTrigger><SelectValue placeholder={tr('Elige el jugador')} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={tr('Elige la jugadora')} /></SelectTrigger>
                     <SelectContent>
                       {enrollments.filter(e => e.status === 'active').map(e => <SelectItem key={e.id} value={e.id}>{e.player_name}</SelectItem>)}
                     </SelectContent>

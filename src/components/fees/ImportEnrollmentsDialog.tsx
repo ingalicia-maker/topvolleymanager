@@ -18,7 +18,7 @@ interface Props {
 
 /** Column names accepted in Spanish, English and Italian (lower case, without accents). */
 const COLUMNS: Record<keyof Row, string[]> = {
-  player_name: ['jugador', 'jugadora', 'nombre jugador', 'nombre', 'player', 'player name', 'name', 'giocatore', 'nome'],
+  player_name: ['jugador', 'jugadora', 'nombre jugador', 'nombre', 'player', 'player name', 'name', 'giocatore', 'giocatrice', 'nome'],
   player_surname: ['apellidos', 'apellido', 'surname', 'last name', 'cognome'],
   player_birth_date: ['fecha nacimiento', 'fecha de nacimiento', 'nacimiento', 'birth date', 'date of birth', 'birthdate', 'data di nascita', 'data nascita'],
   guardian_name: ['tutor', 'padre/madre', 'padre o madre', 'responsable', 'guardian', 'parent', 'genitore', 'tutore'],
@@ -77,7 +77,7 @@ export function ImportEnrollmentsDialog({ open, onOpenChange, plans, onImport }:
         }
         return out;
       }).filter(r => r.player_name);
-      if (!parsed.length) { toast.error(tr('No se encontró ninguna jugadora. Revisa que el archivo tenga una columna "Jugador".')); return; }
+      if (!parsed.length) { toast.error(tr('No se encontró ninguna jugadora. Revisa que el archivo tenga una columna "Jugadora".')); return; }
       setRows(parsed);
     } catch {
       toast.error(tr('No se pudo leer el archivo. Usa un CSV o Excel.'));
@@ -86,7 +86,7 @@ export function ImportEnrollmentsDialog({ open, onOpenChange, plans, onImport }:
 
   const template = () => {
     const ws = XLSX.utils.json_to_sheet([{
-      [tr('Jugador')]: 'Lucía', [tr('Apellidos')]: 'Navarro Pérez', [tr('Fecha nacimiento')]: '03/04/2012',
+      [tr('Jugadora')]: 'Lucía', [tr('Apellidos')]: 'Navarro Pérez', [tr('Fecha nacimiento')]: '03/04/2012',
       [tr('Tutor')]: 'Marta Pérez', Email: 'marta@example.com', [tr('Teléfono')]: '+34 600 000 000',
       [tr('Cuota')]: plans[0]?.name ?? '', [tr('Idioma')]: 'es',
     }]);
@@ -129,7 +129,7 @@ export function ImportEnrollmentsDialog({ open, onOpenChange, plans, onImport }:
         <DialogHeader>
           <DialogTitle>{tr('Importar familias')}</DialogTitle>
           <DialogDescription>
-            {tr('Sube un CSV o Excel con una fila por jugadora. Columnas: Jugador, Apellidos, Fecha nacimiento, Tutor, Email, Teléfono, Cuota, Idioma (es, en o it).')}
+            {tr('Sube un CSV o Excel con una fila por jugadora. Columnas: Jugadora, Apellidos, Fecha nacimiento, Tutor, Email, Teléfono, Cuota, Idioma (es, en o it).')}
           </DialogDescription>
         </DialogHeader>
 

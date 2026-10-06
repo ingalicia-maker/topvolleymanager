@@ -67,7 +67,7 @@ export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, c
   };
 
   const save = () => {
-    if (!open?.player_name?.trim()) { toast.error(tr('Escribe el nombre del jugador')); return; }
+    if (!open?.player_name?.trim()) { toast.error(tr('Escribe el nombre de la jugadora')); return; }
     return run(() => onSave({ ...editedFields(), ...(open.id ? {} : { status: 'pending' as const }) }), tr('Inscripción guardada'));
   };
 
@@ -98,14 +98,14 @@ export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, c
     }).select('id').single();
     if (error) throw error;
     await onSave({ id: open.id, player_id: data.id });
-  }, tr('Jugador añadido a la lista del club'));
+  }, tr('Jugadora añadida a la lista del club'));
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input className="pl-8" value={query} onChange={e => setQuery(e.target.value)} placeholder={tr('Buscar jugador o familia')} />
+          <Input className="pl-8" value={query} onChange={e => setQuery(e.target.value)} placeholder={tr('Buscar jugadora o familia')} />
         </div>
         <Button size="sm" className="gap-1 shrink-0" onClick={() => setOpen({ player_name: '', language: 'es', plan_id: plans.find(p => p.active)?.id ?? null })}>
           <Plus className="h-4 w-4" /> {tr('Añadir')}
@@ -138,7 +138,7 @@ export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, c
               </p>
             </div>
             {e.status === 'active' && balance(e.id) > 0 && <Badge variant="outline">{money(balance(e.id), currency)}</Badge>}
-            {e.player_id && <Badge variant="secondary">{tr('Jugador')}</Badge>}
+            {e.player_id && <Badge variant="secondary">{tr('Jugadora')}</Badge>}
           </CardContent>
         </Card>
       ))}
@@ -150,7 +150,7 @@ export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, c
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1 col-span-2">
-                  <Label>{tr('Nombre y apellidos del jugador')}</Label>
+                  <Label>{tr('Nombre y apellidos de la jugadora')}</Label>
                   <Input value={open.player_name ?? ''} onChange={e => setOpen({ ...open, player_name: e.target.value })} />
                 </div>
                 <div className="space-y-1">

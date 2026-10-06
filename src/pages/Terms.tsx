@@ -52,7 +52,7 @@ function TermsES() {
   return (
     <>
       <h1>Términos y Condiciones de Uso</h1>
-      <p className="text-muted-foreground">Última actualización: {new Date().toLocaleDateString('es-ES')}</p>
+      <p className="text-muted-foreground">Última actualización: 6 de octubre de 2026</p>
 
       <h2>1. Información General</h2>
       <p>
@@ -96,24 +96,22 @@ function TermsES() {
       <h3>4.1 Plan Gratuito</h3>
       <p>El plan gratuito incluye:</p>
       <ul>
-        <li>Gestión de 1 equipo.</li>
+        <li>Director deportivo y hasta 2 equipos, sin entrenadores adicionales.</li>
         <li>5 créditos diarios que se reinician a medianoche (hora local).</li>
         <li>Funcionalidades básicas de gestión.</li>
       </ul>
 
-      <h3>4.2 Plan Premium</h3>
-      <p>El plan Premium (5€/mes o 40€/año) incluye:</p>
+      <h3>4.2 Planes de pago</h3>
+      <p>Los planes de pago incluyen créditos ilimitados, exportación de datos a Excel, gráficos de evolución de jugadoras y gestión de paradas de bus para desplazamientos:</p>
       <ul>
-        <li>Equipos ilimitados.</li>
-        <li>Créditos ilimitados.</li>
-        <li>Exportación de datos a Excel.</li>
-        <li>Gráficos de evolución de jugadoras.</li>
-        <li>Gestión de paradas de bus para desplazamientos.</li>
+        <li>Starter (5€/mes o 40€/año): hasta 4 equipos y 2 entrenadores.</li>
+        <li>Pro (15€/mes o 120€/año): hasta 20 equipos y 15 entrenadores.</li>
+        <li>Elite: equipos y entrenadores ilimitados, con condiciones a medida.</li>
       </ul>
 
       <h3>4.3 Pagos y Facturación</h3>
       <ul>
-        <li>Los pagos se procesan a través de Stripe, una plataforma segura de pagos.</li>
+        <li>Los pagos en la web se procesan a través de Stripe, una plataforma segura de pagos. En las apps para iPhone y Android, a través de App Store o Google Play, según sus propias condiciones.</li>
         <li>Las suscripciones se renuevan automáticamente al final de cada período.</li>
         <li>Los precios pueden variar y serán notificados con antelación.</li>
         <li>El usuario puede cancelar su suscripción en cualquier momento desde su perfil.</li>
@@ -121,9 +119,16 @@ function TermsES() {
 
       <h3>4.4 Cancelación y Período de Gracia</h3>
       <ul>
-        <li>Al cancelar una suscripción Premium, el usuario mantiene acceso hasta el final del período pagado.</li>
+        <li>Al cancelar una suscripción de pago, el usuario mantiene acceso hasta el final del período pagado.</li>
         <li>Tras la cancelación, existe un período de gracia de 7 días durante el cual el usuario puede reactivar su suscripción sin perder datos.</li>
-        <li>Transcurrido el período de gracia, los datos asociados a funciones Premium pueden ser eliminados.</li>
+        <li>Transcurrido el período de gracia, los datos asociados a funciones de pago pueden ser eliminados.</li>
+      </ul>
+
+      <h3>4.5 Cuotas e inscripciones de los clubes</h3>
+      <ul>
+        <li>Los clubes pueden usar la plataforma para gestionar inscripciones, cuotas y recordatorios de pago de sus jugadoras.</li>
+        <li>Los pagos de las familias se realizan directamente al club (por ejemplo, con su propia cuenta de Stripe o por transferencia). Top Volley Manager no cobra, no custodia ese dinero y no emite recibos ni facturas en nombre de los clubes.</li>
+        <li>Cada club es responsable de los datos de las familias que recoge y de sus obligaciones fiscales.</li>
       </ul>
 
       <h2>5. Uso Aceptable</h2>
@@ -219,7 +224,7 @@ function TermsEN() {
   return (
     <>
       <h1>Terms and Conditions of Use</h1>
-      <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-GB')}</p>
+      <p className="text-muted-foreground">Last updated: 6 October 2026</p>
 
       <h2>1. General Information</h2>
       <p>
@@ -263,24 +268,22 @@ function TermsEN() {
       <h3>4.1 Free Plan</h3>
       <p>The free plan includes:</p>
       <ul>
-        <li>Management of 1 team.</li>
+        <li>Sports director and up to 2 teams, without additional coaches.</li>
         <li>5 daily credits that reset at midnight (local time).</li>
         <li>Basic management features.</li>
       </ul>
 
-      <h3>4.2 Premium Plan</h3>
-      <p>The Premium plan (€5/month or €40/year) includes:</p>
+      <h3>4.2 Paid Plans</h3>
+      <p>Paid plans include unlimited credits, data export to Excel, player evolution charts and bus stop management for travel:</p>
       <ul>
-        <li>Unlimited teams.</li>
-        <li>Unlimited credits.</li>
-        <li>Data export to Excel.</li>
-        <li>Player evolution charts.</li>
-        <li>Bus stop management for travel.</li>
+        <li>Starter (€5/month or €40/year): up to 4 teams and 2 coaches.</li>
+        <li>Pro (€15/month or €120/year): up to 20 teams and 15 coaches.</li>
+        <li>Elite: unlimited teams and coaches, on tailored terms.</li>
       </ul>
 
       <h3>4.3 Payments and Billing</h3>
       <ul>
-        <li>Payments are processed through Stripe, a secure payment platform.</li>
+        <li>Payments on the website are processed through Stripe, a secure payment platform. In the iPhone and Android apps, through the App Store or Google Play, under their own terms.</li>
         <li>Subscriptions renew automatically at the end of each period.</li>
         <li>Prices may vary and will be notified in advance.</li>
         <li>Users can cancel their subscription at any time from their profile.</li>
@@ -288,9 +291,16 @@ function TermsEN() {
 
       <h3>4.4 Cancellation and Grace Period</h3>
       <ul>
-        <li>When canceling a Premium subscription, the user retains access until the end of the paid period.</li>
+        <li>When canceling a paid subscription, the user retains access until the end of the paid period.</li>
         <li>After cancellation, there is a 7-day grace period during which the user can reactivate their subscription without losing data.</li>
-        <li>After the grace period, data associated with Premium features may be deleted.</li>
+        <li>After the grace period, data associated with paid features may be deleted.</li>
+      </ul>
+
+      <h3>4.5 Club Fees and Enrolments</h3>
+      <ul>
+        <li>Clubs can use the platform to manage their players' enrolments, fees and payment reminders.</li>
+        <li>Families pay the club directly (for example through the club's own Stripe account or by bank transfer). Top Volley Manager does not collect or hold that money and does not issue receipts or invoices on behalf of clubs.</li>
+        <li>Each club is responsible for the family data it collects and for its own tax obligations.</li>
       </ul>
 
       <h2>5. Acceptable Use</h2>
@@ -386,7 +396,7 @@ function TermsIT() {
   return (
     <>
       <h1>Termini e Condizioni di Utilizzo</h1>
-      <p className="text-muted-foreground">Ultimo aggiornamento: {new Date().toLocaleDateString('it-IT')}</p>
+      <p className="text-muted-foreground">Ultimo aggiornamento: 6 ottobre 2026</p>
 
       <h2>1. Informazioni Generali</h2>
       <p>
@@ -430,24 +440,22 @@ function TermsIT() {
       <h3>4.1 Piano Gratuito</h3>
       <p>Il piano gratuito include:</p>
       <ul>
-        <li>Gestione di 1 squadra.</li>
+        <li>Direttore sportivo e fino a 2 squadre, senza allenatori aggiuntivi.</li>
         <li>5 crediti giornalieri che si azzerano a mezzanotte (ora locale).</li>
         <li>Funzionalità base di gestione.</li>
       </ul>
 
-      <h3>4.2 Piano Premium</h3>
-      <p>Il piano Premium (5€/mese o 40€/anno) include:</p>
+      <h3>4.2 Piani a pagamento</h3>
+      <p>I piani a pagamento includono crediti illimitati, esportazione dei dati in Excel, grafici di evoluzione delle giocatrici e gestione delle fermate bus per le trasferte:</p>
       <ul>
-        <li>Squadre illimitate.</li>
-        <li>Crediti illimitati.</li>
-        <li>Esportazione dati in Excel.</li>
-        <li>Grafici di evoluzione delle giocatrici.</li>
-        <li>Gestione fermate bus per gli spostamenti.</li>
+        <li>Starter (5€/mese o 40€/anno): fino a 4 squadre e 2 allenatori.</li>
+        <li>Pro (15€/mese o 120€/anno): fino a 20 squadre e 15 allenatori.</li>
+        <li>Elite: squadre e allenatori illimitati, a condizioni personalizzate.</li>
       </ul>
 
       <h3>4.3 Pagamenti e Fatturazione</h3>
       <ul>
-        <li>I pagamenti vengono elaborati tramite Stripe, una piattaforma di pagamento sicura.</li>
+        <li>I pagamenti sul sito web vengono elaborati tramite Stripe, una piattaforma di pagamento sicura. Nelle app per iPhone e Android, tramite App Store o Google Play, secondo le loro condizioni.</li>
         <li>Gli abbonamenti si rinnovano automaticamente alla fine di ogni periodo.</li>
         <li>I prezzi possono variare e saranno comunicati in anticipo.</li>
         <li>L'utente può annullare l'abbonamento in qualsiasi momento dal proprio profilo.</li>
@@ -455,9 +463,16 @@ function TermsIT() {
 
       <h3>4.4 Cancellazione e Periodo di Grazia</h3>
       <ul>
-        <li>Quando si annulla un abbonamento Premium, l'utente mantiene l'accesso fino alla fine del periodo pagato.</li>
+        <li>Quando si annulla un abbonamento a pagamento, l'utente mantiene l'accesso fino alla fine del periodo pagato.</li>
         <li>Dopo la cancellazione, c'è un periodo di grazia di 7 giorni durante il quale l'utente può riattivare l'abbonamento senza perdere i dati.</li>
-        <li>Trascorso il periodo di grazia, i dati associati alle funzioni Premium potrebbero essere eliminati.</li>
+        <li>Trascorso il periodo di grazia, i dati associati alle funzioni a pagamento potrebbero essere eliminati.</li>
+      </ul>
+
+      <h3>4.5 Quote e iscrizioni dei club</h3>
+      <ul>
+        <li>I club possono usare la piattaforma per gestire iscrizioni, quote e promemoria di pagamento delle loro giocatrici.</li>
+        <li>Le famiglie pagano direttamente il club (per esempio con il suo account Stripe o tramite bonifico). Top Volley Manager non incassa né custodisce questo denaro e non emette ricevute o fatture per conto dei club.</li>
+        <li>Ogni club è responsabile dei dati delle famiglie che raccoglie e dei propri obblighi fiscali.</li>
       </ul>
 
       <h2>5. Uso Accettabile</h2>

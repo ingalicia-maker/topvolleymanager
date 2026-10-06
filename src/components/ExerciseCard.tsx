@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { Exercise } from "@/hooks/useExercises";
 import { Users, Star, Heart } from "lucide-react";
 import { useToggleFavorite } from "@/hooks/useExerciseFavorites";
+import { tr } from '@/lib/tr';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -56,7 +57,7 @@ export function ExerciseCard({ exercise, onClick, isFavorite = false }: Exercise
       <button
         onClick={handleFavoriteClick}
         className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
-        aria-label="Toggle favorite"
+        aria-label={tr('Marcar como favorito')}
       >
         <Heart
           className={`h-5 w-5 transition-colors ${

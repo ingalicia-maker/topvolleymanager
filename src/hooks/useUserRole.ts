@@ -15,12 +15,15 @@ export interface UserProfile {
 }
 
 export function useUserRole() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // While the session is being restored there is no user yet: keep loading, otherwise
+    // director-only pages opened directly (or reloaded) redirect before the roles arrive.
+    if (authLoading) return;
     if (!user) {
       setRoles([]);
       setProfile(null);
@@ -76,7 +79,7 @@ export function useUserRole() {
     };
 
     fetchRoleAndProfile();
-  }, [user]);
+  }, [user, authLoading]);
 
   const isDirector = roles.includes('director');
   const isCoach = roles.includes('coach') || !isDirector; // Default to coach if no role

@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import i18n from '@/i18n';
 import Landing from './Landing';
+import NotFound from './NotFound';
 
 const SUPPORTED_LANGUAGES = ['es', 'en', 'it'];
 
@@ -14,9 +15,9 @@ export default function LandingWrapper() {
     }
   }, [lang]);
 
-  // If invalid language, redirect to Spanish
+  // Any other single-segment path (a mistyped link) is a missing page, not a language
   if (!lang || !SUPPORTED_LANGUAGES.includes(lang)) {
-    return <Navigate to="/es" replace />;
+    return <NotFound />;
   }
 
   return <Landing />;

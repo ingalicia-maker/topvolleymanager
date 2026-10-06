@@ -39,11 +39,11 @@ const fieldTypeLabel = (t: FieldType) => ({
 
 /** Starting fields; the club can rename, remove or add any of them. */
 const defaultFields = (): FormField[] => [
-  { id: 'dni', label: tr('DNI / documento del jugador'), type: 'text', required: false },
+  { id: 'dni', label: tr('DNI / documento de la jugadora'), type: 'text', required: false },
   { id: 'address', label: tr('Dirección'), type: 'text', required: false },
   { id: 'allergies', label: tr('Alergias o información médica'), type: 'textarea', required: false },
   { id: 'size', label: tr('Talla de equipación'), type: 'select', required: false, options: ['XS', 'S', 'M', 'L', 'XL'] },
-  { id: 'photos', label: tr('Autorizo el uso de imágenes del jugador en las comunicaciones del club'), type: 'checkbox', required: false },
+  { id: 'photos', label: tr('Autorizo el uso de imágenes de la jugadora en las comunicaciones del club'), type: 'checkbox', required: false },
 ];
 
 const newId = () => 'f' + Math.random().toString(36).slice(2, 8);
@@ -234,7 +234,7 @@ export function FormsPanel({ forms, plans, clubName, onSave, onDelete, enrollmen
               <div className="space-y-2">
                 <Label>{tr('Campos del formulario')}</Label>
                 <p className="text-xs text-muted-foreground">
-                  {tr('Siempre se piden: nombre del jugador, fecha de nacimiento, nombre, email y teléfono del responsable. Añade aquí el resto.')}
+                  {tr('Siempre se piden: nombre de la jugadora, fecha de nacimiento, y nombre, email y teléfono del responsable. Añade aquí el resto.')}
                 </p>
                 {fields.map((f, i) => (
                   <div key={f.id} className="rounded-lg border p-3 space-y-2">
