@@ -678,5 +678,16 @@
   "{n} familia no tiene email": "{n} famiglia non ha email",
   "{n} seleccionado": "{n} selezionato",
   "{n} inscripción importada": "{n} iscrizione importata",
-  "{n} fila sin email válido: no recibirá emails.": "{n} riga senza email valida: non riceverà email."
+  "{n} fila sin email válido: no recibirá emails.": "{n} riga senza email valida: non riceverà email.",
+  "Formas de pago": "Metodi di pagamento",
+  "Elige cómo pueden pagarte las familias. Aparecen en los recordatorios y en el email de confirmación de la inscripción. Cada pago lo marcas como pagado en la pestaña Pagos.": "Scegli come le famiglie possono pagarti. Compaiono nei promemoria e nell'email di conferma dell'iscrizione. Segna ogni pagamento come pagato nella scheda Pagamenti.",
+  "Tarjeta, con tu cuenta de Stripe": "Carta, con il tuo account Stripe",
+  "Crea un \"Payment Link\" en la cuenta de Stripe del club y pégalo aquí. Si una cuota tiene su propio enlace, se usa el de la cuota. El dinero va directo a tu cuenta; Top Volley Manager no interviene.": "Crea un \"Payment Link\" nell'account Stripe del club e incollalo qui. Se una quota ha un proprio link, si usa quello. Il denaro va direttamente sul tuo conto; Top Volley Manager non interviene.",
+  "Transferencia bancaria": "Bonifico bancario",
+  "Titular de la cuenta": "Intestatario del conto",
+  "Concepto (si lo dejas vacío: cuota y nombre de la jugadora)": "Causale (se vuota: quota e nome della giocatrice)",
+  "Teléfono de Bizum": "Numero Bizum",
+  "Dónde y cuándo (opcional)": "Dove e quando (facoltativo)",
+  "Otra forma": "Altro",
+  "Explica cómo pagar": "Spiega come pagare"
 }

@@ -678,5 +678,16 @@
   "{n} familia no tiene email": "{n} family has no email",
   "{n} seleccionado": "{n} selected",
   "{n} inscripción importada": "{n} enrolment imported",
-  "{n} fila sin email válido: no recibirá emails.": "{n} row without a valid email: it won't get emails."
+  "{n} fila sin email válido: no recibirá emails.": "{n} row without a valid email: it won't get emails.",
+  "Formas de pago": "Payment methods",
+  "Elige cómo pueden pagarte las familias. Aparecen en los recordatorios y en el email de confirmación de la inscripción. Cada pago lo marcas como pagado en la pestaña Pagos.": "Choose how families can pay you. They appear in reminders and in the enrolment confirmation email. Mark each payment as paid in the Payments tab.",
+  "Tarjeta, con tu cuenta de Stripe": "Card, with your Stripe account",
+  "Crea un \"Payment Link\" en la cuenta de Stripe del club y pégalo aquí. Si una cuota tiene su propio enlace, se usa el de la cuota. El dinero va directo a tu cuenta; Top Volley Manager no interviene.": "Create a \"Payment Link\" in the club's Stripe account and paste it here. If a fee has its own link, that one is used. The money goes straight to your account; Top Volley Manager is not involved.",
+  "Transferencia bancaria": "Bank transfer",
+  "Titular de la cuenta": "Account holder",
+  "Concepto (si lo dejas vacío: cuota y nombre de la jugadora)": "Reference (if empty: fee and player's name)",
+  "Teléfono de Bizum": "Bizum phone number",
+  "Dónde y cuándo (opcional)": "Where and when (optional)",
+  "Otra forma": "Other",
+  "Explica cómo pagar": "Explain how to pay"
 }

@@ -16,6 +16,16 @@ export interface FeeSettings {
   remind_days_before: number;
   remind_every_days: number;
   contact_email: string | null;
+  /** How families can pay this club (each way optional) */
+  payment_methods?: PaymentMethods;
+}
+
+export interface PaymentMethods {
+  stripe?: { enabled: boolean; link?: string };
+  transfer?: { enabled: boolean; holder?: string; iban?: string; note?: string };
+  bizum?: { enabled: boolean; phone?: string };
+  cash?: { enabled: boolean; note?: string };
+  other?: { enabled: boolean; note?: string };
 }
 
 export interface FeePlan {
@@ -93,6 +103,7 @@ export const DEFAULT_SETTINGS: Omit<FeeSettings, 'club_id'> = {
   remind_days_before: 3,
   remind_every_days: 7,
   contact_email: null,
+  payment_methods: {},
 };
 
 const MONTHS_BETWEEN: Record<Frequency, number> = { once: 0, monthly: 1, quarterly: 3, yearly: 12 };
