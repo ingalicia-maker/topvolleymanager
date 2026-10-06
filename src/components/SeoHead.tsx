@@ -36,6 +36,7 @@ const NOINDEX_PREFIXES = [
   "/seasons",
   "/fees",
   "/inscripcion",
+  "/pagar",
 ];
 
 /**

@@ -41,6 +41,7 @@ import ResetPassword from "./pages/ResetPassword";
 import SeasonManagement from "./pages/SeasonManagement";
 import ClubFees from "./pages/ClubFees";
 import EnrollmentPage from "./pages/EnrollmentPage";
+import PayFeePage from "./pages/PayFeePage";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Invitation from "./pages/Invitation";
@@ -322,6 +323,8 @@ const App = () => (
           />
           {/* Public enrolment form shared by clubs with families */}
           <Route path="/inscripcion/:slug" element={<EnrollmentPage />} />
+          {/* Public page to pay one instalment through the club's Stripe account */}
+          <Route path="/pagar/:token" element={<PayFeePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
           </LanguageScope>

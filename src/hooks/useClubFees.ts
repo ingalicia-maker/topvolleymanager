@@ -16,6 +16,9 @@ export interface FeeSettings {
   remind_days_before: number;
   remind_every_days: number;
   contact_email: string | null;
+  /** Optional Stripe Connect account of the club (written only by the server) */
+  stripe_account_id?: string | null;
+  stripe_charges_enabled?: boolean;
 }
 
 export interface FeePlan {
@@ -85,6 +88,7 @@ export interface FeeCharge {
   note: string | null;
   reminders_sent: number;
   last_reminder_at: string | null;
+  pay_token?: string;
 }
 
 export const DEFAULT_SETTINGS: Omit<FeeSettings, 'club_id'> = {
@@ -258,6 +262,18 @@ export function useClubFees() {
     return created.length;
   };
 
+  /** Optional Stripe Connect: 'onboard' returns Stripe's onboarding URL; 'status' refreshes; 'disconnect'. */
+  const stripeConnect = async (action: 'onboard' | 'status' | 'disconnect'): Promise<{ url?: string; chargesEnabled?: boolean }> => {
+    const { data, error } = await supabase.functions.invoke('stripe-connect', { body: { action, clubId } });
+    if (error || data?.error) {
+      let reason = data?.error || error?.message;
+      try { reason = (await (error as { context?: Response })?.context?.json())?.error ?? reason; } catch { /* not JSON */ }
+      throw new Error(reason);
+    }
+    if (action !== 'onboard') await load();
+    return data;
+  };
+
   /** Queues reminder emails; returns how many were sent. */
   const sendReminders = async (ids: string[]): Promise<number> => {
     const { data, error } = await db.rpc('send_fee_reminders', { _charge_ids: ids });
@@ -269,6 +285,6 @@ export function useClubFees() {
   return {
     clubId, clubName: club?.name ?? '', settings, plans, forms, enrollments, charges, loading, error, reload: load,
     saveSettings, savePlan, deletePlan, saveForm, deleteForm, saveEnrollment, activateEnrollment, deleteEnrollment,
-    saveCharge, deleteCharge, markPaid, sendReminders, sendForm, importEnrollments,
+    saveCharge, deleteCharge, markPaid, sendReminders, sendForm, importEnrollments, stripeConnect,
   };
 }

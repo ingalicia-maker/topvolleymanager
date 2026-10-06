@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Bell, Check, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Bell, Check, Link2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,11 +24,13 @@ interface Props {
   onDelete: (id: string) => Promise<void>;
   onMarkPaid: (ids: string[], method: string) => Promise<void>;
   onRemind: (ids: string[]) => Promise<number>;
+  /** The club's Stripe account can take payments: each pending payment has a pay link */
+  stripeReady?: boolean;
 }
 
 type Filter = 'due' | 'overdue' | 'paid' | 'all';
 
-export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete, onMarkPaid, onRemind }: Props) {
+export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete, onMarkPaid, onRemind, stripeReady }: Props) {
   const [filter, setFilter] = useState<Filter>('due');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -232,6 +234,14 @@ export function PaymentsPanel({ charges, enrollments, currency, onSave, onDelete
               {editing?.id && editing.status === 'pending' && (
                 <Button variant="outline" size="sm" className="gap-1" disabled={busy} onClick={() => remind([editing.id!])}>
                   <Bell className="h-4 w-4" /> {tr('Recordar')}
+                </Button>
+              )}
+              {stripeReady && editing?.id && editing.status === 'pending' && editing.pay_token && (
+                <Button variant="outline" size="sm" className="gap-1" onClick={() => {
+                  navigator.clipboard.writeText(`https://www.topvolleymanager.com/pagar/${editing.pay_token}`);
+                  toast.success(tr('Enlace de pago copiado'));
+                }}>
+                  <Link2 className="h-4 w-4" /> {tr('Enlace de pago')}
                 </Button>
               )}
             </div>
