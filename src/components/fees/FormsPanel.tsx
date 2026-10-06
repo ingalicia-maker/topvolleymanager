@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Copy, MessageCircle, Mail, ArrowUp, ArrowDown, ExternalLink } from 'lucide-react';
+import { Plus, Pencil, Trash2, Copy, MessageCircle, Mail, ArrowUp, ArrowDown, ExternalLink, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { EnrollmentForm, FeePlan, FieldType, FormField } from '@/hooks/useClubFees';
+import type { Enrollment, EnrollmentForm, FeePlan, FieldType, FormField } from '@/hooks/useClubFees';
 import { enrollmentLink } from './feeUtils';
 import { tr } from '@/lib/tr';
 
@@ -21,7 +21,11 @@ interface Props {
   clubName: string;
   onSave: (form: Partial<EnrollmentForm>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  enrollments: Enrollment[];
+  onSend: (formId: string, emails: string[], language: string) => Promise<number>;
 }
+
+const EMAIL = /[^\s,;<>"']+@[^\s,;<>"']+\.[^\s,;<>"']+/g;
 
 const FIELD_TYPES: FieldType[] = ['text', 'textarea', 'number', 'date', 'select', 'checkbox'];
 const fieldTypeLabel = (t: FieldType) => ({
@@ -44,7 +48,31 @@ const defaultFields = (): FormField[] => [
 
 const newId = () => 'f' + Math.random().toString(36).slice(2, 8);
 
-export function FormsPanel({ forms, plans, clubName, onSave, onDelete }: Props) {
+export function FormsPanel({ forms, plans, clubName, onSave, onDelete, enrollments, onSend }: Props) {
+  const [sending, setSending] = useState<EnrollmentForm | null>(null);
+  const [recipients, setRecipients] = useState('');
+  const [sendLang, setSendLang] = useState('es');
+  const [busySend, setBusySend] = useState(false);
+  const emails = [...new Set((recipients.match(EMAIL) ?? []).map(e => e.toLowerCase()))];
+  const familyEmails = (filter: (e: Enrollment) => boolean) =>
+    [...new Set(enrollments.filter(filter).map(e => e.guardian_email).filter(Boolean) as string[])];
+  const addRecipients = (list: string[]) => setRecipients(r => [...new Set([...(r.match(EMAIL) ?? []), ...list])].join('\n'));
+
+  const send = async () => {
+    if (!sending || !emails.length) return;
+    setBusySend(true);
+    try {
+      const n = await onSend(sending.id, emails, sendLang);
+      toast.success(tr('Formulario enviado a {n} familias', { n }));
+      setSending(null);
+      setRecipients('');
+    } catch (e) {
+      toast.error(tr('No se pudo enviar') + ': ' + (e as Error).message);
+    } finally {
+      setBusySend(false);
+    }
+  };
+
   const [editing, setEditing] = useState<Partial<EnrollmentForm> | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -119,14 +147,54 @@ export function FormsPanel({ forms, plans, clubName, onSave, onDelete }: Props) 
               <Button variant="ghost" size="icon" aria-label={tr('Eliminar')} onClick={() => remove(form)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
             </div>
             <div className="flex flex-wrap gap-2">
+              <Button size="sm" className="gap-1" onClick={() => setSending(form)} disabled={!form.is_open}><Send className="h-4 w-4" />{tr('Enviar por email')}</Button>
               <Button size="sm" variant="outline" className="gap-1" onClick={() => share(form, 'copy')}><Copy className="h-4 w-4" />{tr('Copiar enlace')}</Button>
               <Button size="sm" variant="outline" className="gap-1" onClick={() => share(form, 'whatsapp')}><MessageCircle className="h-4 w-4" />WhatsApp</Button>
-              <Button size="sm" variant="outline" className="gap-1" onClick={() => share(form, 'email')}><Mail className="h-4 w-4" />Email</Button>
+              <Button size="sm" variant="outline" className="gap-1" onClick={() => share(form, 'email')}><Mail className="h-4 w-4" />{tr('Tu email')}</Button>
               <Button size="sm" variant="ghost" className="gap-1" onClick={() => window.open(`/inscripcion/${form.slug}`, '_blank', 'noopener')}><ExternalLink className="h-4 w-4" />{tr('Ver')}</Button>
             </div>
           </CardContent>
         </Card>
       ))}
+
+      <Dialog open={!!sending} onOpenChange={o => !o && setSending(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{tr('Enviar "{title}"', { title: sending?.title ?? '' })}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{tr('Cada familia recibe un email con el enlace al formulario. Las familias que ya conoces lo reciben en su idioma.')}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => addRecipients(familyEmails(e => e.status !== 'cancelled'))}>
+                {tr('Añadir familias del club ({n})', { n: familyEmails(e => e.status !== 'cancelled').length })}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => addRecipients(familyEmails(e => e.status === 'pending'))}>
+                {tr('Solo por revisar ({n})', { n: familyEmails(e => e.status === 'pending').length })}
+              </Button>
+            </div>
+            <div className="space-y-1">
+              <Label>{tr('Emails (uno por línea o separados por comas)')}</Label>
+              <Textarea rows={6} value={recipients} onChange={e => setRecipients(e.target.value)} placeholder="familia@example.com" />
+              <p className="text-xs text-muted-foreground">{tr('{n} emails válidos', { n: emails.length })}</p>
+            </div>
+            <div className="space-y-1">
+              <Label>{tr('Idioma para las familias nuevas')}</Label>
+              <Select value={sendLang} onValueChange={setSendLang}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="it">Italiano</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSending(null)}>{tr('Cancelar')}</Button>
+            <Button onClick={send} disabled={!emails.length || busySend || emails.length > 500}>
+              {busySend ? tr('Enviando...') : tr('Enviar a {n}', { n: emails.length })}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">

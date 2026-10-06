@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Check, X, Trash2, UserPlus, Search } from 'lucide-react';
+import { Plus, Check, X, Trash2, UserPlus, Search, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import type { Enrollment, EnrollmentForm, FeeCharge, FeePlan } from '@/hooks/useClubFees';
 import { money } from './feeUtils';
+import { ImportEnrollmentsDialog } from './ImportEnrollmentsDialog';
 import { tr } from '@/lib/tr';
 
 interface Props {
@@ -24,12 +25,14 @@ interface Props {
   onSave: (e: Partial<Enrollment>) => Promise<void>;
   onActivate: (e: Enrollment, planId: string | null) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onImport: (rows: Partial<Enrollment>[]) => Promise<number>;
 }
 
 type Filter = 'pending' | 'active' | 'cancelled';
 const NO_PLAN = 'none';
 
-export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, currency, onSave, onActivate, onDelete }: Props) {
+export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, currency, onSave, onActivate, onDelete, onImport }: Props) {
+  const [importing, setImporting] = useState(false);
   const [filter, setFilter] = useState<Filter>('pending');
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<Partial<Enrollment> | null>(null);
@@ -107,7 +110,11 @@ export function EnrollmentsPanel({ clubId, enrollments, forms, plans, charges, c
         <Button size="sm" className="gap-1 shrink-0" onClick={() => setOpen({ player_name: '', language: 'es', plan_id: plans.find(p => p.active)?.id ?? null })}>
           <Plus className="h-4 w-4" /> {tr('Añadir')}
         </Button>
+        <Button size="sm" variant="outline" className="gap-1 shrink-0" onClick={() => setImporting(true)} aria-label={tr('Importar familias')}>
+          <FileUp className="h-4 w-4" /> <span className="hidden sm:inline">{tr('Importar')}</span>
+        </Button>
       </div>
+      <ImportEnrollmentsDialog open={importing} onOpenChange={setImporting} plans={plans} onImport={onImport} />
       <div className="flex gap-2">
         {(['pending', 'active', 'cancelled'] as Filter[]).map(f => (
           <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}>

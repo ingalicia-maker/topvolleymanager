@@ -230,6 +230,34 @@ export function useClubFees() {
     await load();
   };
 
+  /** Emails the enrolment form link; returns how many emails were queued. */
+  const sendForm = async (formId: string, emails: string[], language: string): Promise<number> => {
+    const { data, error } = await db.rpc('send_enrollment_form', { _form_id: formId, _emails: emails, _language: language });
+    if (error) throw error;
+    return data ?? 0;
+  };
+
+  /** Adds many enrolments at once (CSV/Excel import). Active ones get their payments created. */
+  const importEnrollments = async (rows: Partial<Enrollment>[]) => {
+    const { data, error } = await db.from('enrollments')
+      .insert(rows.map(r => ({ ...r, club_id: clubId })))
+      .select('*');
+    if (error) throw error;
+    const created = (data ?? []) as Enrollment[];
+    const newCharges = created
+      .filter(e => e.status === 'active' && e.plan_id)
+      .flatMap(e => {
+        const plan = plans.find(p => p.id === e.plan_id);
+        return plan ? chargesForPlan(plan, e) : [];
+      });
+    if (newCharges.length) {
+      const { error: chargeError } = await db.from('fee_charges').insert(newCharges);
+      if (chargeError) throw chargeError;
+    }
+    await load();
+    return created.length;
+  };
+
   /** Queues reminder emails; returns how many were sent. */
   const sendReminders = async (ids: string[]): Promise<number> => {
     const { data, error } = await db.rpc('send_fee_reminders', { _charge_ids: ids });
@@ -241,6 +269,6 @@ export function useClubFees() {
   return {
     clubId, clubName: club?.name ?? '', settings, plans, forms, enrollments, charges, loading, error, reload: load,
     saveSettings, savePlan, deletePlan, saveForm, deleteForm, saveEnrollment, activateEnrollment, deleteEnrollment,
-    saveCharge, deleteCharge, markPaid, sendReminders,
+    saveCharge, deleteCharge, markPaid, sendReminders, sendForm, importEnrollments,
   };
 }

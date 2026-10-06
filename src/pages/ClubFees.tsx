@@ -13,6 +13,7 @@ import { PlansPanel } from '@/components/fees/PlansPanel';
 import { FormsPanel } from '@/components/fees/FormsPanel';
 import { FeeSettingsPanel } from '@/components/fees/FeeSettingsPanel';
 import { money } from '@/components/fees/feeUtils';
+import { FeesChart } from '@/components/fees/FeesChart';
 import { tr } from '@/lib/tr';
 
 /** Club fees: enrolments, payments, fee plans, enrolment forms and reminders. Directors only. */
@@ -71,6 +72,8 @@ export default function ClubFees() {
               </CardContent></Card>
             </div>
 
+            <FeesChart charges={fees.charges.filter(c => fees.enrollments.find(e => e.id === c.enrollment_id)?.status !== 'cancelled')} currency={currency} />
+
             <Tabs defaultValue={summary.toReview ? 'enrollments' : 'payments'}>
               <TabsList className="w-full overflow-x-auto justify-start">
                 <TabsTrigger value="enrollments">{tr('Inscripciones')}</TabsTrigger>
@@ -83,7 +86,7 @@ export default function ClubFees() {
                 <EnrollmentsPanel
                   clubId={fees.clubId!} enrollments={fees.enrollments} forms={fees.forms} plans={fees.plans}
                   charges={fees.charges} currency={currency}
-                  onSave={fees.saveEnrollment} onActivate={fees.activateEnrollment} onDelete={fees.deleteEnrollment}
+                  onSave={fees.saveEnrollment} onActivate={fees.activateEnrollment} onDelete={fees.deleteEnrollment} onImport={fees.importEnrollments}
                 />
               </TabsContent>
               <TabsContent value="payments">
@@ -96,7 +99,7 @@ export default function ClubFees() {
                 <PlansPanel plans={fees.plans} currency={currency} onSave={fees.savePlan} onDelete={fees.deletePlan} />
               </TabsContent>
               <TabsContent value="forms">
-                <FormsPanel forms={fees.forms} plans={fees.plans} clubName={fees.clubName} onSave={fees.saveForm} onDelete={fees.deleteForm} />
+                <FormsPanel forms={fees.forms} plans={fees.plans} clubName={fees.clubName} onSave={fees.saveForm} onDelete={fees.deleteForm} enrollments={fees.enrollments} onSend={fees.sendForm} />
               </TabsContent>
               <TabsContent value="settings">
                 {fees.settings && <FeeSettingsPanel settings={fees.settings} onSave={fees.saveSettings} />}
