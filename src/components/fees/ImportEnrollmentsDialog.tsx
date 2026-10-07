@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
+import { readSpreadsheetRows } from '@/lib/spreadsheet';
 import { toast } from 'sonner';
 import { Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,8 @@ const plain = (v: unknown) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/
 /** Dates come as Excel serial numbers, dd/mm/yyyy or yyyy-mm-dd. */
 function toIsoDate(v: unknown): string | null {
   if (typeof v === 'number') {
-    const d = XLSX.SSF.parse_date_code(v);
+    // Excel stores dates as day numbers; round so a time of day never shifts the date
+    const d = XLSX.SSF.parse_date_code(Math.round(v));
     return d ? `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}` : null;
   }
   const s = String(v ?? '').trim();
@@ -68,8 +70,7 @@ export function ImportEnrollmentsDialog({ open, onOpenChange, plans, onImport }:
 
   const read = async (file: File) => {
     try {
-      const book = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-      const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(book.Sheets[book.SheetNames[0]], { defval: '' });
+      const raw = await readSpreadsheetRows(file);
       const parsed = raw.map(r => {
         const out = {} as Row;
         for (const key of Object.keys(COLUMNS) as (keyof Row)[]) {

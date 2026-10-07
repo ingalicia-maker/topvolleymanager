@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import * as XLSX from 'xlsx';
+import { readSpreadsheetRows } from '@/lib/spreadsheet';
 import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, X, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -157,10 +158,7 @@ export function ImportPlayersDialog({ open, onOpenChange, onSuccess }: ImportPla
   const parseFile = useCallback(async (file: File) => {
     setIsProcessing(true);
     try {
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' });
+      const rows = await readSpreadsheetRows(file);
 
       const validated = rows
         .map(mapRow)
