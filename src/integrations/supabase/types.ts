@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -174,6 +174,53 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      club_fee_settings: {
+        Row: {
+          auto_reminders: boolean
+          club_id: string
+          contact_email: string | null
+          currency: string
+          payment_methods: Json
+          remind_days_before: number
+          remind_every_days: number
+          stripe_account_id: string | null
+          stripe_charges_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          auto_reminders?: boolean
+          club_id: string
+          contact_email?: string | null
+          currency?: string
+          payment_methods?: Json
+          remind_days_before?: number
+          remind_every_days?: number
+          stripe_account_id?: string | null
+          stripe_charges_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          auto_reminders?: boolean
+          club_id?: string
+          contact_email?: string | null
+          currency?: string
+          payment_methods?: Json
+          remind_days_before?: number
+          remind_every_days?: number
+          stripe_account_id?: string | null
+          stripe_charges_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_fee_settings_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: true
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       club_invitations: {
         Row: {
@@ -530,6 +577,136 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: []
+      }
+      enrollment_forms: {
+        Row: {
+          club_id: string
+          created_at: string
+          fields: Json
+          id: string
+          intro: string | null
+          is_open: boolean
+          plan_ids: string[]
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          fields?: Json
+          id?: string
+          intro?: string | null
+          is_open?: boolean
+          plan_ids?: string[]
+          slug?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          fields?: Json
+          id?: string
+          intro?: string | null
+          is_open?: boolean
+          plan_ids?: string[]
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_forms_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enrollments: {
+        Row: {
+          answers: Json
+          club_id: string
+          created_at: string
+          form_id: string | null
+          guardian_email: string | null
+          guardian_name: string | null
+          guardian_phone: string | null
+          id: string
+          language: string
+          notes: string | null
+          plan_id: string | null
+          player_birth_date: string | null
+          player_id: string | null
+          player_name: string
+          status: string
+        }
+        Insert: {
+          answers?: Json
+          club_id: string
+          created_at?: string
+          form_id?: string | null
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          id?: string
+          language?: string
+          notes?: string | null
+          plan_id?: string | null
+          player_birth_date?: string | null
+          player_id?: string | null
+          player_name: string
+          status?: string
+        }
+        Update: {
+          answers?: Json
+          club_id?: string
+          created_at?: string
+          form_id?: string | null
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          id?: string
+          language?: string
+          notes?: string | null
+          plan_id?: string | null
+          player_birth_date?: string | null
+          player_id?: string | null
+          player_name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollments_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "enrollment_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "fee_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       events: {
         Row: {
@@ -925,6 +1102,138 @@ export type Database = {
             columns: ["scope_id"]
             isOneToOne: false
             referencedRelation: "exercise_scopes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_charges: {
+        Row: {
+          amount: number
+          club_id: string
+          concept: string
+          created_at: string
+          due_date: string
+          enrollment_id: string
+          id: string
+          last_reminder_at: string | null
+          note: string | null
+          paid_at: string | null
+          pay_token: string
+          payment_method: string | null
+          plan_id: string | null
+          reminders_sent: number
+          status: string
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount: number
+          club_id: string
+          concept: string
+          created_at?: string
+          due_date: string
+          enrollment_id: string
+          id?: string
+          last_reminder_at?: string | null
+          note?: string | null
+          paid_at?: string | null
+          pay_token?: string
+          payment_method?: string | null
+          plan_id?: string | null
+          reminders_sent?: number
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount?: number
+          club_id?: string
+          concept?: string
+          created_at?: string
+          due_date?: string
+          enrollment_id?: string
+          id?: string
+          last_reminder_at?: string | null
+          note?: string | null
+          paid_at?: string | null
+          pay_token?: string
+          payment_method?: string | null
+          plan_id?: string | null
+          reminders_sent?: number
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_charges_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_charges_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_charges_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "fee_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_plans: {
+        Row: {
+          active: boolean
+          amount: number
+          club_id: string
+          created_at: string
+          description: string | null
+          first_due_date: string | null
+          frequency: string
+          id: string
+          installments: number
+          name: string
+          payment_link: string | null
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          amount: number
+          club_id: string
+          created_at?: string
+          description?: string | null
+          first_due_date?: string | null
+          frequency?: string
+          id?: string
+          installments?: number
+          name: string
+          payment_link?: string | null
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          amount?: number
+          club_id?: string
+          created_at?: string
+          description?: string | null
+          first_due_date?: string | null
+          frequency?: string
+          id?: string
+          installments?: number
+          name?: string
+          payment_link?: string | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_plans_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
             referencedColumns: ["id"]
           },
         ]
@@ -1763,7 +2072,27 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      fee_how_to_pay_html: {
+        Args: { _lang: string; _methods: Json; _reference: string }
+        Returns: string
+      }
+      fee_html_escape: { Args: { _t: string }; Returns: string }
+      fee_pay_text: { Args: { _key: string; _lang: string }; Returns: string }
+      fee_queue_reminder: { Args: { _charge_id: string }; Returns: boolean }
+      fee_send_email: {
+        Args: {
+          _html: string
+          _key: string
+          _label: string
+          _subject: string
+          _to: string
+        }
+        Returns: undefined
+      }
+      fee_text: { Args: { _key: string; _lang: string }; Returns: string }
       generate_short_code: { Args: never; Returns: string }
+      get_enrollment_form: { Args: { _slug: string }; Returns: Json }
+      get_fee_payment: { Args: { _token: string }; Returns: Json }
       get_grace_period_days_remaining: {
         Args: { _user_id: string }
         Returns: number
@@ -1825,6 +2154,20 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      run_fee_reminders: { Args: never; Returns: number }
+      send_enrollment_form: {
+        Args: { _emails: string[]; _form_id: string; _language?: string }
+        Returns: number
+      }
+      send_fee_reminders: { Args: { _charge_ids: string[] }; Returns: number }
+      shares_club_as_director: {
+        Args: { _director: string; _user: string }
+        Returns: boolean
+      }
+      submit_enrollment: {
+        Args: { _data: Json; _slug: string }
+        Returns: string
       }
       user_belongs_to_club: {
         Args: { _club_id: string; _user_id: string }
