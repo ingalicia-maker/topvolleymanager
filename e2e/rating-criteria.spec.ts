@@ -1,4 +1,4 @@
-import { test, expect } from '../playwright-fixture';
+import { test, expect } from 'bun:test';
 import { toRatingColumns, type Criterion } from '../src/lib/ratingCriteria';
 
 const criterion = (key: string, id: string | null = null): Criterion => ({
