@@ -112,8 +112,13 @@ export default function Ratings() {
     
     if (editingRatingId) {
       // Update existing rating
+      const existingRating = ratings.find(r => r.id === editingRatingId);
+      if (!existingRating) {
+        setSaving(false);
+        return;
+      }
       const success = await updateRating(editingRatingId, {
-        ...toRatingColumns(ratingsValues, criteria),
+        ...toRatingColumns(ratingsValues, criteria, existingRating),
         notes: notes.trim() || null,
       });
       if (success) {
