@@ -72,6 +72,15 @@ export default {
     noOtherTeams: 'Nessun\'altra squadra disponibile',
     playerMoved: 'Giocatrice spostata di squadra',
     playerRemoved: 'Giocatrice rimossa dalla squadra',
+    addExisting: 'Aggiungi giocatrice esistente',
+    addExistingTitle: 'Aggiungi giocatrici alla squadra',
+    addExistingDesc: 'Scegli giocatrici già presenti nel club. Possono appartenere anche ad altre squadre.',
+    searchPlayers: 'Cerca giocatrice...',
+    noCandidates: 'Nessun\'altra giocatrice disponibile da aggiungere',
+    noSearchResults: 'Nessuna giocatrice corrisponde alla ricerca',
+    noTeam: 'Senza squadra',
+    addSelected: 'Aggiungi ({{count}})',
+    playersAdded: '{{count}} giocatrice/i aggiunta/e alla squadra',
   },
 
   // Auth

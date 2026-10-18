@@ -43,25 +43,36 @@ export function SwipeableRow({
   const maxOffset = actions.length * ACTION_WIDTH;
   const [offset, setOffset] = useState(0);
   const startX = useRef<number | null>(null);
+  const startY = useRef(0);
   const startOffset = useRef(0);
+  const axis = useRef<'x' | 'y' | null>(null);
 
   if (actions.length === 0) return <>{children}</>;
 
   const onTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
     startOffset.current = offset;
+    axis.current = null;
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
     if (startX.current === null) return;
-    const delta = e.touches[0].clientX - startX.current;
-    const next = Math.min(maxOffset, Math.max(0, startOffset.current - delta));
-    setOffset(next);
+    const dx = e.touches[0].clientX - startX.current;
+    const dy = e.touches[0].clientY - startY.current;
+    // Lock to the first clearly dominant axis so a vertical scroll never drags the row.
+    if (axis.current === null) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      axis.current = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    }
+    if (axis.current === 'y') return;
+    setOffset(Math.min(maxOffset, Math.max(0, startOffset.current - dx)));
   };
 
   const onTouchEnd = () => {
-    setOffset(offset > maxOffset / 3 ? maxOffset : 0);
+    if (axis.current === 'x') setOffset(offset > maxOffset / 3 ? maxOffset : 0);
     startX.current = null;
+    axis.current = null;
   };
 
   return (
@@ -85,7 +96,7 @@ export function SwipeableRow({
       </div>
       <div
         className="relative transition-transform duration-200"
-        style={{ transform: `translateX(-${offset}px)` }}
+        style={{ transform: `translateX(-${offset}px)`, touchAction: 'pan-y' }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}

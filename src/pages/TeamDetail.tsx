@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Header } from '@/components/Header';
@@ -8,6 +8,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { PlayerCard } from '@/components/PlayerCard';
 import { SwipeableRow } from '@/components/SwipeableRow';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +24,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -36,9 +39,56 @@ export default function TeamDetail() {
   const { teams, loading } = useTeams();
   const [playerToRemove, setPlayerToRemove] = useState<string | null>(null);
   const [playerToMove, setPlayerToMove] = useState<string | null>(null);
+  const [addExistingOpen, setAddExistingOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [adding, setAdding] = useState(false);
 
   const team = teams.find(t => t.id === teamId);
   const teamPlayers = players.filter(p => p.teams?.includes(teamId || ''));
+
+  const fullName = (p: { name: string; surname1: string | null; surname2: string | null }) =>
+    [p.name, p.surname1, p.surname2].filter(Boolean).join(' ');
+  const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+  // Club players that are not yet in this team (archived ones are already excluded by usePlayers).
+  const candidates = useMemo(() => {
+    const q = normalize(search.trim());
+    return players
+      .filter(p => !p.teams?.includes(teamId || ''))
+      .filter(p => !q || normalize(fullName(p)).includes(q))
+      .sort((a, b) => fullName(a).localeCompare(fullName(b), 'es'));
+  }, [players, teamId, search]);
+  const hasAnyCandidate = players.some(p => !p.teams?.includes(teamId || ''));
+
+  const closeAddExisting = () => {
+    setAddExistingOpen(false);
+    setSearch('');
+    setSelectedIds([]);
+  };
+
+  const toggleSelected = (id: string) =>
+    setSelectedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+
+  const addSelectedToTeam = async () => {
+    if (!teamId || selectedIds.length === 0) return;
+    setAdding(true);
+    const results = await Promise.all(
+      selectedIds.map(id => {
+        const player = players.find(p => p.id === id);
+        if (!player) return Promise.resolve(false);
+        return updatePlayer(
+          id,
+          { teams: Array.from(new Set([...(player.teams || []), teamId])) },
+          { silent: true },
+        );
+      }),
+    );
+    setAdding(false);
+    const added = results.filter(Boolean).length;
+    if (added > 0) toast.success(t('coachHub.playersAdded', { count: added }));
+    closeAddExisting();
+  };
 
   const removeFromTeam = async (playerId: string) => {
     const player = players.find(p => p.id === playerId);
@@ -109,6 +159,15 @@ export default function TeamDetail() {
           </p>
         </div>
 
+        <Button
+          variant="outline"
+          className="w-full gap-2 mb-4"
+          onClick={() => setAddExistingOpen(true)}
+        >
+          <UserPlus className="h-4 w-4" />
+          {t('coachHub.addExisting')}
+        </Button>
+
         {teamPlayers.length > 0 && (
           <p className="text-xs text-muted-foreground mb-2">{t('coachHub.swipeHint')}</p>
         )}
@@ -155,6 +214,59 @@ export default function TeamDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={addExistingOpen} onOpenChange={(open) => !open && closeAddExisting()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('coachHub.addExistingTitle')}</DialogTitle>
+            <DialogDescription>{t('coachHub.addExistingDesc')}</DialogDescription>
+          </DialogHeader>
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('coachHub.searchPlayers')}
+          />
+          <div className="space-y-1 max-h-[45vh] overflow-y-auto overscroll-contain">
+            {candidates.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">
+                {hasAnyCandidate ? t('coachHub.noSearchResults') : t('coachHub.noCandidates')}
+              </p>
+            ) : (
+              candidates.map(p => {
+                const otherTeamNames = teams
+                  .filter(tm => p.teams?.includes(tm.id))
+                  .map(tm => tm.name)
+                  .join(', ');
+                return (
+                  <label
+                    key={p.id}
+                    className="flex items-center gap-3 rounded-md border p-3 cursor-pointer"
+                  >
+                    <Checkbox
+                      checked={selectedIds.includes(p.id)}
+                      onCheckedChange={() => toggleSelected(p.id)}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{fullName(p)}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {otherTeamNames || t('coachHub.noTeam')}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={closeAddExisting} disabled={adding}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={addSelectedToTeam} disabled={adding || selectedIds.length === 0}>
+              {t('coachHub.addSelected', { count: selectedIds.length })}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!playerToMove} onOpenChange={(open) => !open && setPlayerToMove(null)}>
         <DialogContent>

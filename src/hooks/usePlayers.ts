@@ -66,7 +66,7 @@ export function usePlayers() {
     return data;
   };
 
-  const updatePlayer = async (id: string, updates: Partial<DbPlayer>) => {
+  const updatePlayer = async (id: string, updates: Partial<DbPlayer>, options?: { silent?: boolean }) => {
     const { error } = await supabase
       .from('players')
       .update(updates)
@@ -78,7 +78,7 @@ export function usePlayers() {
     }
 
     setAllPlayers(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    toast.success(tr('Jugadora actualizada'));
+    if (!options?.silent) toast.success(tr('Jugadora actualizada'));
     return true;
   };
 

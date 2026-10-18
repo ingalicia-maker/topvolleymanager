@@ -73,6 +73,15 @@ export default {
     noOtherTeams: 'No other teams available',
     playerMoved: 'Player moved to another team',
     playerRemoved: 'Player removed from team',
+    addExisting: 'Add existing player',
+    addExistingTitle: 'Add players to the team',
+    addExistingDesc: 'Pick players who are already in the club. They can also belong to other teams.',
+    searchPlayers: 'Search player...',
+    noCandidates: 'No more players available to add',
+    noSearchResults: 'No player matches your search',
+    noTeam: 'No team',
+    addSelected: 'Add ({{count}})',
+    playersAdded: '{{count}} player(s) added to the team',
   },
 
   // Auth

@@ -96,8 +96,18 @@ All colors MUST be HSL.
   body,
   #root {
     /* Prevent any wide child (e.g. the weekly schedule grid) from causing
-       the whole page to pan/scroll sideways on mobile. */
-    overflow-x: hidden;
+       the whole page to pan/scroll sideways on mobile. `clip` instead of
+       `hidden` so these elements don't become nested scroll containers,
+       which makes vertical scrolling stick/lock in iOS WKWebView. */
+    overflow-x: clip;
+  }
+
+  /* iOS < 16 has no `overflow: clip`; body-only `hidden` propagates to the
+     viewport (html stays visible), so it still doesn't nest scrollers. */
+  @supports not (overflow: clip) {
+    body {
+      overflow-x: hidden;
+    }
   }
 
   body {
