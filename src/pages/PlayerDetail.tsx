@@ -288,8 +288,13 @@ export default function PlayerDetail() {
     
     let result;
     if (editingRatingId) {
+      const existingRating = ratings.find(r => r.id === editingRatingId);
+      if (!existingRating) {
+        setSubmittingRating(false);
+        return;
+      }
       result = await updateRating(editingRatingId, {
-        ...toRatingColumns(ratingValues, criteria),
+        ...toRatingColumns(ratingValues, criteria, existingRating),
         notes: ratingNotes || undefined,
         rating_date: `${selectedMonth}-15`,
       });
