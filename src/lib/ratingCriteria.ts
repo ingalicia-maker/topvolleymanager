@@ -132,11 +132,11 @@ export function overallAverage(avgs: Record<string, number | null>): number {
   return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
 }
 
-/** Converts form values ({ key: score }) to the columns of player_ratings. */
-export function toRatingColumns(values: Record<string, number>, criteria: Criterion[]) {
+/** Converts form values to columns, preserving unedited scores when an existing rating is supplied. */
+export function toRatingColumns(values: Record<string, number>, criteria: Criterion[], existing?: ScoredRating) {
   const cols: Record<string, unknown> = {};
-  const extra: Record<string, number> = {};
-  BUILTIN_KEYS.forEach((k) => { cols[k] = null; });
+  const extra: Record<string, number> = { ...((existing?.extra_scores ?? {}) as Record<string, number>) };
+  BUILTIN_KEYS.forEach((k) => { cols[k] = existing?.[k] ?? null; });
   criteria.forEach((c) => {
     const v = values[c.key];
     if (typeof v !== 'number') return;
