@@ -1,4 +1,4 @@
-package app.lovable.topvolleymanager;
+package com.topvolleymanager.app;
 
 import com.getcapacitor.BridgeActivity;
 
