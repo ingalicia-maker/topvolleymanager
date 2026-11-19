@@ -53,6 +53,8 @@ import ResourcesAdmin from "./pages/ResourcesAdmin";
 import Exercises from "./pages/Exercises";
 import NewsletterAdmin from "./pages/NewsletterAdmin";
 import CoachHub from "./pages/CoachHub";
+import ScoutMatches from "./pages/ScoutMatches";
+import ScoutLive from "./pages/ScoutLive";
 
 const queryClient = new QueryClient();
 
@@ -260,6 +262,22 @@ const App = () => (
             element={
               <AuthGuard>
                 <CoachHub />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/coach/scouting"
+            element={
+              <AuthGuard>
+                <ScoutMatches />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/coach/scouting/:matchId"
+            element={
+              <AuthGuard>
+                <ScoutLive />
               </AuthGuard>
             }
           />

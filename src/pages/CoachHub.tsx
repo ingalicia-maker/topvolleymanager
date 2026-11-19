@@ -11,6 +11,7 @@ import {
   TrendingUp,
   ArrowLeft,
   Plus,
+  Crosshair,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { CoachTeamSelector } from '@/components/CoachTeamSelector';
@@ -19,6 +20,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { UpcomingBirthdays } from '@/components/UpcomingBirthdays';
 import { useTeams } from '@/hooks/useTeams';
 import { useUserRole } from '@/hooks/useUserRole';
+import '@/lib/scout/i18n';
 
 export default function CoachHub() {
   const { t } = useTranslation();
@@ -31,6 +33,7 @@ export default function CoachHub() {
     : teams.filter((team) => assignedTeams.includes(team.id));
 
   const actions = [
+    { to: '/coach/scouting', icon: Crosshair, title: t('scout.title'), subtitle: t('scout.hubDesc') },
     { to: '/events', icon: Calendar, title: t('coachHub.trainings'), subtitle: t('coachHub.trainingsDesc') },
     { to: '/events/new', icon: CalendarPlus, title: t('events.create'), subtitle: t('coachHub.createEventDesc') },
     { to: '/exercises', icon: Dumbbell, title: t('exercises.title'), subtitle: t('exercises.subtitle') },
