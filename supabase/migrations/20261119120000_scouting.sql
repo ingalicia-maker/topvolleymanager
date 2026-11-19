@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS public.scout_matches (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   club_id uuid NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
-  team_id uuid NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
+  team_id text NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
   event_id uuid REFERENCES public.events(id) ON DELETE SET NULL,
   opponent text NOT NULL DEFAULT '',
   match_date date NOT NULL DEFAULT CURRENT_DATE,
