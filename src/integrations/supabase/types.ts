@@ -1756,6 +1756,118 @@ export type Database = {
         }
         Relationships: []
       }
+      scout_actions: {
+        Row: {
+          client_ts: number
+          club_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          match_id: string
+          payload: Json
+        }
+        Insert: {
+          client_ts: number
+          club_id: string
+          created_at?: string
+          created_by?: string | null
+          id: string
+          kind: string
+          match_id: string
+          payload?: Json
+        }
+        Update: {
+          client_ts?: number
+          club_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          match_id?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scout_actions_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scout_actions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "scout_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scout_matches: {
+        Row: {
+          best_of: number
+          club_id: string
+          created_at: string
+          created_by: string | null
+          event_id: string | null
+          id: string
+          match_date: string
+          opponent: string
+          status: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          best_of?: number
+          club_id: string
+          created_at?: string
+          created_by?: string | null
+          event_id?: string | null
+          id?: string
+          match_date?: string
+          opponent?: string
+          status?: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          best_of?: number
+          club_id?: string
+          created_at?: string
+          created_by?: string | null
+          event_id?: string | null
+          id?: string
+          match_date?: string
+          opponent?: string
+          status?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scout_matches_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scout_matches_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scout_matches_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seasons: {
         Row: {
           club_id: string | null
