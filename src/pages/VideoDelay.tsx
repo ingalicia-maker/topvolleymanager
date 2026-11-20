@@ -20,9 +20,17 @@ import '@/lib/scout/i18n';
 // watch their own movement right after doing it. Frames are kept in a ring of small
 // canvases (memory stays bounded); pausing freezes the buffer to review it frame by frame.
 
-const FPS = 20;
-const MAX_DELAY = 10;
-const FRAME_W = 512;
+const MIN_DELAY = 2;
+const MAX_DELAY = 30;
+const DELAY_STEP = 2;
+
+/** Longer delays keep more frames, so they use fewer frames per second and smaller
+ *  frames to keep memory around 100–130 MB. */
+function profile(delay: number): { fps: number; width: number } {
+  if (delay <= 10) return { fps: 20, width: 512 };
+  if (delay <= 20) return { fps: 12, width: 448 };
+  return { fps: 10, width: 400 };
+}
 const SPEEDS = [1, 0.5, 0.25];
 
 interface Ring {
@@ -31,6 +39,7 @@ interface Ring {
   write: number;
   w: number;
   h: number;
+  fps: number;
 }
 
 export default function VideoDelay() {
@@ -65,8 +74,11 @@ export default function VideoDelay() {
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
-  const makeRing = useCallback((w: number, h: number, seconds: number): Ring => {
-    const n = Math.ceil(seconds * FPS) + FPS;
+  const makeRing = useCallback((vw: number, vh: number, seconds: number): Ring => {
+    const { fps, width } = profile(seconds);
+    const w = Math.min(width, vw);
+    const h = Math.round((w * vh) / vw);
+    const n = Math.ceil(seconds * fps) + fps;
     const canvases: HTMLCanvasElement[] = [];
     for (let i = 0; i < n; i++) {
       const c = document.createElement('canvas');
@@ -74,7 +86,7 @@ export default function VideoDelay() {
       c.height = h;
       canvases.push(c);
     }
-    return { canvases, times: new Array(n).fill(0), write: 0, w, h };
+    return { canvases, times: new Array(n).fill(0), write: 0, w, h, fps };
   }, []);
 
   const draw = useCallback((src: HTMLCanvasElement | null) => {
@@ -106,7 +118,7 @@ export default function VideoDelay() {
     const ring = ringRef.current;
     if (!video || !ring || pausedRef.current || video.readyState < 2) return;
     const now = performance.now();
-    if (now - lastCapture.current >= 1000 / FPS - 2) {
+    if (now - lastCapture.current >= 1000 / ring.fps - 2) {
       lastCapture.current = now;
       const i = ring.write % ring.canvases.length;
       ring.canvases[i].getContext('2d')?.drawImage(video, 0, 0, ring.w, ring.h);
@@ -165,11 +177,7 @@ export default function VideoDelay() {
         const video = videoRef.current!;
         video.srcObject = stream;
         await video.play();
-        const vw = video.videoWidth || 1280;
-        const vh = video.videoHeight || 720;
-        const w = Math.min(FRAME_W, vw);
-        const h = Math.round((w * vh) / vw);
-        ringRef.current = makeRing(w, h, MAX_DELAY);
+        ringRef.current = makeRing(video.videoWidth || 1280, video.videoHeight || 720, delayRef.current);
         lastCapture.current = 0;
         setMirror(face === 'user');
         setRunning(true);
@@ -189,6 +197,16 @@ export default function VideoDelay() {
   );
 
   useEffect(() => () => stop(), [stop]);
+
+  // A new delay needs a buffer of the right length: rebuild it (the countdown starts again).
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!running || paused || !video || !ringRef.current) return;
+    ringRef.current = makeRing(video.videoWidth || 1280, video.videoHeight || 720, delay);
+    lastCapture.current = 0;
+    setFill(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delay]);
 
   // Review mode: freeze the buffer and step through it.
   const pause = () => {
@@ -269,7 +287,13 @@ export default function VideoDelay() {
               <span className="font-medium">{t('scout.vd.delay')}</span>
               <span className="font-bold tabular-nums">{delay} s</span>
             </div>
-            <Slider min={1} max={MAX_DELAY} step={1} value={[delay]} onValueChange={(v) => setDelay(v[0])} />
+            <Slider
+              min={MIN_DELAY}
+              max={MAX_DELAY}
+              step={DELAY_STEP}
+              value={[delay]}
+              onValueChange={(v) => setDelay(v[0])}
+            />
           </div>
           {running && fill < 1 && (
             <p className="text-xs text-muted-foreground">
