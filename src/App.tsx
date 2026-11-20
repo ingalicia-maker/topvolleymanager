@@ -55,6 +55,7 @@ import NewsletterAdmin from "./pages/NewsletterAdmin";
 import CoachHub from "./pages/CoachHub";
 import ScoutMatches from "./pages/ScoutMatches";
 import ScoutLive from "./pages/ScoutLive";
+import VideoDelay from "./pages/VideoDelay";
 
 const queryClient = new QueryClient();
 
@@ -270,6 +271,14 @@ const App = () => (
             element={
               <AuthGuard>
                 <ScoutMatches />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/coach/video-delay"
+            element={
+              <AuthGuard>
+                <VideoDelay />
               </AuthGuard>
             }
           />

@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Plus,
   Crosshair,
+  Video,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { CoachTeamSelector } from '@/components/CoachTeamSelector';
@@ -34,6 +35,7 @@ export default function CoachHub() {
 
   const actions = [
     { to: '/coach/scouting', icon: Crosshair, title: t('scout.title'), subtitle: t('scout.hubDesc') },
+    { to: '/coach/video-delay', icon: Video, title: t('scout.vd.title'), subtitle: t('scout.vd.hubDesc') },
     { to: '/events', icon: Calendar, title: t('coachHub.trainings'), subtitle: t('coachHub.trainingsDesc') },
     { to: '/events/new', icon: CalendarPlus, title: t('events.create'), subtitle: t('coachHub.createEventDesc') },
     { to: '/exercises', icon: Dumbbell, title: t('exercises.title'), subtitle: t('exercises.subtitle') },
