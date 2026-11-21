@@ -114,6 +114,13 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 
+  /* Stop the whole-page rubber-band bounce: in the iOS app it dragged the fixed bottom
+     bar off screen and could leave the page stuck mid-bounce. Inner scrollers keep it. */
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+
   /* Reserve space for the iOS status bar / notch so fixed and sticky
      headers don't render underneath it inside the native app. */
   header {

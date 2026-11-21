@@ -483,7 +483,7 @@ export default function Messages() {
       </div>
 
       {/* Message Input */}
-      <div className="sticky bottom-0 bg-background border-t p-4">
+      <div className="sticky bottom-0 bg-background border-t p-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
         <div className="flex gap-2">
           <Input
             placeholder={t('chat.typeMessagePlaceholder')}
