@@ -114,6 +114,13 @@ export default function Subscription() {
     }
   };
 
+  // In the app, show the price the store will charge (e.g. 39,99 €), not the web price.
+  const priceLabel = (plan: PlanType, webLabel: string, suffix: string) => {
+    if (!isNative) return webLabel;
+    const pkg = offerings?.current?.availablePackages.find(p => p.identifier === plan);
+    return pkg ? `${pkg.product.priceString}/${suffix}` : webLabel;
+  };
+
   const handleCancelClick = () => {
     setShowYearlyOffer(true);
   };
@@ -375,14 +382,14 @@ export default function Subscription() {
                     onClick={() => handleCheckout('starter_monthly')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('5€/mes')}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : priceLabel('starter_monthly', tr('5€/mes'), tr('mes'))}
                   </Button>
                   <Button 
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     onClick={() => handleCheckout('starter_season')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('40€/temporada')}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : priceLabel('starter_season', tr('40€/temporada'), tr('temporada'))}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
@@ -425,14 +432,14 @@ export default function Subscription() {
                     onClick={() => handleCheckout('pro_monthly')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('15€/mes')}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : priceLabel('pro_monthly', tr('15€/mes'), tr('mes'))}
                   </Button>
                   <Button 
                     className="w-full bg-purple-600 hover:bg-purple-700"
                     onClick={() => handleCheckout('pro_season')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('120€/temporada')}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : priceLabel('pro_season', tr('120€/temporada'), tr('temporada'))}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">

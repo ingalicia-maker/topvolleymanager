@@ -46,7 +46,9 @@ serve(async (req) => {
 
     const userId: string = event.app_user_id;
     const eventType: string = event.type;
-    const entitlementIds: string[] = event.entitlement_ids ?? (event.entitlement_id ? [event.entitlement_id] : []);
+    // RevenueCat entitlement ids are case-sensitive ("Pro" in the dashboard); compare in lower case.
+    const entitlementIds: string[] = (event.entitlement_ids ?? (event.entitlement_id ? [event.entitlement_id] : []))
+      .map((e: string) => String(e).toLowerCase());
 
     logStep("Received event", { eventType, userId, entitlementIds });
 
