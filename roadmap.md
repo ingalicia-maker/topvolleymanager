@@ -10,4 +10,4 @@
 - [x] Apply `20261126120000_season_pass_and_trial.sql` from commit `85bed7c` unchanged.
 - [x] Verify the new subscription fields and updated database functions.
 - [x] Deploy `create-checkout`, `check-subscription`, and `revenuecat-webhook`.
-- [ ] Review security scan, verify the release, and publish the website.
+- [x] Review security scan, verify the release, and publish the website.
