@@ -43,6 +43,12 @@ const PRICES = {
   pro_yearly: "price_1SpmKNPNqf8w4NJDGjMrUJpd", // 120€/año
 };
 
+// Season passes: one payment for 12 months, no auto-renewal (amounts in cents).
+const SEASON_PASSES: Record<string, { tier: string; amount: number; name: string }> = {
+  starter_season: { tier: 'starter', amount: 4000, name: 'Top Volley Manager · Pase de temporada Starter (12 meses)' },
+  pro_season: { tier: 'pro', amount: 12000, name: 'Top Volley Manager · Pase de temporada Pro (12 meses)' },
+};
+
 // Map price IDs to subscription status
 const PRICE_TO_STATUS: Record<string, string> = {
   [PRICES.starter_monthly]: 'starter',
@@ -91,7 +97,8 @@ serve(async (req) => {
     logStep("Request body parsed", { plan });
 
     // Validate plan
-    if (!plan || typeof plan !== 'string' || !PRICES[plan as keyof typeof PRICES]) {
+    const isSeason = typeof plan === 'string' && plan in SEASON_PASSES;
+    if (!plan || typeof plan !== 'string' || (!isSeason && !PRICES[plan as keyof typeof PRICES])) {
       return new Response(
         JSON.stringify({ error: "Invalid plan" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -107,6 +114,29 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
+    }
+
+    if (isSeason) {
+      const pass = SEASON_PASSES[plan];
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        customer_email: customerId ? undefined : user.email,
+        customer_creation: customerId ? undefined : "always",
+        line_items: [{
+          price_data: { currency: "eur", unit_amount: pass.amount, product_data: { name: pass.name } },
+          quantity: 1,
+        }],
+        mode: "payment",
+        success_url: `${req.headers.get("origin")}/subscription?success=true`,
+        cancel_url: `${req.headers.get("origin")}/subscription?canceled=true`,
+        metadata: { user_id: user.id, plan_type: plan, season_tier: pass.tier },
+        payment_intent_data: { metadata: { user_id: user.id, plan_type: plan, season_tier: pass.tier } },
+      });
+      logStep("Season pass checkout created", { sessionId: session.id, plan });
+      return new Response(JSON.stringify({ url: session.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     // Get price ID based on plan

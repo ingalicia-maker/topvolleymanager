@@ -12,6 +12,53 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Recurring Stripe prices -> tier (same ids as create-checkout).
+const PRICE_TO_STATUS: Record<string, string> = {
+  "price_1SnbIBPNqf8w4NJDicwJvJGT": "starter",
+  "price_1SnbLGPNqf8w4NJD5miilpCr": "starter",
+  "price_1SpmIOPNqf8w4NJD3g8i1ccv": "pro",
+  "price_1SpmKNPNqf8w4NJDGjMrUJpd": "pro",
+};
+const TIER_RANK: Record<string, number> = { starter: 1, pro: 2, elite: 3 };
+const SEASON_MS = 365 * 24 * 60 * 60 * 1000;
+
+// Writes what Stripe says into user_subscriptions, the table the app reads.
+// `status` is only touched when Stripe owns it (status_source = 'stripe'), so a
+// subscription bought in the App Store / Google Play is never downgraded here.
+async function syncToDb(
+  db: ReturnType<typeof createClient>,
+  userId: string,
+  recurringTier: string | null,
+  pass: { tier: string; until: string } | null,
+) {
+  const { data: row } = await db.from("user_subscriptions")
+    .select("status, status_source, pass_tier, pass_until")
+    .eq("user_id", userId).maybeSingle();
+  const patch: Record<string, unknown> = {};
+
+  if (recurringTier) {
+    if (row?.status !== recurringTier && row?.status !== "vip") {
+      patch.status = recurringTier;
+      patch.status_source = "stripe";
+    }
+  } else if (row?.status_source === "stripe" && row.status !== "free") {
+    patch.status = "free";
+  }
+
+  if (pass && (!row?.pass_until || new Date(pass.until) > new Date(row.pass_until))) {
+    patch.pass_tier = pass.tier;
+    patch.pass_until = pass.until;
+  }
+
+  if (!Object.keys(patch).length) return;
+  patch.updated_at = new Date().toISOString();
+  const { error } = row
+    ? await db.from("user_subscriptions").update(patch).eq("user_id", userId)
+    : await db.from("user_subscriptions").insert({ user_id: userId, status: "free", ...patch });
+  if (error) logStep("DB sync failed", { message: error.message });
+  else logStep("DB synced", patch);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -44,6 +91,7 @@ serve(async (req) => {
     
     if (customers.data.length === 0) {
       logStep("No customer found");
+      await syncToDb(supabaseClient, user.id, null, null);
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -75,12 +123,30 @@ serve(async (req) => {
       logStep("No active subscription found");
     }
 
+    // Season passes: paid one-time checkouts, valid 12 months from payment.
+    let pass: { tier: string; until: string } | null = null;
+    const sessions = await stripe.checkout.sessions.list({ customer: customerId, limit: 100 });
+    for (const s of sessions.data) {
+      const tier = s.metadata?.season_tier;
+      if (s.mode !== "payment" || s.payment_status !== "paid" || !tier) continue;
+      const until = new Date(s.created * 1000 + SEASON_MS);
+      if (until <= new Date()) continue;
+      if (!pass || TIER_RANK[tier] > TIER_RANK[pass.tier] ||
+          (TIER_RANK[tier] === TIER_RANK[pass.tier] && until > new Date(pass.until))) {
+        pass = { tier, until: until.toISOString() };
+      }
+    }
+
+    await syncToDb(supabaseClient, user.id, priceId ? (PRICE_TO_STATUS[priceId] ?? null) : null, pass);
+
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_id: productId,
       price_id: priceId,
       interval: interval,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      pass_tier: pass?.tier ?? null,
+      pass_until: pass?.until ?? null
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

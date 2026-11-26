@@ -15,8 +15,8 @@ const ACTIVE_EVENTS = new Set([
   "RENEWAL",
   "UNCANCELLATION",
   "PRODUCT_CHANGE",
-  "NON_RENEWING_PURCHASE",
 ]);
+const SEASON_MS = 365 * 24 * 60 * 60 * 1000;
 const INACTIVE_EVENTS = new Set(["EXPIRATION"]);
 
 serve(async (req) => {
@@ -57,6 +57,36 @@ serve(async (req) => {
       return new Response(JSON.stringify({ skipped: true }), { status: 200 });
     }
 
+    // Season pass (App Store non-renewing subscription / Play one-time product):
+    // 12 months of access from the purchase, added on top of any pass still running.
+    if (eventType === "NON_RENEWING_PURCHASE") {
+      const productId: string = String(event.product_id ?? "");
+      const tier: Tier | undefined = TIER_PRIORITY.find(t => entitlementIds.includes(t))
+        ?? (productId.includes("pro") ? "pro" : productId.includes("starter") ? "starter" : undefined);
+      if (!tier) {
+        logStep("Season pass without a known tier, ignoring", { productId, entitlementIds });
+        return new Response(JSON.stringify({ skipped: true }), { status: 200 });
+      }
+      const { data: row } = await supabase.from("user_subscriptions")
+        .select("pass_until, pass_last_txn").eq("user_id", userId).maybeSingle();
+      const txn = String(event.transaction_id ?? event.id ?? "");
+      if (txn && row?.pass_last_txn === txn) {
+        logStep("Season pass already applied (duplicate delivery)", { txn });
+        return new Response(JSON.stringify({ skipped: true }), { status: 200 });
+      }
+      const purchasedAt = Number(event.purchased_at_ms) || Date.now();
+      const current = row?.pass_until ? new Date(row.pass_until).getTime() : 0;
+      const start = Math.max(purchasedAt, current > Date.now() ? current : 0);
+      const passUntil = new Date(start + SEASON_MS).toISOString();
+      const patch = { pass_tier: tier, pass_until: passUntil, pass_last_txn: txn || null, updated_at: new Date().toISOString() };
+      const { error } = row
+        ? await supabase.from("user_subscriptions").update(patch).eq("user_id", userId)
+        : await supabase.from("user_subscriptions").insert({ user_id: userId, status: "free", ...patch });
+      if (error) throw error;
+      logStep("Season pass recorded", { userId, tier, passUntil });
+      return new Response(JSON.stringify({ success: true }), { status: 200 });
+    }
+
     let status: Tier | "free" | null = null;
 
     if (INACTIVE_EVENTS.has(eventType)) {
@@ -77,7 +107,7 @@ serve(async (req) => {
     const { error } = await supabase
       .from("user_subscriptions")
       .upsert(
-        { user_id: userId, status, updated_at: new Date().toISOString() },
+        { user_id: userId, status, status_source: "store", updated_at: new Date().toISOString() },
         { onConflict: "user_id" },
       );
     if (error) throw error;

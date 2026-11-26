@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Capacitor } from '@capacitor/core';
 import { useAuth } from './useAuth';
 
 export type SubscriptionStatus = 'free' | 'starter' | 'pro' | 'elite' | 'vip';
@@ -19,6 +20,25 @@ export interface Subscription {
   isVip: boolean;
   inGracePeriod: boolean;
   gracePeriodDaysRemaining: number;
+  /** Active season pass (one payment, 12 months, no auto-renewal). */
+  passTier: SubscriptionStatus | null;
+  passUntil: string | null;
+  /** Free Pro trial of a new account, while it lasts. */
+  trialEndsAt: string | null;
+  inTrial: boolean;
+  /** Plan that comes from an auto-renewing subscription (store or Stripe). */
+  recurringStatus: SubscriptionStatus;
+}
+
+const TIER_RANK: Record<SubscriptionStatus, number> = { free: 0, starter: 1, pro: 2, elite: 3, vip: 4 };
+const isFuture = (iso?: string | null) => !!iso && new Date(iso).getTime() > Date.now();
+
+// Web: pull Stripe purchases (subscriptions and season passes) into the database once per session.
+let stripeSyncDone = false;
+async function syncStripeOnce() {
+  if (stripeSyncDone || Capacitor.isNativePlatform()) return;
+  stripeSyncDone = true;
+  try { await supabase.functions.invoke('check-subscription'); } catch { /* best effort */ }
 }
 
 // Plan limits configuration
@@ -69,6 +89,11 @@ export function useSubscription() {
     isVip: false,
     inGracePeriod: false,
     gracePeriodDaysRemaining: 0,
+    passTier: null,
+    passUntil: null,
+    trialEndsAt: null,
+    inTrial: false,
+    recurringStatus: 'free',
   });
   const [loading, setLoading] = useState(true);
 
@@ -114,12 +139,15 @@ export function useSubscription() {
           console.warn('[useSubscription] is_vip_user RPC failed:', isVipError);
         }
 
-        // Get subscription status
-        const { data: subData } = await supabase
+        await syncStripeOnce();
+
+        // Get subscription status (pass/trial columns are newer than the generated types)
+        const { data: subRow } = await supabase
           .from('user_subscriptions')
-          .select('status')
+          .select('*')
           .eq('user_id', user.id)
           .maybeSingle();
+        const subData = subRow as { status?: string; pass_tier?: string | null; pass_until?: string | null; trial_ends_at?: string | null } | null;
 
         // Get today's credits
         const { data: creditsData } = await supabase
@@ -143,7 +171,15 @@ export function useSubscription() {
         }
         
         const isVip = isVipData || false;
-        
+        const recurringStatus = status;
+
+        // Best valid plan: auto-renewing subscription, season pass or trial (trial = Pro).
+        const passTier = isFuture(subData?.pass_until) && subData?.pass_tier
+          ? (subData.pass_tier as SubscriptionStatus) : null;
+        if (passTier && TIER_RANK[passTier] > TIER_RANK[status]) status = passTier;
+        const inTrial = status === 'free' && isFuture(subData?.trial_ends_at);
+        if (inTrial) status = 'pro';
+
         // VIPs and admins have unlimited credits (show 999)
         const isPaidPlan = status !== 'free';
         const credits = (isAdmin || isVip || isPaidPlan) 
@@ -157,6 +193,11 @@ export function useSubscription() {
           isVip,
           inGracePeriod: inGracePeriod || false,
           gracePeriodDaysRemaining: graceDaysRemaining || 0,
+          passTier,
+          passUntil: passTier ? subData?.pass_until ?? null : null,
+          trialEndsAt: inTrial ? subData?.trial_ends_at ?? null : null,
+          inTrial,
+          recurringStatus,
         });
       } catch (error) {
         console.error('Error fetching subscription:', error);

@@ -36,7 +36,7 @@ import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/lib/dateLocale';
 import { tr } from '@/lib/tr';
 
-type PlanType = 'starter_monthly' | 'starter_yearly' | 'pro_monthly' | 'pro_yearly';
+type PlanType = 'starter_monthly' | 'starter_yearly' | 'pro_monthly' | 'pro_yearly' | 'starter_season' | 'pro_season';
 
 export default function Subscription() {
   const { t, i18n } = useTranslation();
@@ -229,6 +229,16 @@ export default function Subscription() {
                 {subscription.isAdmin ? tr('Administrador de la App') : tr('Acceso VIP - Funciones ilimitadas')}
               </CardDescription>
             )}
+            {subscription.inTrial && subscription.trialEndsAt && (
+              <CardDescription className="text-primary font-medium">
+                {tr('Prueba gratis del plan Pro: te quedan {days} días', { days: Math.max(1, Math.ceil((new Date(subscription.trialEndsAt).getTime() - Date.now()) / 86400000)) })}
+              </CardDescription>
+            )}
+            {subscription.passTier && subscription.passUntil && (
+              <CardDescription>
+                {tr('Pase de temporada {plan} válido hasta el {date}', { plan: statusConfig[subscription.passTier]?.label ?? '', date: format(new Date(subscription.passUntil), 'PPP', { locale: getDateFnsLocale(i18n.language) }) })}
+              </CardDescription>
+            )}
             {isPaidPlan && stripeSubscription?.subscription_end && (
               <CardDescription>
                 {tr('Próxima renovación: {date}', { date: format(new Date(stripeSubscription.subscription_end), 'PPP', { locale: getDateFnsLocale(i18n.language) }) })}
@@ -298,7 +308,7 @@ export default function Subscription() {
         </Card>
 
         {/* Plans */}
-        {!isPaidPlan && (
+        {subscription.status !== 'vip' && subscription.recurringStatus === 'free' && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold px-1">{t('subscription.choosePlan')}</h2>
             
@@ -310,7 +320,7 @@ export default function Subscription() {
                     <Zap className="h-5 w-5 text-muted-foreground" />
                     {t('subscription.free')}
                   </CardTitle>
-                  <Badge variant="secondary">{tr('Actual')}</Badge>
+                  {!isPaidPlan && <Badge variant="secondary">{tr('Actual')}</Badge>}
                 </div>
                 <CardDescription>{t('subscription.freeDesc')}</CardDescription>
               </CardHeader>
@@ -369,14 +379,14 @@ export default function Subscription() {
                   </Button>
                   <Button 
                     className="w-full bg-blue-600 hover:bg-blue-700"
-                    onClick={() => handleCheckout('starter_yearly')}
+                    onClick={() => handleCheckout('starter_season')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('40€/año')}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('40€/temporada')}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  {t('subscription.yearlySaveStarter')}
+                  {tr('Pase de temporada: pago único, 12 meses, sin renovación automática. Ahorras 20€.')}
                 </p>
               </CardContent>
             </Card>
@@ -419,14 +429,14 @@ export default function Subscription() {
                   </Button>
                   <Button 
                     className="w-full bg-purple-600 hover:bg-purple-700"
-                    onClick={() => handleCheckout('pro_yearly')}
+                    onClick={() => handleCheckout('pro_season')}
                     disabled={processingCheckout}
                   >
-                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('120€/año')}
+                    {processingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('120€/temporada')}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  {t('subscription.yearlySavePro')}
+                  {tr('Pase de temporada: pago único, 12 meses, sin renovación automática. Ahorras 60€.')}
                 </p>
               </CardContent>
             </Card>

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { tr } from '@/lib/tr';
 import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
@@ -303,6 +304,9 @@ export default function Landing() {
           </h2>
           <p className="text-muted-foreground text-center mb-12">
             {t('landing.pricing.subtitle')}
+            <span className="block mt-2 font-medium text-primary">
+              {tr('Prueba el plan Pro 14 días gratis al registrarte, sin tarjeta.')}
+            </span>
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto items-stretch">
             {/* Free Plan */}
@@ -340,7 +344,7 @@ export default function Landing() {
                   <span className="text-muted-foreground text-sm">/{t('landing.pricing.month')}</span>
                 </div>
                 <p className="text-xs text-primary mb-4">
-                  {t('landing.pricing.year')}: 40€ ({t('subscription.saveYearly', { percent: '33%' })})
+                  {tr('Pase de temporada: 40€ (pago único, 12 meses)')}
                 </p>
                 <ul className="space-y-2 mb-6 text-sm flex-1">
                   {starterFeatures.map((feature, index) => (
@@ -371,7 +375,7 @@ export default function Landing() {
                   <span className="text-muted-foreground text-sm">/{t('landing.pricing.month')}</span>
                 </div>
                 <p className="text-xs text-primary mb-4">
-                  {t('landing.pricing.year')}: 120€ ({t('subscription.saveYearly', { percent: '33%' })})
+                  {tr('Pase de temporada: 120€ (pago único, 12 meses)')}
                 </p>
                 <ul className="space-y-2 mb-6 text-sm flex-1">
                   {proFeatures.map((feature, index) => (

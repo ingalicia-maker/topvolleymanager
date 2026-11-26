@@ -104,15 +104,17 @@ function TermsES() {
       <h3>4.2 Planes de pago</h3>
       <p>Los planes de pago incluyen créditos ilimitados, exportación de datos a Excel, gráficos de evolución de jugadoras y gestión de paradas de bus para desplazamientos:</p>
       <ul>
-        <li>Starter (5€/mes o 40€/año): hasta 4 equipos y 2 entrenadores.</li>
-        <li>Pro (15€/mes o 120€/año): hasta 20 equipos y 15 entrenadores.</li>
+        <li>Starter (5€/mes, o pase de temporada de 40€): hasta 4 equipos y 2 entrenadores.</li>
+        <li>Pro (15€/mes, o pase de temporada de 120€): hasta 20 equipos y 15 entrenadores.</li>
         <li>Elite: equipos y entrenadores ilimitados, con condiciones a medida.</li>
       </ul>
 
       <h3>4.3 Pagos y Facturación</h3>
       <ul>
         <li>Los pagos en la web se procesan a través de Stripe, una plataforma segura de pagos. En las apps para iPhone y Android, a través de App Store o Google Play, según sus propias condiciones.</li>
-        <li>Las suscripciones se renuevan automáticamente al final de cada período.</li>
+        <li>Las suscripciones mensuales se renuevan automáticamente al final de cada período.</li>
+        <li>El pase de temporada es un pago único que da acceso al plan durante 12 meses desde la compra y no se renueva automáticamente. Al terminar, la cuenta vuelve al Plan Gratuito salvo que se compre otro pase o una suscripción.</li>
+        <li>Las cuentas nuevas disfrutan de 14 días de prueba gratuita del plan Pro, sin pedir datos de pago. Al terminar la prueba la cuenta pasa al Plan Gratuito sin ningún cargo.</li>
         <li>Los precios pueden variar y serán notificados con antelación.</li>
         <li>El usuario puede cancelar su suscripción en cualquier momento desde su perfil.</li>
       </ul>
@@ -276,15 +278,17 @@ function TermsEN() {
       <h3>4.2 Paid Plans</h3>
       <p>Paid plans include unlimited credits, data export to Excel, player evolution charts and bus stop management for travel:</p>
       <ul>
-        <li>Starter (€5/month or €40/year): up to 4 teams and 2 coaches.</li>
-        <li>Pro (€15/month or €120/year): up to 20 teams and 15 coaches.</li>
+        <li>Starter (€5/month, or a €40 season pass): up to 4 teams and 2 coaches.</li>
+        <li>Pro (€15/month, or a €120 season pass): up to 20 teams and 15 coaches.</li>
         <li>Elite: unlimited teams and coaches, on tailored terms.</li>
       </ul>
 
       <h3>4.3 Payments and Billing</h3>
       <ul>
         <li>Payments on the website are processed through Stripe, a secure payment platform. In the iPhone and Android apps, through the App Store or Google Play, under their own terms.</li>
-        <li>Subscriptions renew automatically at the end of each period.</li>
+        <li>Monthly subscriptions renew automatically at the end of each period.</li>
+        <li>The season pass is a one-time payment that gives access to the plan for 12 months from purchase and does not renew automatically. When it ends, the account returns to the Free Plan unless another pass or a subscription is bought.</li>
+        <li>New accounts get a 14-day free trial of the Pro plan, with no payment details required. When the trial ends the account moves to the Free Plan at no charge.</li>
         <li>Prices may vary and will be notified in advance.</li>
         <li>Users can cancel their subscription at any time from their profile.</li>
       </ul>
@@ -448,15 +452,17 @@ function TermsIT() {
       <h3>4.2 Piani a pagamento</h3>
       <p>I piani a pagamento includono crediti illimitati, esportazione dei dati in Excel, grafici di evoluzione delle giocatrici e gestione delle fermate bus per le trasferte:</p>
       <ul>
-        <li>Starter (5€/mese o 40€/anno): fino a 4 squadre e 2 allenatori.</li>
-        <li>Pro (15€/mese o 120€/anno): fino a 20 squadre e 15 allenatori.</li>
+        <li>Starter (5€/mese, o pass stagionale da 40€): fino a 4 squadre e 2 allenatori.</li>
+        <li>Pro (15€/mese, o pass stagionale da 120€): fino a 20 squadre e 15 allenatori.</li>
         <li>Elite: squadre e allenatori illimitati, a condizioni personalizzate.</li>
       </ul>
 
       <h3>4.3 Pagamenti e Fatturazione</h3>
       <ul>
         <li>I pagamenti sul sito web vengono elaborati tramite Stripe, una piattaforma di pagamento sicura. Nelle app per iPhone e Android, tramite App Store o Google Play, secondo le loro condizioni.</li>
-        <li>Gli abbonamenti si rinnovano automaticamente alla fine di ogni periodo.</li>
+        <li>Gli abbonamenti mensili si rinnovano automaticamente alla fine di ogni periodo.</li>
+        <li>Il pass stagionale è un pagamento unico che dà accesso al piano per 12 mesi dall'acquisto e non si rinnova automaticamente. Alla scadenza l'account torna al Piano Gratuito, salvo l'acquisto di un nuovo pass o di un abbonamento.</li>
+        <li>I nuovi account hanno 14 giorni di prova gratuita del piano Pro, senza dati di pagamento. Al termine della prova l'account passa al Piano Gratuito senza alcun addebito.</li>
         <li>I prezzi possono variare e saranno comunicati in anticipo.</li>
         <li>L'utente può annullare l'abbonamento in qualsiasi momento dal proprio profilo.</li>
       </ul>

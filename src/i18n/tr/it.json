@@ -689,5 +689,14 @@
   "Teléfono de Bizum": "Numero Bizum",
   "Dónde y cuándo (opcional)": "Dove e quando (facoltativo)",
   "Otra forma": "Altro",
-  "Explica cómo pagar": "Spiega come pagare"
+  "Explica cómo pagar": "Spiega come pagare",
+  "Prueba gratis del plan Pro: te quedan {days} días": "Prova gratuita del piano Pro: mancano {days} giorni",
+  "Pase de temporada {plan} válido hasta el {date}": "Pass stagionale {plan} valido fino al {date}",
+  "40€/temporada": "40€/stagione",
+  "120€/temporada": "120€/stagione",
+  "Pase de temporada: pago único, 12 meses, sin renovación automática. Ahorras 20€.": "Pass stagionale: pagamento unico, 12 mesi, senza rinnovo automatico. Risparmi 20€.",
+  "Pase de temporada: pago único, 12 meses, sin renovación automática. Ahorras 60€.": "Pass stagionale: pagamento unico, 12 mesi, senza rinnovo automatico. Risparmi 60€.",
+  "Pase de temporada: 40€ (pago único, 12 meses)": "Pass stagionale: 40€ (pagamento unico, 12 mesi)",
+  "Pase de temporada: 120€ (pago único, 12 meses)": "Pass stagionale: 120€ (pagamento unico, 12 mesi)",
+  "Prueba el plan Pro 14 días gratis al registrarte, sin tarjeta.": "Prova il piano Pro gratis per 14 giorni alla registrazione, senza carta."
 }
