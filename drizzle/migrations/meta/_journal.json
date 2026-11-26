@@ -22,6 +22,13 @@
       "when": 1795123069407,
       "tag": "0002_scouting",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795717223798,
+      "tag": "0003_season_pass_and_trial",
+      "breakpoints": true
     }
   ]
 }

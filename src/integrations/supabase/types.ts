@@ -2105,9 +2105,14 @@ export type Database = {
           data_deleted_at: string | null
           grace_period_ends_at: string | null
           id: string
+          pass_last_txn: string | null
+          pass_tier: Database["public"]["Enums"]["subscription_status"] | null
+          pass_until: string | null
           status: Database["public"]["Enums"]["subscription_status"]
+          status_source: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          trial_ends_at: string | null
           updated_at: string
           user_id: string
         }
@@ -2119,9 +2124,14 @@ export type Database = {
           data_deleted_at?: string | null
           grace_period_ends_at?: string | null
           id?: string
+          pass_last_txn?: string | null
+          pass_tier?: Database["public"]["Enums"]["subscription_status"] | null
+          pass_until?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
+          status_source?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -2133,9 +2143,14 @@ export type Database = {
           data_deleted_at?: string | null
           grace_period_ends_at?: string | null
           id?: string
+          pass_last_txn?: string | null
+          pass_tier?: Database["public"]["Enums"]["subscription_status"] | null
+          pass_until?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
+          status_source?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
         }
