@@ -1238,6 +1238,57 @@ export type Database = {
           },
         ]
       }
+      founder_applications: {
+        Row: {
+          admin_note: string | null
+          approved_at: string | null
+          city: string
+          club_name: string
+          contact_name: string
+          country: string | null
+          created_at: string
+          email: string
+          id: string
+          lang: string | null
+          message: string | null
+          phone: string | null
+          status: string
+          teams_count: number | null
+        }
+        Insert: {
+          admin_note?: string | null
+          approved_at?: string | null
+          city: string
+          club_name: string
+          contact_name: string
+          country?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          lang?: string | null
+          message?: string | null
+          phone?: string | null
+          status?: string
+          teams_count?: number | null
+        }
+        Update: {
+          admin_note?: string | null
+          approved_at?: string | null
+          city?: string
+          club_name?: string
+          contact_name?: string
+          country?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          lang?: string | null
+          message?: string | null
+          phone?: string | null
+          status?: string
+          teams_count?: number | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -2217,6 +2268,7 @@ export type Database = {
         Returns: undefined
       }
       fee_text: { Args: { _key: string; _lang: string }; Returns: string }
+      founder_spots_left: { Args: never; Returns: number }
       generate_short_code: { Args: never; Returns: string }
       get_enrollment_form: { Args: { _slug: string }; Returns: Json }
       get_fee_payment: { Args: { _token: string }; Returns: Json }
@@ -2250,6 +2302,7 @@ export type Database = {
       }
       get_user_club_id: { Args: { _user_id: string }; Returns: string }
       get_user_credits: { Args: { _user_id: string }; Returns: number }
+      grant_founder_pass: { Args: { _application_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2294,6 +2347,20 @@ export type Database = {
       }
       submit_enrollment: {
         Args: { _data: Json; _slug: string }
+        Returns: string
+      }
+      submit_founder_application: {
+        Args: {
+          _city: string
+          _club_name: string
+          _contact_name: string
+          _country: string
+          _email: string
+          _lang: string
+          _message: string
+          _phone: string
+          _teams_count: number
+        }
         Returns: string
       }
       user_belongs_to_club: {
