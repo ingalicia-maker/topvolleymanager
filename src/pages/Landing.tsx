@@ -308,6 +308,15 @@ export default function Landing() {
               {tr('Prueba el plan Pro 14 días gratis al registrarte, sin tarjeta.')}
             </span>
           </p>
+          <div className="max-w-3xl mx-auto -mt-6 mb-10 rounded-xl border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <p className="text-sm">
+              <span className="font-semibold">{tr('Clubes Fundadores:')}</span>{' '}
+              {tr('los primeros 25 clubes tienen una temporada Pro gratis.')}
+            </p>
+            <Link to="/clubes-fundadores" className="shrink-0">
+              <Button size="sm">{tr('Solicitar plaza')}</Button>
+            </Link>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto items-stretch">
             {/* Free Plan */}
             <Card className="relative overflow-hidden flex flex-col h-full">

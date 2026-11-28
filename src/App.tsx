@@ -44,6 +44,7 @@ import ClubFees from "./pages/ClubFees";
 import EnrollmentPage from "./pages/EnrollmentPage";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import FounderClubs from "./pages/FounderClubs";
 import Invitation from "./pages/Invitation";
 import NotFound from "./pages/NotFound";
 import Blog from "./pages/Blog";
@@ -91,6 +92,7 @@ const App = () => (
           <Route path="/exercises" element={<Exercises />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/clubes-fundadores" element={<FounderClubs />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/confirm" element={<AuthConfirm />} />
           <Route path="/reset-password" element={<ResetPassword />} />

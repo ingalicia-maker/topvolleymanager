@@ -51,6 +51,7 @@ import { RegistrationChart } from '@/components/admin/RegistrationChart';
 import { GoogleAnalyticsCard } from '@/components/admin/GoogleAnalyticsCard';
 import { RetentionMetrics } from '@/components/admin/RetentionMetrics';
 import { SiteAnalytics } from '@/components/admin/SiteAnalytics';
+import { FounderApplications } from '@/components/admin/FounderApplications';
 
 interface VipUser {
   id: string;
@@ -306,7 +307,7 @@ export default function AdminPanel() {
         </div>
 
         <Tabs defaultValue="analytics" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Analíticas
@@ -318,6 +319,10 @@ export default function AdminPanel() {
             <TabsTrigger value="vip" className="gap-2">
               <Crown className="h-4 w-4" />
               VIP
+            </TabsTrigger>
+            <TabsTrigger value="founders" className="gap-2">
+              <Users className="h-4 w-4" />
+              Fundadores
             </TabsTrigger>
           </TabsList>
 
@@ -482,6 +487,10 @@ export default function AdminPanel() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="founders" className="space-y-4">
+            <FounderApplications />
           </TabsContent>
 
           <TabsContent value="vip" className="space-y-4">
